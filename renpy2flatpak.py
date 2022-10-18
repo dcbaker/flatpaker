@@ -16,16 +16,14 @@ if typing.TYPE_CHECKING:
 
     class Arguments(typing.Protocol):
         input: pathlib.Path
-        repo: str
+        repo: typing.Optional[str]
         domain: str
         name: str
 
 
-def dump_yaml(args: Arguments, workdir: str) -> None:
+def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
     with args.input.open('rb') as f:
         hash = hashlib.sha256(f.read()).hexdigest()
-
-    appid = f'{args.domain}.{args.name}'
 
     modules = [
         {
@@ -47,7 +45,7 @@ def dump_yaml(args: Arguments, workdir: str) -> None:
                 'rm -Rf /app/lib/game/lib/windows-*',
                 'rm -Rf /app/lib/game/lib/*-i686',
                 # Patch the game to not require sandbox access
-                '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share")@g' /app/lib/*.py''',
+                '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share")@g' /app/lib/game/*.py''',
                 'mkdir -p /app/bin',
                 'echo  \'cd /app/lib/game/; export RENPY_PERFORMANCE_TEST=0; sh *.sh\' > /app/bin/game.sh',
                 'chmod +x /app/bin/game.sh'
@@ -78,21 +76,32 @@ def dump_yaml(args: Arguments, workdir: str) -> None:
         yaml.dump(struct, f)
 
 
+def build_flatpak(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
+    build_command = [
+        'flatpak-builder', '--force-clean', 'build',
+        (workdir / f'{appid}.yaml').absolute(),
+    ]
+
+    if args.repo:
+        build_command.extend(['--repo', args.repo])
+
+    subprocess.run(build_command)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('input', type=pathlib.Path)
-    parser.add_argument('repo')
-    parser.add_argument('--domain', required=True)
-    parser.add_argument('--name', required=True)
+    parser.add_argument('input', type=pathlib.Path, help='path to the renpy archive')
+    parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
+    parser.add_argument('--domain', action='store', required=True, help="the reversed domain without the name. ex: 'com.github.user'")
+    parser.add_argument('--name', action='store', required=True, help="the name of the project, without spaces")
     args: Arguments = parser.parse_args()
 
+    appid = f'{args.domain}.{args.name}'
+
     with tempfile.TemporaryDirectory() as d:
-        dump_yaml(args, d)
-        subprocess.run([
-            'flatpak-builder', '--force-clean', 'build',
-            (pathlib.Path(d) / f'{args.domain}.{args.name}.yaml').absolute(),
-            # '--repo', args.repo,
-        ])
+        wd = pathlib.Path(d)
+        dump_yaml(args, wd, appid)
+        build_flatpak(args, wd, appid)
 
 
 if __name__ == "__main__":
