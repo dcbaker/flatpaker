@@ -126,7 +126,7 @@ def main() -> None:
     parser.add_argument('--name', action='store', required=True, help="the name of the project, without spaces")
     args: Arguments = parser.parse_args()
 
-    appid = f'{args.domain}.{args.name}'
+    appid = f"{args.domain}.{args.name.replace(' ', '_')}"
 
     with tempfile.TemporaryDirectory() as d:
         wd = pathlib.Path(d)
