@@ -58,8 +58,8 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 'cp -R * /app/lib/game',
                 'rm -f /app/lib/game/*.exe',
                 'rm -Rf /app/lib/game/*.app',
-                'rm -Rf /app/lib/game/lib/darwin-*',
-                'rm -Rf /app/lib/game/lib/windows-*',
+                'rm -Rf /app/lib/game/lib/*-darwin-*',
+                'rm -Rf /app/lib/game/lib/*-windows-*',
                 'rm -Rf /app/lib/game/lib/*-i686',
                 # Patch the game to not require sandbox access
                 '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share")@g' /app/lib/game/*.py''',
