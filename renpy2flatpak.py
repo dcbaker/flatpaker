@@ -20,6 +20,7 @@ if typing.TYPE_CHECKING:
         repo: typing.Optional[str]
         domain: str
         name: str
+        patches: typing.Optional[typing.List[str]]
 
 
 def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathlib.Path:
@@ -72,7 +73,7 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             'sources': [
                 {
                     'path': desktop_file.as_posix(),
-                    'sha256': desktop_hash,
+                    'sha256': sha256(desktop_file),
                     'type': 'file',
                 }
             ],
@@ -82,6 +83,24 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             ],
         },
     ]
+
+    if args.patches:
+        sources = []
+        for p in args.patches:
+            patch = pathlib.Path(p).absolute()
+            sources.append({
+                'path': patch.as_posix(),
+                'sha256': sha256(patch),
+                'type': 'file',
+            })
+        modules.append({
+            'buildsystem': 'simple',
+            'name': 'patches',
+            'sources': sources,
+            'build-commands': [
+                'cp *.rpy /app/lib/game/game',
+            ],
+        })
 
     struct = {
         'sdk': 'org.freedesktop.Sdk',
@@ -124,6 +143,7 @@ def main() -> None:
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
     parser.add_argument('--domain', action='store', required=True, help="the reversed domain without the name. ex: 'com.github.user'")
     parser.add_argument('--name', action='store', required=True, help="the name of the project, without spaces")
+    parser.add_argument('--patches', action='append', default=[], help="Additional rpy files to copy into the game folder")
     args: Arguments = parser.parse_args()
 
     appid = f"{args.domain}.{args.name.replace(' ', '_')}"
