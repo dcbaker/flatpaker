@@ -30,7 +30,8 @@ def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
             [Desktop Entry]
             Name={args.name}
             Exec=game.sh
-            Type=Game
+            Type=Application
+            Categories=Game;
             '''))
     return p
 
