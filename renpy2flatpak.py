@@ -34,12 +34,12 @@ def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
     return p
 
 
-def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path) -> None:
-    with args.input.open('rb') as f:
-        archive_hash = hashlib.sha256(f.read()).hexdigest()
-    with desktop_file.open('rb') as f:
-        desktop_hash = hashlib.sha256(f.read()).hexdigest()
+def sha256(path: pathlib.Path) -> str:
+    with path.open('rb') as f:
+        return hashlib.sha256(f.read()).hexdigest()
 
+
+def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path) -> None:
     modules = [
         {
             'buildsystem': 'simple',
@@ -47,7 +47,7 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             'sources': [
                 {
                     'path': args.input.as_posix(),
-                    'sha256': archive_hash,
+                    'sha256':  sha256(args.input),
                     'type': 'archive',
                 },
             ],
