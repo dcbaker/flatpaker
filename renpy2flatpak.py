@@ -8,6 +8,7 @@ import hashlib
 import pathlib
 import subprocess
 import tempfile
+import textwrap
 import typing
 
 import yaml
@@ -21,9 +22,23 @@ if typing.TYPE_CHECKING:
         name: str
 
 
-def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
+def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathlib.Path:
+    p = workdir / f'{appid}.desktop'
+    with p.open('w') as f:
+        f.write(textwrap.dedent(f'''\
+            [Desktop Entry]
+            Name={args.name}
+            Exec=game.sh
+            Type=Game
+            '''))
+    return p
+
+
+def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path) -> None:
     with args.input.open('rb') as f:
-        hash = hashlib.sha256(f.read()).hexdigest()
+        archive_hash = hashlib.sha256(f.read()).hexdigest()
+    with desktop_file.open('rb') as f:
+        desktop_hash = hashlib.sha256(f.read()).hexdigest()
 
     modules = [
         {
@@ -32,9 +47,9 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
             'sources': [
                 {
                     'path': args.input.as_posix(),
-                    'sha256': hash,
+                    'sha256': archive_hash,
                     'type': 'archive',
-                }
+                },
             ],
             'build-commands': [
                 'mkdir -p /app/lib/game',
@@ -50,7 +65,22 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
                 'echo  \'cd /app/lib/game/; export RENPY_PERFORMANCE_TEST=0; sh *.sh\' > /app/bin/game.sh',
                 'chmod +x /app/bin/game.sh'
             ],
-        }
+        },
+        {
+            'buildsystem': 'simple',
+            'name': 'desktop_file',
+            'sources': [
+                {
+                    'path': desktop_file.as_posix(),
+                    'sha256': desktop_hash,
+                    'type': 'file',
+                }
+            ],
+            'build-commands': [
+                'mkdir -p /app/share/applications',
+                f'cp {desktop_file.name} /app/share/applications',
+            ],
+        },
     ]
 
     struct = {
@@ -100,7 +130,8 @@ def main() -> None:
 
     with tempfile.TemporaryDirectory() as d:
         wd = pathlib.Path(d)
-        dump_yaml(args, wd, appid)
+        desktop_file = create_desktop(args, wd, appid)
+        dump_yaml(args, wd, appid, desktop_file)
         build_flatpak(args, wd, appid)
 
 
