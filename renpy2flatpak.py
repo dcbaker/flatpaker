@@ -140,8 +140,8 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
         ],
         'modules': modules,
         'cleanup-commands': [
-            'rm -Rf /app/lib/game/lib/*-darwin-*',
-            'rm -Rf /app/lib/game/lib/*-windows-*',
+            'rm -Rf /app/lib/game/lib/*darwin-*',
+            'rm -Rf /app/lib/game/lib/*windows-*',
             'rm -Rf /app/lib/game/lib/*-i686',
         ],
     }
