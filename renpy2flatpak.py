@@ -45,7 +45,7 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
     modules = [
         {
             'buildsystem': 'simple',
-            'name': args.name,
+            'name': args.name.replace(' ', '_'),
             'sources': [
                 {
                     'path': args.input.as_posix(),
@@ -62,7 +62,7 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 'rm -Rf /app/lib/game/lib/*-windows-*',
                 'rm -Rf /app/lib/game/lib/*-i686',
                 # Patch the game to not require sandbox access
-                '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share")@g' /app/lib/game/*.py''',
+                '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
                 'mkdir -p /app/bin',
                 'echo  \'cd /app/lib/game/; export RENPY_PERFORMANCE_TEST=0; sh *.sh\' > /app/bin/game.sh',
                 'chmod +x /app/bin/game.sh'
@@ -99,8 +99,19 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             'name': 'patches',
             'sources': sources,
             'build-commands': [
-                'cp *.rpy /app/lib/game/game',
+                'cp *.rpy /app/lib/game/game/',
+
+                # Compile the patch files. Existing files will not be
+                # recompiled, and will result in warnings to the console we want
+                # to suppress
+                'pushd /app/lib/game; ./*.sh . compile 2&>/dev/null; popd',
+
+                # Remove the rpy files, which saves space
+                'rm /app/lib/game/game/*.rpy',
             ],
+            'cleanup': [
+                '*.rpyc.bak',
+            ]
         })
 
     struct = {
