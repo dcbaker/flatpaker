@@ -33,6 +33,7 @@ def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
             Exec=game.sh
             Type=Application
             Categories=Game;
+            Icon={appid}
             '''))
     return p
 
@@ -82,6 +83,15 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 'mkdir -p /app/bin',
                 'echo  \'cd /app/lib/game/; export RENPY_PERFORMANCE_TEST=0; sh *.sh\' > /app/bin/game.sh',
                 'chmod +x /app/bin/game.sh'
+            ],
+        },
+        {
+            'buildsystem': 'simple',
+            'name': 'icon',
+            'sources': [],
+            'build-commands': [
+                'mkdir -p /app/share/icons/hicolor/256x256/apps/',
+                f'cp /app/lib/game/game/gui/window_icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png'
             ],
         },
         {
