@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 import textwrap
 import typing
+from xml.etree import ElementTree as ET
 
 import yaml
 
@@ -23,6 +24,42 @@ if typing.TYPE_CHECKING:
         patches: typing.Optional[typing.List[str]]
         install: bool
         categories: typing.List[str]
+        summary: typing.Optional[str]
+        description: typing.Optional[str]
+
+
+def subelem(elem: ET.Element, tag: str, text: str, **extra: str) -> ET.Element:
+    new = ET.SubElement(elem, tag, **extra)
+    new.text = text
+    return new
+
+
+def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathlib.Path:
+    p = workdir / f'{appid}.metainfo.xml'
+
+    root =  ET.Element('component', type="desktop-application")
+    subelem(root, 'id', appid)
+    subelem(root, 'name', args.name)
+    summary = subelem(root, 'summary', args.summary or 'No summary provided')
+    subelem(root, 'metadata_license', 'CC0-1.0')
+    subelem(root, 'project_license', 'Proprietary')
+
+    supports = ET.SubElement(root, 'supports')
+    for c in ['pointing', 'keyboard', 'touch', 'gamepad']:
+        subelem(supports, 'control', c)
+
+    categories = ET.SubElement(root, 'categories')
+    for c in ['Game'] + args.categories:
+        subelem(categories, 'category', c)
+
+    description = ET.SubElement(root, 'description')
+    subelem(description, 'p', args.description or summary.text)
+    subelem(root, 'launchable', f'{appid}.desktop', type="desktop-id")
+
+    tree = ET.ElementTree(root)
+    tree.write(p, encoding='utf-8', xml_declaration=True)
+
+    return p
 
 
 def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathlib.Path:
@@ -44,7 +81,7 @@ def sha256(path: pathlib.Path) -> str:
         return hashlib.sha256(f.read()).hexdigest()
 
 
-def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path) -> None:
+def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     modules = [
         {
             'buildsystem': 'simple',
@@ -108,6 +145,21 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             'build-commands': [
                 'mkdir -p /app/share/applications',
                 f'cp {desktop_file.name} /app/share/applications',
+            ],
+        },
+        {
+            'buildsystem': 'simple',
+            'name': 'appdata_file',
+            'sources': [
+                {
+                    'path': appdata_file.as_posix(),
+                    'sha256': sha256(appdata_file),
+                    'type': 'file',
+                }
+            ],
+            'build-commands': [
+                'mkdir -p /app/share/metainfo',
+                f'cp {appdata_file.name} /app/share/metainfo',
             ],
         },
     ]
@@ -174,6 +226,8 @@ def main() -> None:
     parser.add_argument('--patches', action='append', default=[], help="Additional rpy files to copy into the game folder")
     parser.add_argument('--install', action='store_true', default=[], help="Install for the user (useful for testing)")
     parser.add_argument('--extra-category', dest='categories', action='append', default=[], help="Additional desktop categories")
+    parser.add_argument('--summary', action='store', help="A short summary of the game")
+    parser.add_argument('--description', action='store', help="A longer description of the game")
     args: Arguments = parser.parse_args()
 
     appid = f"{args.domain}.{args.name.replace(' ', '_')}"
@@ -181,7 +235,8 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as d:
         wd = pathlib.Path(d)
         desktop_file = create_desktop(args, wd, appid)
-        dump_yaml(args, wd, appid, desktop_file)
+        appdata_file = create_appdata(args, wd, appid)
+        dump_yaml(args, wd, appid, desktop_file, appdata_file)
         build_flatpak(args, wd, appid)
 
 
