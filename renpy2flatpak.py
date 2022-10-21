@@ -33,6 +33,7 @@ if typing.TYPE_CHECKING:
 
         summary: str
         description: str
+        content_rating: typing.Dict[str, typing.Literal['none', 'mild', 'moderate', 'intense']]
 
     class Description(typing.TypedDict):
 
@@ -68,7 +69,14 @@ def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
     subelem(description, 'p', args.description['appdata']['summary'])
     subelem(root, 'launchable', f'{appid}.desktop', type="desktop-id")
 
+    # There is an oars-1.1, but it doesn't appear to be supported by KDE
+    # discover yet
+    cr = ET.SubElement(root, 'content_rating', type="oars-1.0")
+    for k, v in args.description['appdata']['content_rating'].items():
+        subelem(cr, 'content_attribute', v, id=k)
+
     tree = ET.ElementTree(root)
+    ET.indent(tree)
     tree.write(p, encoding='utf-8', xml_declaration=True)
 
     return p
