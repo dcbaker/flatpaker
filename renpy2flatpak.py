@@ -22,6 +22,7 @@ if typing.TYPE_CHECKING:
         name: str
         patches: typing.Optional[typing.List[str]]
         install: bool
+        categories: typing.List[str]
 
 
 def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathlib.Path:
@@ -32,7 +33,7 @@ def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
             Name={args.name}
             Exec=game.sh
             Type=Application
-            Categories=Game;
+            Categories=Game;{';'.join(args.categories)}{';' if args.categories else ''}
             Icon={appid}
             '''))
     return p
@@ -172,6 +173,7 @@ def main() -> None:
     parser.add_argument('--name', action='store', required=True, help="the name of the project, without spaces")
     parser.add_argument('--patches', action='append', default=[], help="Additional rpy files to copy into the game folder")
     parser.add_argument('--install', action='store_true', default=[], help="Install for the user (useful for testing)")
+    parser.add_argument('--extra-category', dest='categories', action='append', default=[], help="Additional desktop categories")
     args: Arguments = parser.parse_args()
 
     appid = f"{args.domain}.{args.name.replace(' ', '_')}"
