@@ -18,18 +18,30 @@ if typing.TYPE_CHECKING:
 
     class Arguments(typing.Protocol):
         input: pathlib.Path
+        description: Description
         repo: typing.Optional[str]
-        domain: str
-        name: str
         patches: typing.Optional[typing.List[str]]
         install: bool
+
+    class _Common(typing.TypedDict):
+
+        reverse_url: str
+        name: str
         categories: typing.List[str]
-        summary: typing.Optional[str]
-        description: typing.Optional[str]
+
+    class _AppData(typing.TypedDict):
+
+        summary: str
+        description: str
+
+    class Description(typing.TypedDict):
+
+        common: _Common
+        appdata: _AppData
 
 
 def subelem(elem: ET.Element, tag: str, text: str, **extra: str) -> ET.Element:
-    new = ET.SubElement(elem, tag, **extra)
+    new = ET.SubElement(elem, tag, extra)
     new.text = text
     return new
 
@@ -39,8 +51,8 @@ def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
 
     root =  ET.Element('component', type="desktop-application")
     subelem(root, 'id', appid)
-    subelem(root, 'name', args.name)
-    summary = subelem(root, 'summary', args.summary or 'No summary provided')
+    subelem(root, 'name', args.description['common']['name'])
+    subelem(root, 'summary', args.description['appdata']['summary'])
     subelem(root, 'metadata_license', 'CC0-1.0')
     subelem(root, 'project_license', 'Proprietary')
 
@@ -49,11 +61,11 @@ def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
         subelem(supports, 'control', c)
 
     categories = ET.SubElement(root, 'categories')
-    for c in ['Game'] + args.categories:
+    for c in ['Game'] + args.description['common']['categories']:
         subelem(categories, 'category', c)
 
     description = ET.SubElement(root, 'description')
-    subelem(description, 'p', args.description or summary.text)
+    subelem(description, 'p', args.description['appdata']['summary'])
     subelem(root, 'launchable', f'{appid}.desktop', type="desktop-id")
 
     tree = ET.ElementTree(root)
@@ -67,10 +79,10 @@ def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
     with p.open('w') as f:
         f.write(textwrap.dedent(f'''\
             [Desktop Entry]
-            Name={args.name}
+            Name={args.description['common']['name']}
             Exec=game.sh
             Type=Application
-            Categories=Game;{';'.join(args.categories)}{';' if args.categories else ''}
+            Categories=Game;{';'.join(args.description['common']['categories'])};
             Icon={appid}
             '''))
     return p
@@ -85,7 +97,7 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
     modules = [
         {
             'buildsystem': 'simple',
-            'name': args.name.replace(' ', '_'),
+            'name': args.description['common']['name'].replace(' ', '_'),
             'sources': [
                 {
                     'path': args.input.as_posix(),
@@ -204,9 +216,9 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
 
 
 def build_flatpak(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
-    build_command = [
+    build_command: typing.List[str] = [
         'flatpak-builder', '--force-clean', 'build',
-        (workdir / f'{appid}.yaml').absolute(),
+        (workdir / f'{appid}.yaml').absolute().as_posix(),
     ]
 
     if args.repo:
@@ -217,20 +229,21 @@ def build_flatpak(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
     subprocess.run(build_command)
 
 
+def load_description(name: str) -> Description:
+    with open(name, 'r') as f:
+        return yaml.load(f, yaml.Loader)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('input', type=pathlib.Path, help='path to the renpy archive')
+    parser.add_argument('description', type=load_description, help="A Yaml description file")
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
-    parser.add_argument('--domain', action='store', required=True, help="the reversed domain without the name. ex: 'com.github.user'")
-    parser.add_argument('--name', action='store', required=True, help="the name of the project, without spaces")
     parser.add_argument('--patches', action='append', default=[], help="Additional rpy files to copy into the game folder")
     parser.add_argument('--install', action='store_true', default=[], help="Install for the user (useful for testing)")
-    parser.add_argument('--extra-category', dest='categories', action='append', default=[], help="Additional desktop categories")
-    parser.add_argument('--summary', action='store', help="A short summary of the game")
-    parser.add_argument('--description', action='store', help="A longer description of the game")
     args: Arguments = parser.parse_args()
 
-    appid = f"{args.domain}.{args.name.replace(' ', '_')}"
+    appid = f"{args.description['common']['reverse_url']}.{args.description['common']['name'].replace(' ', '_')}"
 
     with tempfile.TemporaryDirectory() as d:
         wd = pathlib.Path(d)
