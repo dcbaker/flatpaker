@@ -259,7 +259,7 @@ def main() -> None:
     parser.add_argument('description', type=load_description, help="A Yaml description file")
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
     parser.add_argument('--patches', action='append', default=[], help="Additional rpy files to copy into the game folder")
-    parser.add_argument('--install', action='store_true', default=[], help="Install for the user (useful for testing)")
+    parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     args: Arguments = parser.parse_args()
     args.input = args.input.absolute()
 
