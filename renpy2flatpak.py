@@ -24,6 +24,7 @@ if typing.TYPE_CHECKING:
         repo: typing.Optional[str]
         patches: typing.Optional[typing.List[str]]
         install: bool
+        cleanup: bool
 
     class _Common(typing.TypedDict):
 
@@ -246,11 +247,12 @@ def load_description(name: str) -> Description:
 
 
 @contextlib.contextmanager
-def tmpdir(name: str) -> typing.Iterator[pathlib.Path]:
+def tmpdir(name: str, cleanup: bool = True) -> typing.Iterator[pathlib.Path]:
     tdir = pathlib.Path(tempfile.gettempdir()) / name
     tdir.mkdir(parents=True, exist_ok=True)
     yield tdir
-    shutil.rmtree(tdir)
+    if cleanup:
+        shutil.rmtree(tdir)
 
 
 def main() -> None:
@@ -260,12 +262,13 @@ def main() -> None:
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
     parser.add_argument('--patches', action='append', default=[], help="Additional rpy files to copy into the game folder")
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
+    parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     args: Arguments = parser.parse_args()
     args.input = args.input.absolute()
 
     appid = f"{args.description['common']['reverse_url']}.{args.description['common']['name'].replace(' ', '_')}"
 
-    with tmpdir(args.description['common']['name']) as d:
+    with tmpdir(args.description['common']['name'], args.cleanup) as d:
         wd = pathlib.Path(d)
         desktop_file = create_desktop(args, wd, appid)
         appdata_file = create_appdata(args, wd, appid)
