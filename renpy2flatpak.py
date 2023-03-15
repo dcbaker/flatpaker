@@ -4,8 +4,10 @@
 
 from __future__ import annotations
 import argparse
+import contextlib
 import hashlib
 import pathlib
+import shutil
 import subprocess
 import tempfile
 import textwrap
@@ -243,6 +245,14 @@ def load_description(name: str) -> Description:
         return yaml.load(f, yaml.Loader)
 
 
+@contextlib.contextmanager
+def tmpdir(name: str) -> typing.Iterator[pathlib.Path]:
+    tdir = pathlib.Path(tempfile.gettempdir()) / name
+    tdir.mkdir(parents=True, exist_ok=True)
+    yield tdir
+    shutil.rmtree(tdir)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('input', type=pathlib.Path, help='path to the renpy archive')
@@ -255,7 +265,7 @@ def main() -> None:
 
     appid = f"{args.description['common']['reverse_url']}.{args.description['common']['name'].replace(' ', '_')}"
 
-    with tempfile.TemporaryDirectory() as d:
+    with tmpdir(args.description['common']['name']) as d:
         wd = pathlib.Path(d)
         desktop_file = create_desktop(args, wd, appid)
         appdata_file = create_appdata(args, wd, appid)
