@@ -251,6 +251,7 @@ def main() -> None:
     parser.add_argument('--patches', action='append', default=[], help="Additional rpy files to copy into the game folder")
     parser.add_argument('--install', action='store_true', default=[], help="Install for the user (useful for testing)")
     args: Arguments = parser.parse_args()
+    args.input = args.input.absolute()
 
     appid = f"{args.description['common']['reverse_url']}.{args.description['common']['name'].replace(' ', '_')}"
 
