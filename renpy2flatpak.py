@@ -102,7 +102,8 @@ def sha256(path: pathlib.Path) -> str:
 
 
 def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
-    modules = [
+    # TODO: typing requires more thought
+    modules: typing.List[typing.Dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
             'name': args.description['common']['name'].replace(' ', '_'),
