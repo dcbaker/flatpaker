@@ -57,9 +57,13 @@ def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
     subelem(root, 'metadata_license', 'CC0-1.0')
     subelem(root, 'project_license', 'Proprietary')
 
-    supports = ET.SubElement(root, 'supports')
+    recommends = ET.SubElement(root, 'recommends')
     for c in ['pointing', 'keyboard', 'touch', 'gamepad']:
-        subelem(supports, 'control', c)
+        subelem(recommends, 'control', c)
+
+    requires = ET.SubElement(root, 'requires')
+    subelem(requires, 'display_length', '360', compare="ge")
+    subelem(requires, 'internet', 'offline-only')
 
     categories = ET.SubElement(root, 'categories')
     for c in ['Game'] + args.description['common']['categories']:
