@@ -126,14 +126,12 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
 
                 # Compile the patch files.
                 'pushd /app/lib/game; ./*.sh . compile --keep-orphan-rpyc; popd',
-
-                # Remove the rpy files, which saves space
-                'rm /app/lib/game/game/*.rpy',
             ],
             'cleanup': [
                 '*.exe',
                 '*.app',
                 '*.rpyc.bak',
+                '*.rpy',
             ],
         },
         {
