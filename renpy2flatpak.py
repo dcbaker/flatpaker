@@ -30,6 +30,7 @@ if typing.TYPE_CHECKING:
         patches: typing.Optional[typing.List[str]]
         install: bool
         cleanup: bool
+        icon: bool
 
     class _Common(typing.TypedDict):
 
@@ -45,10 +46,14 @@ if typing.TYPE_CHECKING:
         releases: NotRequired[typing.Dict[str, str]]
         license: NotRequired[str]
 
+    class _Workarounds(typing.TypedDict, total=False):
+        icon: bool
+
     class Description(typing.TypedDict):
 
         common: _Common
         appdata: _AppData
+        workarounds: _Workarounds
 
 
 def subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **extra: str) -> ET.Element:
@@ -111,8 +116,10 @@ def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
             Exec=game.sh
             Type=Application
             Categories=Game;{';'.join(args.description['common']['categories'])};
-            Icon={appid}
             '''))
+        if args.description['workarounds'].get('icon', True):
+            f.write(f'Icon={appid}')
+
     return p
 
 
@@ -122,8 +129,6 @@ def sha256(path: pathlib.Path) -> str:
 
 
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
-    icon_src = '/app/lib/game/game/gui/window_icon.png'
-    icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
 
     # TODO: typing requires more thought
     modules: typing.List[typing.Dict[str, typing.Any]] = [
@@ -165,23 +170,6 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
         },
         {
             'buildsystem': 'simple',
-            'name': 'icon',
-            'sources': [],
-            'build-commands': [
-                'mkdir -p /app/share/icons/hicolor/256x256/apps/',
-                # I have run into at least one game where the file is called a
-                # ".png" but the format is actually web/p.
-                # This uses join to attempt to make it more readable
-                ' ; '.join([
-                    f"if file {icon_src} | grep 'Web/P' -q",
-                    f'then dwebp {icon_src} -o {icon_dst}',
-                    f'else cp {icon_src} {icon_dst}',
-                    'fi',
-                ]),
-            ],
-        },
-        {
-            'buildsystem': 'simple',
             'name': 'desktop_file',
             'sources': [
                 {
@@ -211,6 +199,28 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             ],
         },
     ]
+
+    if args.description['workarounds'].get('icon', True):
+        icon_src = '/app/lib/game/game/gui/window_icon.png'
+        icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
+        # Must at least be before the appdata is generated
+        modules.insert(1, {
+            'buildsystem': 'simple',
+            'name': 'icon',
+            'sources': [],
+            'build-commands': [
+                'mkdir -p /app/share/icons/hicolor/256x256/apps/',
+                # I have run into at least one game where the file is called a
+                # ".png" but the format is actually web/p.
+                # This uses join to attempt to make it more readable
+                ' ; '.join([
+                    f"if file {icon_src} | grep 'Web/P' -q",
+                    f'then dwebp {icon_src} -o {icon_dst}',
+                    f'else cp {icon_src} {icon_dst}',
+                    'fi',
+                ]),
+            ],
+        })
 
     if args.patches:
         sources = []
