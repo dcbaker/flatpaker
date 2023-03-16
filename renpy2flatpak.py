@@ -109,6 +109,9 @@ def sha256(path: pathlib.Path) -> str:
 
 
 def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
+    icon_src = '/app/lib/game/game/gui/window_icon.png'
+    icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
+
     # TODO: typing requires more thought
     modules: typing.List[typing.Dict[str, typing.Any]] = [
         {
@@ -153,7 +156,15 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             'sources': [],
             'build-commands': [
                 'mkdir -p /app/share/icons/hicolor/256x256/apps/',
-                f'cp /app/lib/game/game/gui/window_icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png'
+                # I have run into at least one game where the file is called a
+                # ".png" but the format is actually web/p.
+                # This uses join to attempt to make it more readable
+                ' ; '.join([
+                    f"if file {icon_src} | grep 'Web/P' -q",
+                    f'then dwebp {icon_src} -o {icon_dst}',
+                    f'else cp {icon_src} {icon_dst}',
+                    'fi',
+                ]),
             ],
         },
         {
