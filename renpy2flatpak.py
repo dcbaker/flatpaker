@@ -39,6 +39,7 @@ if typing.TYPE_CHECKING:
         description: str
         content_rating: NotRequired[typing.Dict[str, typing.Literal['none', 'mild', 'moderate', 'intense']]]
         releases: NotRequired[typing.Dict[str, str]]
+        license: NotRequired[str]
 
     class Description(typing.TypedDict):
 
@@ -60,7 +61,7 @@ def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
     subelem(root, 'name', args.description['common']['name'])
     subelem(root, 'summary', args.description['appdata']['summary'])
     subelem(root, 'metadata_license', 'CC0-1.0')
-    subelem(root, 'project_license', 'Proprietary')
+    subelem(root, 'project_license', args.description.appdata.get('license', 'LicenseRef-Proprietary'))
 
     recommends = ET.SubElement(root, 'recommends')
     for c in ['pointing', 'keyboard', 'touch', 'gamepad']:

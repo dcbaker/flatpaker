@@ -58,4 +58,11 @@ appdata:
   releases:  # optional
     # in the form "version: date"
     relase_version: "2023-01-01"
+
+  # This is an optional value for the license of the renpy project itself.
+  # If unset it defaults to LicenseRef-Proprietary.
+  # if you have specific terms which are not an Open Source license, you can use the form:
+  # LicenseRef-Proprietary=https://www.example.com/my-license
+  # See: https://spdx.org/specifications for more information
+  license: "SPDX identifier"
 ```
