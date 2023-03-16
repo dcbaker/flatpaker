@@ -51,8 +51,11 @@ appdata:
     A longer description.
 
     probably on multiple lines
-  content_rating:
+  content_rating:  # optional
     # Uses OARS specifications. See: https://hughsie.github.io/oars/
     # keys should be ids, and the values must be a rating: none, mild, moderate, or intense
     language-profanity: mild
+  releases:  # optional
+    # in the form "version: date"
+    relase_version: "2023-01-01"
 ```

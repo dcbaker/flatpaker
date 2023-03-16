@@ -17,6 +17,7 @@ from xml.etree import ElementTree as ET
 import yaml
 
 if typing.TYPE_CHECKING:
+    from typing_extensions import NotRequired
 
     class Arguments(typing.Protocol):
         input: pathlib.Path
@@ -36,8 +37,8 @@ if typing.TYPE_CHECKING:
 
         summary: str
         description: str
-        content_rating: typing.Dict[str, typing.Literal['none', 'mild', 'moderate', 'intense']]
-        releases: typing.Dict[str, str]
+        content_rating: NotRequired[typing.Dict[str, typing.Literal['none', 'mild', 'moderate', 'intense']]]
+        releases: NotRequired[typing.Dict[str, str]]
 
     class Description(typing.TypedDict):
 
@@ -79,13 +80,15 @@ def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
 
     # There is an oars-1.1, but it doesn't appear to be supported by KDE
     # discover yet
-    cr = ET.SubElement(root, 'content_rating', type="oars-1.0")
-    for k, r in args.description['appdata']['content_rating'].items():
-        subelem(cr, 'content_attribute', r, id=k)
+    if 'content_rating' in args.description['appdata']:
+        cr = ET.SubElement(root, 'content_rating', type="oars-1.0")
+        for k, r in args.description['appdata']['content_rating'].items():
+            subelem(cr, 'content_attribute', r, id=k)
 
-    cr = ET.SubElement(root, 'releases')
-    for k, v in args.description['appdata']['releases'].items():
-        subelem(cr, 'release', version=k, date=v)
+    if 'releases' in args.description['appdata']:
+        cr = ET.SubElement(root, 'releases')
+        for k, v in args.description['appdata']['releases'].items():
+            subelem(cr, 'release', version=k, date=v)
 
     tree = ET.ElementTree(root)
     ET.indent(tree)
