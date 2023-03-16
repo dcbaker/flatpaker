@@ -37,6 +37,7 @@ if typing.TYPE_CHECKING:
         summary: str
         description: str
         content_rating: typing.Dict[str, typing.Literal['none', 'mild', 'moderate', 'intense']]
+        releases: typing.Dict[str, str]
 
     class Description(typing.TypedDict):
 
@@ -44,7 +45,7 @@ if typing.TYPE_CHECKING:
         appdata: _AppData
 
 
-def subelem(elem: ET.Element, tag: str, text: str, **extra: str) -> ET.Element:
+def subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **extra: str) -> ET.Element:
     new = ET.SubElement(elem, tag, extra)
     new.text = text
     return new
@@ -79,8 +80,12 @@ def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
     # There is an oars-1.1, but it doesn't appear to be supported by KDE
     # discover yet
     cr = ET.SubElement(root, 'content_rating', type="oars-1.0")
-    for k, v in args.description['appdata']['content_rating'].items():
-        subelem(cr, 'content_attribute', v, id=k)
+    for k, r in args.description['appdata']['content_rating'].items():
+        subelem(cr, 'content_attribute', r, id=k)
+
+    cr = ET.SubElement(root, 'releases')
+    for k, v in args.description['appdata']['releases'].items():
+        subelem(cr, 'release', version=k, date=v)
 
     tree = ET.ElementTree(root)
     ET.indent(tree)
