@@ -236,6 +236,12 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
         'finish-args': [
             '--socket=pulseaudio',
             '--socket=wayland',
+            # TODO: for projects with repny >= 7.4 it's possible to use wayland, and in that case
+            # We'd really like to do wayland and fallback-x11 (use wayland, but
+            # allow x11 as a fallback), and not enable wayland for < 7.4
+            # It's not clear yet to me how to test the renpy version from the
+            # script, which doesn't have access to the decompressesd sources
+            # See: https://github.com/renpy/renpy-build/issues/60
             '--socket=x11',
             '--device=dri',
         ],
