@@ -14,12 +14,12 @@ It currently automatically does the following automatically:
 - Generates an appstream xml file
 - Generates a .desktop file
 - Extracts an icon from the game source, and installs it
-- patches the main entrypoint to honor XDG_DATA_hOME for storing game data
-- setups up the sandbox to allow audio and display, but nothing else
+- patches the game to honor $XDG_DATA_HOME for storing game data inside the sandbox (instead of needing $HOME access)
+- sets up the sandbox to allow audio and display, but nothing else
 - recompiles the program when mods are applied
 - strips .rpy files to save space (keeping the rpyc files)
 - strips windows and macos specific files
-- allows local install, or publishing to a repo
+- allows local install or publishing to a repo
 
 ## Why?
 
