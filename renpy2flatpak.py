@@ -15,7 +15,10 @@ import textwrap
 import typing
 from xml.etree import ElementTree as ET
 
-import yaml
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
 
 if typing.TYPE_CHECKING:
     from typing_extensions import NotRequired
@@ -263,8 +266,8 @@ def build_flatpak(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
 
 
 def load_description(name: str) -> Description:
-    with open(name, 'r') as f:
-        return yaml.load(f, yaml.Loader)
+    with open(name, 'rb') as f:
+        return tomllib.load(f)
 
 
 @contextlib.contextmanager
@@ -279,13 +282,15 @@ def tmpdir(name: str, cleanup: bool = True) -> typing.Iterator[pathlib.Path]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('input', type=pathlib.Path, help='path to the renpy archive')
-    parser.add_argument('description', type=load_description, help="A Yaml description file")
+    parser.add_argument('description', help="A Toml description file")
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
     parser.add_argument('--patches', action='append', default=[], help="Additional rpy files to copy into the game folder")
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     args: Arguments = parser.parse_args()
     args.input = args.input.absolute()
+    # Don't use type for this because it swallows up the exception
+    args.description = load_description(args.description)
 
     appid = f"{args.description['common']['reverse_url']}.{args.description['common']['name'].replace(' ', '_')}"
 

@@ -19,7 +19,7 @@
         "Topic :: System :: Archiving :: Packaging",
     ]
     dependencies = [
-        "pyyaml"
+        'tomli; python_version<"3.11"',
     ]
 
 [project.scripts]
