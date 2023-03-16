@@ -1,0 +1,26 @@
+[build-system]
+    requires = ["setuptools", "Setuptools-scm"]
+    build-backend = "setuptools.build_meta"
+
+[project]
+    name = "renpy2flatpak"
+    version = "0.0.1"
+    authors = [
+        { name = "Dylan Baker", email = "dylan@pnwbakers.com" }
+    ]
+    description = "Script to simplify creating flatpaks from published renpy projects"
+    readme = "README.md"
+    requires-python = ">=3.8"
+    keywords = ["flatpak", "renpy"]
+    license = {text = "MIT"}
+    classifiers = [
+        "Development Status :: 3 - Alpha",
+        "Environment :: Console",
+        "Topic :: System :: Archiving :: Packaging",
+    ]
+    dependencies = [
+        "pyyaml"
+    ]
+
+[project.scripts]
+    renpy2flatpak = "renpy2flatpak:main"
