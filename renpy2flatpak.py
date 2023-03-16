@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import hashlib
+import json
 import pathlib
 import shutil
 import subprocess
@@ -61,7 +62,7 @@ def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
     subelem(root, 'name', args.description['common']['name'])
     subelem(root, 'summary', args.description['appdata']['summary'])
     subelem(root, 'metadata_license', 'CC0-1.0')
-    subelem(root, 'project_license', args.description.appdata.get('license', 'LicenseRef-Proprietary'))
+    subelem(root, 'project_license', args.description['appdata'].get('license', 'LicenseRef-Proprietary'))
 
     recommends = ET.SubElement(root, 'recommends')
     for c in ['pointing', 'keyboard', 'touch', 'gamepad']:
@@ -117,7 +118,7 @@ def sha256(path: pathlib.Path) -> str:
         return hashlib.sha256(f.read()).hexdigest()
 
 
-def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
+def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     icon_src = '/app/lib/game/game/gui/window_icon.png'
     icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
 
@@ -243,14 +244,14 @@ def dump_yaml(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
         ],
     }
 
-    with (pathlib.Path(workdir) / f'{appid}.yaml').open('w') as f:
-        yaml.dump(struct, f)
+    with (pathlib.Path(workdir) / f'{appid}.json').open('w') as f:
+        json.dump(struct, f)
 
 
 def build_flatpak(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
     build_command: typing.List[str] = [
         'flatpak-builder', '--force-clean', 'build',
-        (workdir / f'{appid}.yaml').absolute().as_posix(),
+        (workdir / f'{appid}.json').absolute().as_posix(),
     ]
 
     if args.repo:
@@ -292,7 +293,7 @@ def main() -> None:
         wd = pathlib.Path(d)
         desktop_file = create_desktop(args, wd, appid)
         appdata_file = create_appdata(args, wd, appid)
-        dump_yaml(args, wd, appid, desktop_file, appdata_file)
+        dump_json(args, wd, appid, desktop_file, appdata_file)
         build_flatpak(args, wd, appid)
 
 
