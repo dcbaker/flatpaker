@@ -144,9 +144,20 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             ],
             'build-commands': [
                 'mkdir -p /app/lib/game',
+
+                # Move patch files out of the way
+                'mkdir tmp',
+                'mv *.rpy tmp',
+
+                # Copy the main game files
                 'cp -R * /app/lib/game',
+
                 # Patch the game to not require sandbox access
                 '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
+
+                # Apply the patch files after the main game, in case the replace something
+                'mv tmp/* /app/lib/game/game',
+                'rm -r tmp',
 
                 # Compile the patch files.
                 'pushd /app/lib/game; ./*.sh . compile --keep-orphan-rpyc; popd',
