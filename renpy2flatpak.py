@@ -156,6 +156,9 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 '*.app',
                 '*.rpyc.bak',
                 '*.rpy',
+                '/lib/game/lib/*darwin-*',
+                '/lib/game/lib/*windows-*',
+                '/lib/game/lib/*-i686',
             ],
         },
         {
@@ -256,11 +259,6 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             '--device=dri',
         ],
         'modules': modules,
-        'cleanup-commands': [
-            'rm -Rf /app/lib/game/lib/*darwin-*',
-            'rm -Rf /app/lib/game/lib/*windows-*',
-            'rm -Rf /app/lib/game/lib/*-i686',
-        ],
     }
 
     with (pathlib.Path(workdir) / f'{appid}.json').open('w') as f:
