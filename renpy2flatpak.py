@@ -156,9 +156,12 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 '*.app',
                 '*.rpyc.bak',
                 '*.rpy',
+                '/lib/game/renpy/*.py',
+                '/lib/game/game/*.py',
                 '/lib/game/lib/*darwin-*',
                 '/lib/game/lib/*windows-*',
                 '/lib/game/lib/*-i686',
+                '/lib/game/lib/*.py',
             ],
         },
         {
