@@ -27,7 +27,7 @@ if typing.TYPE_CHECKING:
         input: pathlib.Path
         description: Description
         repo: typing.Optional[str]
-        patches: typing.Optional[typing.List[str]]
+        patches: typing.Optional[typing.Tuple[str, str]]
         install: bool
         cleanup: bool
         icon: bool
@@ -53,7 +53,7 @@ if typing.TYPE_CHECKING:
 
         common: _Common
         appdata: _AppData
-        workarounds: _Workarounds
+        workarounds: NotRequired[_Workarounds]
 
 
 def subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **extra: str) -> ET.Element:
@@ -117,7 +117,7 @@ def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
             Type=Application
             Categories=Game;{';'.join(args.description['common']['categories'])};
             '''))
-        if args.description['workarounds'].get('icon', True):
+        if args.description.get('workarounds', {}).get('icon', True):
             f.write(f'Icon={appid}')
 
     return p
@@ -145,22 +145,11 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             'build-commands': [
                 'mkdir -p /app/lib/game',
 
-                # Move patch files out of the way
-                'mkdir tmp',
-                'mv *.rpy tmp',
-
-                # Copy the main game files
-                'cp -R * /app/lib/game',
+                # install the main game files
+                'mv *.sh *.py renpy game lib /app/lib/game/',
 
                 # Patch the game to not require sandbox access
                 '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
-
-                # Apply the patch files after the main game, in case the replace something
-                'mv tmp/* /app/lib/game/game',
-                'rm -r tmp',
-
-                # Compile the patch files.
-                'pushd /app/lib/game; ./*.sh . compile --keep-orphan-rpyc; popd',
             ],
             'cleanup': [
                 '*.exe',
@@ -217,7 +206,7 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
         },
     ]
 
-    if args.description['workarounds'].get('icon', True):
+    if args.description.get('workarounds', {}).get('icon', True):
         icon_src = '/app/lib/game/game/gui/window_icon.png'
         icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
         # Must at least be before the appdata is generated
@@ -239,16 +228,27 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             ],
         })
 
+    sources: typing.List[typing.Dict[str, str]]
+    build_commands: typing.List[str]
+
     if args.patches:
         sources = []
-        for p in args.patches:
-            patch = pathlib.Path(p).absolute()
+        build_commands = []
+        for pa, d in args.patches:
+            patch = pathlib.Path(pa).absolute()
             sources.append({
                 'path': patch.as_posix(),
                 'sha256': sha256(patch),
-                'type': 'file',
+                'type': 'file'
             })
+            build_commands.append(f'mv {patch.name} /app/lib/game/{d}')
+
         modules[0]['sources'].extend(sources)
+        modules[0]['build-commands'].extend(build_commands)
+
+        # Recompile the game and all new rpy files
+        modules[0]['build-commands'].append(
+            'pushd /app/lib/game; ./*.sh . compile --keep-orphan-rpyc; popd')
 
     struct = {
         'sdk': 'org.freedesktop.Sdk',
@@ -312,13 +312,14 @@ def main() -> None:
     parser.add_argument('input', type=pathlib.Path, help='path to the renpy archive')
     parser.add_argument('description', help="A Toml description file")
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
-    parser.add_argument('--patches', action='append', default=[], help="Additional rpy files to copy into the game folder")
+    parser.add_argument('--patches', type=lambda x: tuple(x.split('=')), action='append', default=[],
+                        help="Additional rpy files to install, in the format src=dest")
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     args: Arguments = parser.parse_args()
     args.input = args.input.absolute()
     # Don't use type for this because it swallows up the exception
-    args.description = load_description(args.description)
+    args.description = load_description(args.description)  # type: ignore
 
     appid = f"{args.description['common']['reverse_url']}.{args.description['common']['name'].replace(' ', '_')}"
 
