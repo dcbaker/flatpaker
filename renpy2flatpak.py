@@ -150,6 +150,8 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
 
                 # Patch the game to not require sandbox access
                 '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
+
+                'pushd /app/lib/game; ./*.sh . compile --keep-orphan-rpyc; popd',
             ],
             'cleanup': [
                 '*.exe',
@@ -243,12 +245,12 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             })
             build_commands.append(f'mv {patch.name} /app/lib/game/{d}')
 
+        # Recompile the game and all new rpy files
+        build_commands.append(
+            'pushd /app/lib/game; ./*.sh . compile --keep-orphan-rpyc; popd')
+
         modules[0]['sources'].extend(sources)
         modules[0]['build-commands'].extend(build_commands)
-
-        # Recompile the game and all new rpy files
-        modules[0]['build-commands'].append(
-            'pushd /app/lib/game; ./*.sh . compile --keep-orphan-rpyc; popd')
 
     struct = {
         'sdk': 'org.freedesktop.Sdk',
