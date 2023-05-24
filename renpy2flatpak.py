@@ -134,7 +134,7 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
     modules: typing.List[typing.Dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
-            'name': args.description['common']['name'].replace(' ', '_'),
+            'name': args.description['common']['name'].replace(' ', '_').replace(':', ''),
             'sources': [
                 {
                     'path': args.input.as_posix(),
@@ -321,7 +321,7 @@ def main() -> None:
     # Don't use type for this because it swallows up the exception
     args.description = load_description(args.description)  # type: ignore
 
-    appid = f"{args.description['common']['reverse_url']}.{args.description['common']['name'].replace(' ', '_')}"
+    appid = f"{args.description['common']['reverse_url']}.{args.description['common']['name'].replace(' ', '_').replace(':', '')}"
 
     with tmpdir(args.description['common']['name'], args.cleanup) as d:
         wd = pathlib.Path(d)
