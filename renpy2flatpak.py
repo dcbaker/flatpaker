@@ -128,13 +128,20 @@ def sha256(path: pathlib.Path) -> str:
         return hashlib.sha256(f.read()).hexdigest()
 
 
+def sanitize_name(name: str) -> str:
+    """Replace invalid characters in a name with valid ones."""
+    return name \
+        .replace(' ', '_') \
+        .replace(':', '')
+
+
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
 
     # TODO: typing requires more thought
     modules: typing.List[typing.Dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
-            'name': args.description['common']['name'].replace(' ', '_').replace(':', ''),
+            'name': sanitize_name(args.description['common']['name']),
             'sources': [
                 {
                     'path': args.input.as_posix(),
@@ -323,7 +330,7 @@ def main() -> None:
     # Don't use type for this because it swallows up the exception
     args.description = load_description(args.description)  # type: ignore
 
-    appid = f"{args.description['common']['reverse_url']}.{args.description['common']['name'].replace(' ', '_').replace(':', '')}"
+    appid = f"{args.description['common']['reverse_url']}.{sanitize_name(args.description['common']['name'])}"
 
     with tmpdir(args.description['common']['name'], args.cleanup) as d:
         wd = pathlib.Path(d)
