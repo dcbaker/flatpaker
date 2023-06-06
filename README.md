@@ -60,13 +60,13 @@ project.
   # if you have specific terms which are not an Open Source license, you can use the form:
   # LicenseRef-Proprietary=https://www.example.com/my-license
   # See: https://spdx.org/specifications for more information
-  license: "SPDX identifier"
+  license = "SPDX identifier"
 
 [appdata.content_rating]
     # optional
     # Uses OARS specifications. See: https://hughsie.github.io/oars/
     # keys should be ids, and the values must be a rating: none, mild, moderate, or intense
-    language-profanity: mild
+    language-profanity = mild
 
 [appdata.releases]
   # optional
