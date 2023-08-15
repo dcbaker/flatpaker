@@ -16,7 +16,6 @@ if typing.TYPE_CHECKING:
         description: flatpaker.Description
         patches: typing.List[typing.Tuple[str, str]]
         cleanup: bool
-        icon: bool
 
 
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
