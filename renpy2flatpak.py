@@ -11,13 +11,10 @@ import typing
 import flatpaker
 
 if typing.TYPE_CHECKING:
-
-    class Arguments(typing.Protocol):
+    class Arguments(flatpaker.SharedArguments):
         input: pathlib.Path
         description: flatpaker.Description
-        repo: typing.Optional[str]
         patches: typing.List[typing.Tuple[str, str]]
-        install: bool
         cleanup: bool
         icon: bool
 
@@ -193,8 +190,8 @@ def main() -> None:
 
     with flatpaker.tmpdir(args.description['common']['name'], args.cleanup) as d:
         wd = pathlib.Path(d)
-        desktop_file = flatpaker.create_desktop(args, wd, appid)
-        appdata_file = flatpaker.create_appdata(args, wd, appid)
+        desktop_file = flatpaker.create_desktop(args.description, wd, appid)
+        appdata_file = flatpaker.create_appdata(args.description, wd, appid)
         dump_json(args, wd, appid, desktop_file, appdata_file)
         flatpaker.build_flatpak(args, wd, appid)
 

@@ -20,14 +20,9 @@ except ImportError:
 if typing.TYPE_CHECKING:
     from typing_extensions import NotRequired
 
-    class Arguments(typing.Protocol):
-        input: pathlib.Path
-        description: Description
+    class SharedArguments(typing.Protocol):
         repo: typing.Optional[str]
-        patches: typing.Optional[typing.Tuple[str, str]]
         install: bool
-        cleanup: bool
-        icon: bool
 
     class _Common(typing.TypedDict):
 
@@ -59,15 +54,15 @@ def _subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **ex
     return new
 
 
-def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathlib.Path:
+def create_appdata(description: Description, workdir: pathlib.Path, appid: str) -> pathlib.Path:
     p = workdir / f'{appid}.metainfo.xml'
 
     root =  ET.Element('component', type="desktop-application")
     _subelem(root, 'id', appid)
-    _subelem(root, 'name', args.description['common']['name'])
-    _subelem(root, 'summary', args.description['appdata']['summary'])
+    _subelem(root, 'name', description['common']['name'])
+    _subelem(root, 'summary', description['appdata']['summary'])
     _subelem(root, 'metadata_license', 'CC0-1.0')
-    _subelem(root, 'project_license', args.description['appdata'].get('license', 'LicenseRef-Proprietary'))
+    _subelem(root, 'project_license', description['appdata'].get('license', 'LicenseRef-Proprietary'))
 
     recommends = ET.SubElement(root, 'recommends')
     for c in ['pointing', 'keyboard', 'touch', 'gamepad']:
@@ -78,23 +73,23 @@ def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
     _subelem(requires, 'internet', 'offline-only')
 
     categories = ET.SubElement(root, 'categories')
-    for c in ['Game'] + args.description['common']['categories']:
+    for c in ['Game'] + description['common']['categories']:
         _subelem(categories, 'category', c)
 
-    description = ET.SubElement(root, 'description')
-    _subelem(description, 'p', args.description['appdata']['summary'])
+    desc = ET.SubElement(root, 'description')
+    _subelem(desc, 'p', description['appdata']['summary'])
     _subelem(root, 'launchable', f'{appid}.desktop', type="desktop-id")
 
     # There is an oars-1.1, but it doesn't appear to be supported by KDE
     # discover yet
-    if 'content_rating' in args.description['appdata']:
+    if 'content_rating' in description['appdata']:
         cr = ET.SubElement(root, 'content_rating', type="oars-1.0")
-        for k, r in args.description['appdata']['content_rating'].items():
+        for k, r in description['appdata']['content_rating'].items():
             _subelem(cr, 'content_attribute', r, id=k)
 
-    if 'releases' in args.description['appdata']:
+    if 'releases' in description['appdata']:
         cr = ET.SubElement(root, 'releases')
-        for k, v in args.description['appdata']['releases'].items():
+        for k, v in description['appdata']['releases'].items():
             _subelem(cr, 'release', version=k, date=v)
 
     tree = ET.ElementTree(root)
@@ -104,17 +99,17 @@ def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
     return p
 
 
-def create_desktop(args: Arguments, workdir: pathlib.Path, appid: str) -> pathlib.Path:
+def create_desktop(description: Description, workdir: pathlib.Path, appid: str) -> pathlib.Path:
     p = workdir / f'{appid}.desktop'
     with p.open('w') as f:
         f.write(textwrap.dedent(f'''\
             [Desktop Entry]
-            Name={args.description['common']['name']}
+            Name={description['common']['name']}
             Exec=game.sh
             Type=Application
-            Categories=Game;{';'.join(args.description['common']['categories'])};
+            Categories=Game;{';'.join(description['common']['categories'])};
             '''))
-        if args.description.get('workarounds', {}).get('icon', True):
+        if description.get('workarounds', {}).get('icon', True):
             f.write(f'Icon={appid}')
 
     return p
@@ -132,7 +127,7 @@ def sanitize_name(name: str) -> str:
         .replace(':', '')
 
 
-def build_flatpak(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
+def build_flatpak(args: SharedArguments, workdir: pathlib.Path, appid: str) -> None:
     build_command: typing.List[str] = [
         'flatpak-builder', '--force-clean', 'build',
         (workdir / f'{appid}.json').absolute().as_posix(),
