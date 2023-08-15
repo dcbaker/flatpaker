@@ -27,7 +27,7 @@ if typing.TYPE_CHECKING:
         input: pathlib.Path
         description: Description
         repo: typing.Optional[str]
-        patches: typing.Optional[typing.Tuple[str, str]]
+        patches: typing.List[typing.Tuple[str, str]]
         install: bool
         cleanup: bool
         icon: bool
