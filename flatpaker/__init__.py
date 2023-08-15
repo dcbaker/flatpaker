@@ -53,7 +53,7 @@ if typing.TYPE_CHECKING:
         workarounds: NotRequired[_Workarounds]
 
 
-def subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **extra: str) -> ET.Element:
+def _subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **extra: str) -> ET.Element:
     new = ET.SubElement(elem, tag, extra)
     new.text = text
     return new
@@ -63,39 +63,39 @@ def create_appdata(args: Arguments, workdir: pathlib.Path, appid: str) -> pathli
     p = workdir / f'{appid}.metainfo.xml'
 
     root =  ET.Element('component', type="desktop-application")
-    subelem(root, 'id', appid)
-    subelem(root, 'name', args.description['common']['name'])
-    subelem(root, 'summary', args.description['appdata']['summary'])
-    subelem(root, 'metadata_license', 'CC0-1.0')
-    subelem(root, 'project_license', args.description['appdata'].get('license', 'LicenseRef-Proprietary'))
+    _subelem(root, 'id', appid)
+    _subelem(root, 'name', args.description['common']['name'])
+    _subelem(root, 'summary', args.description['appdata']['summary'])
+    _subelem(root, 'metadata_license', 'CC0-1.0')
+    _subelem(root, 'project_license', args.description['appdata'].get('license', 'LicenseRef-Proprietary'))
 
     recommends = ET.SubElement(root, 'recommends')
     for c in ['pointing', 'keyboard', 'touch', 'gamepad']:
-        subelem(recommends, 'control', c)
+        _subelem(recommends, 'control', c)
 
     requires = ET.SubElement(root, 'requires')
-    subelem(requires, 'display_length', '360', compare="ge")
-    subelem(requires, 'internet', 'offline-only')
+    _subelem(requires, 'display_length', '360', compare="ge")
+    _subelem(requires, 'internet', 'offline-only')
 
     categories = ET.SubElement(root, 'categories')
     for c in ['Game'] + args.description['common']['categories']:
-        subelem(categories, 'category', c)
+        _subelem(categories, 'category', c)
 
     description = ET.SubElement(root, 'description')
-    subelem(description, 'p', args.description['appdata']['summary'])
-    subelem(root, 'launchable', f'{appid}.desktop', type="desktop-id")
+    _subelem(description, 'p', args.description['appdata']['summary'])
+    _subelem(root, 'launchable', f'{appid}.desktop', type="desktop-id")
 
     # There is an oars-1.1, but it doesn't appear to be supported by KDE
     # discover yet
     if 'content_rating' in args.description['appdata']:
         cr = ET.SubElement(root, 'content_rating', type="oars-1.0")
         for k, r in args.description['appdata']['content_rating'].items():
-            subelem(cr, 'content_attribute', r, id=k)
+            _subelem(cr, 'content_attribute', r, id=k)
 
     if 'releases' in args.description['appdata']:
         cr = ET.SubElement(root, 'releases')
         for k, v in args.description['appdata']['releases'].items():
-            subelem(cr, 'release', version=k, date=v)
+            _subelem(cr, 'release', version=k, date=v)
 
     tree = ET.ElementTree(root)
     ET.indent(tree)
