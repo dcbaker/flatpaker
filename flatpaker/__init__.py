@@ -153,3 +153,39 @@ def tmpdir(name: str, cleanup: bool = True) -> typing.Iterator[pathlib.Path]:
     yield tdir
     if cleanup:
         shutil.rmtree(tdir)
+
+
+def bd_desktop(file_: pathlib.Path) -> typing.Dict[str, typing.Any]:
+    return {
+        'buildsystem': 'simple',
+        'name': 'desktop_file',
+        'sources': [
+        {
+            'path': file_.as_posix(),
+            'sha256': sha256(file_),
+            'type': 'file',
+        }
+        ],
+        'build-commands': [
+        'mkdir -p /app/share/applications',
+        f'cp {file_.name} /app/share/applications',
+        ],
+    }
+
+
+def bd_appdata(file_: pathlib.Path) -> typing.Dict[str, typing.Any]:
+    return {
+        'buildsystem': 'simple',
+        'name': 'appdata_file',
+        'sources': [
+            {
+                'path': file_.as_posix(),
+                'sha256': sha256(file_),
+                'type': 'file',
+            }
+        ],
+        'build-commands': [
+            'mkdir -p /app/share/metainfo',
+            f'cp {file_.name} /app/share/metainfo',
+        ],
+    }

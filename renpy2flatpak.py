@@ -67,36 +67,8 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 'chmod +x /app/bin/game.sh'
             ],
         },
-        {
-            'buildsystem': 'simple',
-            'name': 'desktop_file',
-            'sources': [
-                {
-                    'path': desktop_file.as_posix(),
-                    'sha256': flatpaker.sha256(desktop_file),
-                    'type': 'file',
-                }
-            ],
-            'build-commands': [
-                'mkdir -p /app/share/applications',
-                f'cp {desktop_file.name} /app/share/applications',
-            ],
-        },
-        {
-            'buildsystem': 'simple',
-            'name': 'appdata_file',
-            'sources': [
-                {
-                    'path': appdata_file.as_posix(),
-                    'sha256': flatpaker.sha256(appdata_file),
-                    'type': 'file',
-                }
-            ],
-            'build-commands': [
-                'mkdir -p /app/share/metainfo',
-                f'cp {appdata_file.name} /app/share/metainfo',
-            ],
-        },
+        flatpaker.bd_desktop(desktop_file),
+        flatpaker.bd_appdata(appdata_file),
     ]
 
     if args.description.get('workarounds', {}).get('icon', True):
