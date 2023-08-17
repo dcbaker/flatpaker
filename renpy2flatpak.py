@@ -148,6 +148,7 @@ def main() -> None:
     parser.add_argument('input', type=pathlib.Path, help='path to the renpy archive')
     parser.add_argument('description', help="A Toml description file")
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
+    parser.add_argument('--gpg', action='store', help='A GPG key to sign the output to when writing to a repo')
     parser.add_argument('--patches', type=lambda x: tuple(x.split('=')), action='append', default=[],
                         help="Additional rpy files to install, in the format src=dest")
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")

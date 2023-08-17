@@ -22,6 +22,7 @@ if typing.TYPE_CHECKING:
 
     class SharedArguments(typing.Protocol):
         repo: typing.Optional[str]
+        gpg: typing.Optional[str]
         install: bool
 
     class _Common(typing.TypedDict):
@@ -135,6 +136,8 @@ def build_flatpak(args: SharedArguments, workdir: pathlib.Path, appid: str) -> N
 
     if args.repo:
         build_command.extend(['--repo', args.repo])
+        if args.gpg:
+            build_command.extend(['--gpg-sign', args.gpg])
     if args.install:
         build_command.extend(['--user', '--install'])
 
