@@ -78,7 +78,7 @@ def create_appdata(description: Description, workdir: pathlib.Path, appid: str) 
         _subelem(categories, 'category', c)
 
     desc = ET.SubElement(root, 'description')
-    _subelem(desc, 'p', description['appdata']['summary'])
+    _subelem(desc, 'p', description['appdata']['description'])
     _subelem(root, 'launchable', f'{appid}.desktop', type="desktop-id")
 
     # There is an oars-1.1, but it doesn't appear to be supported by KDE
