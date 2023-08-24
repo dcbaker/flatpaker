@@ -125,7 +125,8 @@ def sanitize_name(name: str) -> str:
     """Replace invalid characters in a name with valid ones."""
     return name \
         .replace(' ', '_') \
-        .replace(':', '')
+        .replace(':', '') \
+        .replace("'", '')
 
 
 def build_flatpak(args: SharedArguments, workdir: pathlib.Path, appid: str) -> None:
