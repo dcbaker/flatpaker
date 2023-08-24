@@ -17,6 +17,23 @@ if typing.TYPE_CHECKING:
         patches: typing.List[typing.Tuple[str, str]]
         cleanup: bool
 
+def _create_game_sh(use_x11: bool) -> typing.List[str]:
+    lines: typing.List[str] = [
+        '#!/usr/bin/env sh',
+        '',
+        'export RENPY_PERFORMANCE_TEST=0',
+    ]
+
+    if not use_x11:
+        lines.append('export SDL_VIDEODRIVER=wayland')
+
+    lines.extend([
+        'cd /app/lib/game',
+        'exec sh *.sh',
+    ])
+
+    return '\n'.join(lines)
+
 
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
 
@@ -62,7 +79,7 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             'sources': [],
             'build-commands': [
                 'mkdir -p /app/bin',
-                'echo  \'cd /app/lib/game/; export RENPY_PERFORMANCE_TEST=0; sh *.sh\' > /app/bin/game.sh',
+                f"echo '{_create_game_sh(args.description.get('workarounds', {}).get('use_x11', True))}' > /app/bin/game.sh",
                 'chmod +x /app/bin/game.sh'
             ],
         },
@@ -114,6 +131,12 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
         modules[0]['sources'].extend(sources)
         modules[0]['build-commands'].extend(build_commands)
 
+    if args.description.get('workarounds', {}).get('use_x11', True):
+        finish_args = ['--socket=x11']
+    else:
+        finish_args = ['--socket=wayland', '--socket=fallback-x11']
+
+
     struct = {
         'sdk': 'org.freedesktop.Sdk',
         'runtime': 'org.freedesktop.Platform',
@@ -125,15 +148,8 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
         },
         'command': 'game.sh',
         'finish-args': [
+            *finish_args,
             '--socket=pulseaudio',
-            '--socket=wayland',
-            # TODO: for projects with repny >= 7.4 it's possible to use wayland, and in that case
-            # We'd really like to do wayland and fallback-x11 (use wayland, but
-            # allow x11 as a fallback), and not enable wayland for < 7.4
-            # It's not clear yet to me how to test the renpy version from the
-            # script, which doesn't have access to the decompressesd sources
-            # See: https://github.com/renpy/renpy-build/issues/60
-            '--socket=x11',
             '--device=dri',
         ],
         'modules': modules,
