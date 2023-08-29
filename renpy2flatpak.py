@@ -12,7 +12,7 @@ import flatpaker
 
 if typing.TYPE_CHECKING:
     class Arguments(flatpaker.SharedArguments):
-        input: pathlib.Path
+        input: typing.List[pathlib.Path]
         description: flatpaker.Description
         patches: typing.List[typing.Tuple[str, str]]
         cleanup: bool
@@ -35,6 +35,10 @@ def _create_game_sh(use_x11: bool) -> typing.List[str]:
     return '\n'.join(lines)
 
 
+def quote(s: str) -> str:
+    return f'"{s}"'
+
+
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
 
     # TODO: typing requires more thought
@@ -44,16 +48,28 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             'name': flatpaker.sanitize_name(args.description['common']['name']),
             'sources': [
                 {
-                    'path': args.input.as_posix(),
-                    'sha256': flatpaker.sha256(args.input),
+                    'path': i.as_posix(),
+                    'sha256': flatpaker.sha256(i),
                     'type': 'archive',
-                },
+                    'strip-components': 1 if c == 0 else 0,  # otherwise we have directory collisions
+                } for c, i in enumerate(args.input)
             ],
             'build-commands': [
                 'mkdir -p /app/lib/game',
 
                 # install the main game files
                 'mv *.sh *.py renpy game lib /app/lib/game/',
+
+                # Merge each additional source, in order
+                f'''
+                DEST=/app/lib/game/
+                for d in {" ".join(quote(i.name.split('.', 1)[0]) for i in args.input[1:])}; do
+                    pushd "$d"
+                    find . -type d -exec mkdir -p "$DEST"/\{{}} \;
+                    find . -type f -exec mv \{{}} "$DEST"/\{{}} \;
+                    popd
+                done
+                ''',
 
                 # Patch the game to not require sandbox access
                 '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
@@ -161,8 +177,8 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('input', type=pathlib.Path, help='path to the renpy archive')
     parser.add_argument('description', help="A Toml description file")
+    parser.add_argument('input', nargs='+', help='path to the renpy archive')
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
     parser.add_argument('--gpg', action='store', help='A GPG key to sign the output to when writing to a repo')
     parser.add_argument('--patches', type=lambda x: tuple(x.split('=')), action='append', default=[],
@@ -170,7 +186,7 @@ def main() -> None:
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     args: Arguments = parser.parse_args()
-    args.input = args.input.absolute()
+    args.input = [pathlib.PosixPath(i).absolute() for i in args.input]
     # Don't use type for this because it swallows up the exception
     args.description = flatpaker.load_description(args.description)  # type: ignore
 
