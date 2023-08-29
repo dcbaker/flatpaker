@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
     class Arguments(flatpaker.SharedArguments):
         input: typing.List[pathlib.Path]
         description: flatpaker.Description
-        patches: typing.List[typing.Tuple[str, str]]
+        extra_files: typing.List[typing.Tuple[str, str]]
         cleanup: bool
 
 def _create_game_sh(use_x11: bool) -> typing.List[str]:
@@ -128,10 +128,10 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
     sources: typing.List[typing.Dict[str, str]]
     build_commands: typing.List[str]
 
-    if args.patches:
+    if args.extra_files:
         sources = []
         build_commands = []
-        for pa, d in args.patches:
+        for pa, d in args.extra_files:
             patch = pathlib.Path(pa).absolute()
             sources.append({
                 'path': patch.as_posix(),
@@ -181,7 +181,7 @@ def main() -> None:
     parser.add_argument('input', nargs='+', help='path to the renpy archive')
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
     parser.add_argument('--gpg', action='store', help='A GPG key to sign the output to when writing to a repo')
-    parser.add_argument('--patches', type=lambda x: tuple(x.split('=')), action='append', default=[],
+    parser.add_argument('--extra-files', type=lambda x: tuple(x.split('=')), action='append', default=[],
                         help="Additional rpy files to install, in the format src=dest")
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
