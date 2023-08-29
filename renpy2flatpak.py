@@ -13,6 +13,7 @@ import flatpaker
 if typing.TYPE_CHECKING:
     class Arguments(flatpaker.SharedArguments):
         input: typing.List[pathlib.Path]
+        patches: typing.List[pathlib.Path]
         description: flatpaker.Description
         extra_files: typing.List[typing.Tuple[str, str]]
         cleanup: bool
@@ -53,6 +54,11 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                     'type': 'archive',
                     'strip-components': 1 if c == 0 else 0,  # otherwise we have directory collisions
                 } for c, i in enumerate(args.input)
+            ] + [
+                {
+                    'type': 'patch',
+                    'path': i.as_posix(),
+                } for i in args.patches
             ],
             'build-commands': [
                 'mkdir -p /app/lib/game',
@@ -183,10 +189,12 @@ def main() -> None:
     parser.add_argument('--gpg', action='store', help='A GPG key to sign the output to when writing to a repo')
     parser.add_argument('--extra-files', type=lambda x: tuple(x.split('=')), action='append', default=[],
                         help="Additional rpy files to install, in the format src=dest")
+    parser.add_argument('--patches', action='append', default=[], help="patch files to apply")
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     args: Arguments = parser.parse_args()
     args.input = [pathlib.PosixPath(i).absolute() for i in args.input]
+    args.patches = [pathlib.PosixPath(i).absolute() for i in args.patches]
     # Don't use type for this because it swallows up the exception
     args.description = flatpaker.load_description(args.description)  # type: ignore
 
