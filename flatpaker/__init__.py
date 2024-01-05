@@ -132,7 +132,7 @@ def sanitize_name(name: str) -> str:
 
 def build_flatpak(args: SharedArguments, workdir: pathlib.Path, appid: str) -> None:
     build_command: typing.List[str] = [
-        'flatpak-builder', '--force-clean', 'build',
+        'flatpak-builder', '--force-clean', '--install-deps-from=flathub', '--user', 'build',
         (workdir / f'{appid}.json').absolute().as_posix(),
     ]
 
@@ -141,7 +141,7 @@ def build_flatpak(args: SharedArguments, workdir: pathlib.Path, appid: str) -> N
         if args.gpg:
             build_command.extend(['--gpg-sign', args.gpg])
     if args.install:
-        build_command.extend(['--user', '--install'])
+        build_command.extend(['--install'])
 
     subprocess.run(build_command)
 
