@@ -69,7 +69,7 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 # Merge each additional source, in order
                 f'''
                 DEST=/app/lib/game/
-                for d in {" ".join(quote(i.name.split('.', 1)[0]) for i in args.input[1:])}; do
+                for d in {" ".join(quote(i.name.rsplit('.', 1)[0]) for i in args.input[1:])}; do
                     pushd "$d"
                     find . -type d -exec mkdir -p "$DEST"/\{{}} \;
                     find . -type f -exec mv \{{}} "$DEST"/\{{}} \;
@@ -184,7 +184,7 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('description', help="A Toml description file")
-    parser.add_argument('input', nargs='+', help='path to the renpy archive')
+    parser.add_argument('input', nargs='+', help='path to the renpy archive, plus archive patches')
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
     parser.add_argument('--gpg', action='store', help='A GPG key to sign the output to when writing to a repo')
     parser.add_argument('--extra-files', type=lambda x: tuple(x.split('=')), action='append', default=[],
