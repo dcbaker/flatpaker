@@ -13,12 +13,10 @@ import flatpaker
 if typing.TYPE_CHECKING:
     class Arguments(flatpaker.SharedArguments):
         input: typing.List[pathlib.Path]
-        patches: typing.List[pathlib.Path]
         description: flatpaker.Description
-        extra_files: typing.List[typing.Tuple[str, str]]
         cleanup: bool
 
-def _create_game_sh(use_x11: bool) -> typing.List[str]:
+def _create_game_sh(use_x11: bool) -> str:
     lines: typing.List[str] = [
         '#!/usr/bin/env sh',
         '',
@@ -42,40 +40,54 @@ def quote(s: str) -> str:
 
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
 
+    sources: typing.List[typing.Dict[str, object]] = []
+
+    if 'sources' in args.description:
+        for a in args.description['sources']['archives']:
+            if isinstance(a, pathlib.Path):
+                sources.append({
+                    'path': a.as_posix(),
+                    'sha256': flatpaker.sha256(a),
+                    'type': 'archive',
+                })
+            else:
+                sources.append({
+                    'path': a['path'].as_posix(),
+                    'sha256': flatpaker.sha256(a['path']),
+                    'type': 'archive',
+                    'strip-components': a.get('strip_components', 1),
+                })
+        for p in args.description['sources'].get('files', []):
+            sources.append({
+                'path': p.as_posix(),
+                'sha256': flatpaker.sha256(p),
+                'type': 'file',
+            })
+        for p in args.description['sources'].get('patches', []):
+            sources.append({
+                'type': 'patch',
+                'path': p.as_posix(),
+            })
+    else:
+        sources = [{
+            'path': i.as_posix(),
+            'sha256': flatpaker.sha256(i),
+            'type': 'archive',
+        } for i in args.input]
+
     # TODO: typing requires more thought
     modules: typing.List[typing.Dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
             'name': flatpaker.sanitize_name(args.description['common']['name']),
-            'sources': [
-                {
-                    'path': i.as_posix(),
-                    'sha256': flatpaker.sha256(i),
-                    'type': 'archive',
-                    'strip-components': 1 if c == 0 else 0,  # otherwise we have directory collisions
-                } for c, i in enumerate(args.input)
-            ] + [
-                {
-                    'type': 'patch',
-                    'path': i.as_posix(),
-                } for i in args.patches
-            ],
+            'sources': sources,
             'build-commands': [
                 'mkdir -p /app/lib/game',
 
                 # install the main game files
                 'mv *.sh *.py renpy game lib /app/lib/game/',
 
-                # Merge each additional source, in order
-                f'''
-                DEST=/app/lib/game/
-                for d in {" ".join(quote(i.name.rsplit('.', 1)[0]) for i in args.input[1:])}; do
-                    pushd "$d"
-                    find . -type d -exec mkdir -p "$DEST"/\{{}} \;
-                    find . -type f -exec mv \{{}} "$DEST"/\{{}} \;
-                    popd
-                done
-                ''',
+                'mv *.rpy /app/lib/game/game/ || true',
 
                 # Patch the game to not require sandbox access
                 '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
@@ -86,6 +98,7 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 '*.exe',
                 '*.app',
                 '*.rpyc.bak',
+                '*.txt',
                 '*.rpy',
                 #'/lib/game/renpy/*.py',
                 '/lib/game/game/*.py',
@@ -131,28 +144,6 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             ],
         })
 
-    sources: typing.List[typing.Dict[str, str]]
-    build_commands: typing.List[str]
-
-    if args.extra_files:
-        sources = []
-        build_commands = []
-        for pa, d in args.extra_files:
-            patch = pathlib.Path(pa).absolute()
-            sources.append({
-                'path': patch.as_posix(),
-                'sha256': flatpaker.sha256(patch),
-                'type': 'file'
-            })
-            build_commands.append(f'mv {patch.name} /app/lib/game/{d}')
-
-        # Recompile the game and all new rpy files
-        build_commands.append(
-            'pushd /app/lib/game; ./*.sh . compile --keep-orphan-rpyc; popd')
-
-        modules[0]['sources'].extend(sources)
-        modules[0]['build-commands'].extend(build_commands)
-
     if args.description.get('workarounds', {}).get('use_x11', True):
         finish_args = ['--socket=x11']
     else:
@@ -178,23 +169,19 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
     }
 
     with (pathlib.Path(workdir) / f'{appid}.json').open('w') as f:
-        json.dump(struct, f)
+        json.dump(struct, f, indent=4)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('description', help="A Toml description file")
-    parser.add_argument('input', nargs='+', help='path to the renpy archive, plus archive patches')
+    parser.add_argument('input', nargs='*', help='path to the renpy archive, plus archive patches')
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
     parser.add_argument('--gpg', action='store', help='A GPG key to sign the output to when writing to a repo')
-    parser.add_argument('--extra-files', type=lambda x: tuple(x.split('=')), action='append', default=[],
-                        help="Additional rpy files to install, in the format src=dest")
-    parser.add_argument('--patches', action='append', default=[], help="patch files to apply")
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
-    args: Arguments = parser.parse_args()
+    args = typing.cast('Arguments', parser.parse_args())
     args.input = [pathlib.PosixPath(i).absolute() for i in args.input]
-    args.patches = [pathlib.PosixPath(i).absolute() for i in args.patches]
     # Don't use type for this because it swallows up the exception
     args.description = flatpaker.load_description(args.description)  # type: ignore
 

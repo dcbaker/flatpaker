@@ -43,11 +43,26 @@ if typing.TYPE_CHECKING:
         icon: bool
         no_wayland: bool
 
+    class _Archive(typing.TypedDict):
+
+        path: pathlib.Path
+        strip_comonents: NotRequired[int]
+
+    Archive = typing.Union[pathlib.Path, _Archive]
+
+    class Sources(typing.TypedDict):
+
+        archives: typing.List[Archive]
+        files: NotRequired[typing.List[pathlib.Path]]
+        patches: NotRequired[typing.List[pathlib.Path]]
+
     class Description(typing.TypedDict):
 
         common: _Common
         appdata: _AppData
         workarounds: NotRequired[_Workarounds]
+        sources: NotRequired[Sources]
+
 
 
 def _subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **extra: str) -> ET.Element:
@@ -147,8 +162,22 @@ def build_flatpak(args: SharedArguments, workdir: pathlib.Path, appid: str) -> N
 
 
 def load_description(name: str) -> Description:
+    relpath = pathlib.Path(name).parent.absolute()
     with open(name, 'rb') as f:
-        return tomllib.load(f)
+        d: Description = tomllib.load(f)
+
+    # Fixup relative paths
+    if 'sources' in d:
+        for i, a in enumerate(d['sources']['archives']):
+            if isinstance(a, str):
+                d['sources']['archives'][i] = relpath / a
+            else:
+                # we're fixing up expectations here
+                a['path'] = relpath / a['path']  # type: ignore
+        if 'files' in d['sources']:
+            d['sources']['files'] = [relpath / f for f in d['sources']['files']]
+
+    return d
 
 
 @contextlib.contextmanager
