@@ -126,21 +126,20 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
         icon_src = '/app/lib/game/game/gui/window_icon.png'
         icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
         # Must at least be before the appdata is generated
+
+        _icon_install_cmd: str
+        if args.description.get('workarounds', {}).get('icon_is_webp'):
+            _icon_install_cmd = f'dwebp {icon_src} -o {icon_dst}'
+        else:
+            _icon_install_cmd = f'cp {icon_src} {icon_dst}'
+
         modules.insert(1, {
             'buildsystem': 'simple',
             'name': 'icon',
             'sources': [],
             'build-commands': [
                 'mkdir -p /app/share/icons/hicolor/256x256/apps/',
-                # I have run into at least one game where the file is called a
-                # ".png" but the format is actually web/p.
-                # This uses join to attempt to make it more readable
-                ' ; '.join([
-                    f"if file {icon_src} | grep 'Web/P' -q",
-                    f'then dwebp {icon_src} -o {icon_dst}',
-                    f'else cp {icon_src} {icon_dst}',
-                    'fi',
-                ]),
+                _icon_install_cmd,
             ],
         })
 

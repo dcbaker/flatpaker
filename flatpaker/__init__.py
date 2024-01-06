@@ -41,6 +41,7 @@ if typing.TYPE_CHECKING:
 
     class _Workarounds(typing.TypedDict, total=False):
         icon: bool
+        icon_is_webp: bool
         no_wayland: bool
 
     class _Archive(typing.TypedDict):
