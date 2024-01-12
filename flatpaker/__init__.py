@@ -125,7 +125,7 @@ def create_desktop(description: Description, workdir: pathlib.Path, appid: str) 
             Name={description['common']['name']}
             Exec=game.sh
             Type=Application
-            Categories=Game;{';'.join(description['common']['categories'])};
+            Categories={';'.join(['Game'] + description['common']['categories'])};
             '''))
         if description.get('workarounds', {}).get('icon', True):
             f.write(f'Icon={appid}')
