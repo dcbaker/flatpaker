@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright © 2022-2023 Dylan Baker
+# Copyright © 2022-2024 Dylan Baker
 
 from __future__ import annotations
 from xml.etree import ElementTree as ET
@@ -55,7 +55,7 @@ if typing.TYPE_CHECKING:
 
         archives: typing.List[Archive]
         files: NotRequired[typing.List[pathlib.Path]]
-        patches: NotRequired[typing.List[pathlib.Path]]
+        patches: NotRequired[typing.List[Archive]]
 
     class Description(typing.TypedDict):
 
@@ -142,6 +142,7 @@ def sanitize_name(name: str) -> str:
     """Replace invalid characters in a name with valid ones."""
     return name \
         .replace(' ', '_') \
+        .replace("&", '_') \
         .replace(':', '') \
         .replace("'", '')
 
@@ -177,6 +178,13 @@ def load_description(name: str) -> Description:
                 a['path'] = relpath / a['path']  # type: ignore
         if 'files' in d['sources']:
             d['sources']['files'] = [relpath / f for f in d['sources']['files']]
+        if 'patches' in d['sources']:
+            for i, a in enumerate(d['sources']['patches']):
+                if isinstance(a, str):
+                    d['sources']['patches'][i] = relpath / a
+                else:
+                    # we're fixing up expectations here
+                    a['path'] = relpath / a['path']  # type: ignore
 
     return d
 

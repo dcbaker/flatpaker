@@ -11,7 +11,7 @@ import typing
 import flatpaker
 
 if typing.TYPE_CHECKING:
-    class Arguments(flatpaker.SharedArguments):
+    class Arguments(flatpaker.SharedArguments, typing.Protocol):
         input: typing.List[pathlib.Path]
         description: flatpaker.Description
         cleanup: bool
@@ -63,11 +63,18 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 'sha256': flatpaker.sha256(p),
                 'type': 'file',
             })
-        for p in args.description['sources'].get('patches', []):
-            sources.append({
-                'type': 'patch',
-                'path': p.as_posix(),
-            })
+        for a in args.description['sources'].get('patches', []):
+            if isinstance(a, pathlib.Path):
+                sources.append({
+                    'type': 'patch',
+                    'path': a.as_posix(),
+                })
+            else:
+                sources.append({
+                    'type': 'patch',
+                    'path': a['path'].as_posix(),
+                    'strip-components': a.get('strip_components', 1),
+                })
     else:
         sources = [{
             'path': i.as_posix(),
