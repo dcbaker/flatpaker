@@ -65,8 +65,9 @@ project.
 [appdata.content_rating]
     # optional
     # Uses OARS specifications. See: https://hughsie.github.io/oars/
-    # keys should be ids, and the values must be a rating: none, mild, moderate, or intense
-    language-profanity = mild
+    # keys should be ids, and the values are must be a rating (as a string):
+    # none, mild, moderate, or intense
+    language-profanity = "mild"
 
 [appdata.releases]
   # optional
