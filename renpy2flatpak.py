@@ -77,7 +77,7 @@ def bd_build_commands(args: Arguments) -> typing.List[str]:
         '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
 
         # Recompile all of the rpy files
-        r'''
+        '''
         pushd /app/lib/game; \
         script="$PWD/$(ls *.sh)"; \
         dirs="$(find . -type f -name '*.rpy' -printf '%h\\0' | sort -zu | sed -z 's@$@ @')"; \
@@ -89,9 +89,21 @@ def bd_build_commands(args: Arguments) -> typing.List[str]:
 
         # Recompile all python py files, so we can remove the py files
         # form the final distribution
+        #
+        # Use -f to force the files mtimes to be updated, otherwise
+        # flatpak-builder will delete them as "stale"
+        #
+        # Use -b for python3 to allow us to delete the .py files
+        # I have run into a couple of python2 based ren'py programs that lack
+        # the python infrastructure to run with -m, so we'll just open code it to
+        # make it more portable
         '''
         pushd /app/lib/game;
-        lib/py3-linux-x86_64/python -m compileall -b .;
+        if [ -d "lib/py3-linux-x86_64" ]; then
+            lib/py3-linux-x86_64/python -m compileall -b -f . || exit 1;
+        else
+            lib/linux-x86_64/python -c 'import compileall; compileall.main()' -f . || exit 1;
+        fi;
         popd;
         '''
     ])
