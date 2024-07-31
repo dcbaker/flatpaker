@@ -44,19 +44,12 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
 
     if 'sources' in args.description:
         for a in args.description['sources']['archives']:
-            if isinstance(a, pathlib.Path):
-                sources.append({
-                    'path': a.as_posix(),
-                    'sha256': flatpaker.sha256(a),
-                    'type': 'archive',
-                })
-            else:
-                sources.append({
-                    'path': a['path'].as_posix(),
-                    'sha256': flatpaker.sha256(a['path']),
-                    'type': 'archive',
-                    'strip-components': a.get('strip_components', 1),
-                })
+            sources.append({
+                'path': a['path'].as_posix(),
+                'sha256': flatpaker.sha256(a['path']),
+                'type': 'archive',
+                'strip-components': a.get('strip_components', 1),
+            })
         for source in args.description['sources'].get('files', []):
             p = source['path']
             sources.append({
@@ -64,7 +57,7 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 'sha256': flatpaker.sha256(p),
                 'type': 'file',
             })
-        for a in args.description.get('sources', {}).get('patches', []):
+        for a in args.description['sources'].get('patches', []):
             sources.append({
                 'type': 'patch',
                 'path': a['path'].as_posix(),

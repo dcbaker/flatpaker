@@ -44,12 +44,10 @@ if typing.TYPE_CHECKING:
         icon_is_webp: bool
         use_x11: bool
 
-    class _Archive(typing.TypedDict):
+    class Archive(typing.TypedDict):
 
         path: pathlib.Path
         strip_components: NotRequired[int]
-
-    Archive = typing.Union[pathlib.Path, _Archive]
 
     class File(typing.TypedDict):
 
@@ -60,7 +58,7 @@ if typing.TYPE_CHECKING:
 
         archives: typing.List[Archive]
         files: NotRequired[typing.List[File]]
-        patches: NotRequired[typing.List[_Archive]]
+        patches: NotRequired[typing.List[Archive]]
 
     class Description(typing.TypedDict):
 
@@ -175,12 +173,8 @@ def load_description(name: str) -> Description:
 
     # Fixup relative paths
     if 'sources' in d:
-        for i, a in enumerate(d['sources']['archives']):
-            if isinstance(a, str):
-                d['sources']['archives'][i] = relpath / a
-            else:
-                # we're fixing up expectations here
-                a['path'] = relpath / a['path']  # type: ignore
+        for a in d['sources']['archives']:
+            a['path'] = relpath / a['path']
         if 'files' in d['sources']:
             for s in d['sources']['files']:
                 s['path'] = relpath / s['path']
