@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
+import textwrap
 import typing
 
 import flatpaker
@@ -77,15 +78,15 @@ def bd_build_commands(args: Arguments) -> typing.List[str]:
         '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
 
         # Recompile all of the rpy files
-        '''
-        pushd /app/lib/game; \
-        script="$PWD/$(ls *.sh)"; \
-        dirs="$(find . -type f -name '*.rpy' -printf '%h\\0' | sort -zu | sed -z 's@$@ @')"; \
-        for d in $dirs; do \
-            bash $script $d compile --keep-orphan-rpyc; \
-        done; \
-        popd;
-        ''',
+        textwrap.dedent('''
+            pushd /app/lib/game;
+            script="$PWD/$(ls *.sh)";
+            dirs="$(find . -type f -name '*.rpy' -printf '%h\\0' | sort -zu | sed -z 's@$@ @')";
+            for d in $dirs; do
+                bash $script $d compile --keep-orphan-rpyc;
+            done;
+            popd;
+            '''),
 
         # Recompile all python py files, so we can remove the py files
         # form the final distribution
@@ -97,15 +98,15 @@ def bd_build_commands(args: Arguments) -> typing.List[str]:
         # I have run into a couple of python2 based ren'py programs that lack
         # the python infrastructure to run with -m, so we'll just open code it to
         # make it more portable
-        '''
-        pushd /app/lib/game;
-        if [ -d "lib/py3-linux-x86_64" ]; then
-            lib/py3-linux-x86_64/python -m compileall -b -f . || exit 1;
-        else
-            lib/linux-x86_64/python -c 'import compileall; compileall.main()' -f . || exit 1;
-        fi;
-        popd;
-        '''
+        textwrap.dedent('''
+            pushd /app/lib/game;
+            if [ -d "lib/py3-linux-x86_64" ]; then
+                lib/py3-linux-x86_64/python -m compileall -b -f . || exit 1;
+            else
+                lib/linux-x86_64/python -c 'import compileall; compileall.main()' -f . || exit 1;
+            fi;
+            popd;
+            ''')
     ])
 
     return commands
