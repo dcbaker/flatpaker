@@ -179,26 +179,18 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "anyOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "path": {
-                                        "type": "string"
-                                    },
-                                    "strip_components": {
-                                        "type": "number"
-                                    }
-                                },
-                                "required": [
-                                    "path"
-                                ],
-                                "additionalProperties": false
-                            },
-                            {
+                        "properties": {
+                            "path": {
                                 "type": "string"
+                            },
+                            "strip_components": {
+                                "type": "number"
                             }
-                        ]
+                        },
+                        "required": [
+                            "path"
+                        ],
+                        "additionalProperties": false
                     }
                 }
             },
