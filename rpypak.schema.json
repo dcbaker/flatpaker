@@ -1,0 +1,260 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://github.com.com/dcbaker/renpy2flatpak/rpypak.schema.json",
+    "title": "Renpy2Flatpak",
+    "description": "A Description of a Ren'py to build as a Flatpak",
+    "type": "object",
+    "properties": {
+        "common": {
+            "description": "Common properties used in the flatpak, appdata, and desktop files.",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "The name of the application in proper casing."
+                },
+                "reverse_url": {
+                    "type": "string",
+                    "description": "A reverse root url for the game. For example, com.github.User. The name will be appended automatically"
+                },
+                "categories": {
+                    "type": "array",
+                    "description": "Valid categories for the game's desktop file. 'Game' is added automatically",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "reverse_url",
+                "categories"
+            ],
+            "additionalProperties": false
+        },
+        "appdata": {
+            "description": "Application metadata.",
+            "type": "object",
+            "properties": {
+                "summary": {
+                    " type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "content_rating": {
+                    "type": "object",
+                    "properties": {
+                        "drugs-alcohol": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "drugs-tobacco": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "language-discrimination": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "language-humor": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "language-profanity": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "money-gambling": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "money-purchasing": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "sex-nudity": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "sex-themes": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "social-audio": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "social-chat": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "social-contacts": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "social-info": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "social-location": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "violence-bloodshed": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "violence-cartoon": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "violence-fantasy": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "violence-realistic": {
+                            "$ref": "#/$defs/content_ratings"
+                        },
+                        "violence-sexual": {
+                            "$ref": "#/$defs/content_ratings"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "releases": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "license": {
+                    "description": "An SPDX license expression. If unset will default to proprietary",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "summary",
+                "description"
+            ],
+            "additionalProperties": false
+        },
+        "sources": {
+            "description": "Optionally, sources for this description.",
+            "type": "object",
+            "properties": {
+                "archives": {
+                    "description": "A list of archives used to build the project",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "path": {
+                                        "type": "string"
+                                    },
+                                    "strip_components": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "path"
+                                ],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                },
+                "files": {
+                    "description": "Single file sources",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "path": {
+                                        "type": "string",
+                                        "description": "The Path to the file"
+                                    },
+                                    "dest": {
+                                        "type": "string",
+                                        "description": "Where to install the file. .rpy files are automatically merged into the game directory, other files likely need an explicit destination"
+                                    }
+                                },
+                                "required": [
+                                    "path"
+                                ],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                },
+                "patches": {
+                    "description": "Unix patch files to apply",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "path": {
+                                        "type": "string"
+                                    },
+                                    "strip_components": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "path"
+                                ],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "archives"
+            ],
+            "additionalProperties": false
+        },
+        "workarounds": {
+            "description": "Workarounds for specific ren'py projects that are broken in various ways.",
+            "type": "object",
+            "properties": {
+                "icon": {
+                    "description": "If set to False then no icon is available for this project.",
+                    "type": "boolean"
+                },
+                "icon_is_webp": {
+                    "description": "The icon is webp, even though it says it's png.",
+                    "type": "boolean"
+                },
+                "use_x11": {
+                    "description": "If set to false, then this project can use wayland",
+                    "type": "boolean"
+                }
+            },
+            "releases": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "required": [
+        "common",
+        "appdata"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+        "content_ratings": {
+            "type": "string",
+            "enum": [
+                "unknown",
+                "none",
+                "mild",
+                "moderate",
+                "intense"
+            ]
+        }
+    }
+}
