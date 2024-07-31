@@ -51,12 +51,10 @@ if typing.TYPE_CHECKING:
 
     Archive = typing.Union[pathlib.Path, _Archive]
 
-    class _File(typing.TypedDict):
+    class File(typing.TypedDict):
 
         path: pathlib.Path
         dest: NotRequired[str]
-
-    File = typing.Union[pathlib.Path, _File]
 
     class Sources(typing.TypedDict):
 
@@ -184,11 +182,8 @@ def load_description(name: str) -> Description:
                 # we're fixing up expectations here
                 a['path'] = relpath / a['path']  # type: ignore
         if 'files' in d['sources']:
-            for i, s in enumerate(d['sources']['files']):
-                if isinstance(s, str):
-                    d['sources']['files'][i] = relpath / s
-                else:
-                    s['path'] = relpath / s['path'] # type: ignore
+            for s in d['sources']['files']:
+                s['path'] = relpath / s['path']
         if 'patches' in d['sources']:
             for i, a in enumerate(d['sources']['patches']):
                 if isinstance(a, str):

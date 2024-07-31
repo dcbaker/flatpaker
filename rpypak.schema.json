@@ -158,28 +158,20 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "anyOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "path": {
-                                        "type": "string",
-                                        "description": "The Path to the file"
-                                    },
-                                    "dest": {
-                                        "type": "string",
-                                        "description": "Where to install the file. .rpy files are automatically merged into the game directory, other files likely need an explicit destination"
-                                    }
-                                },
-                                "required": [
-                                    "path"
-                                ],
-                                "additionalProperties": false
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "The Path to the file"
                             },
-                            {
-                                "type": "string"
+                            "dest": {
+                                "type": "string",
+                                "description": "Where to install the file. .rpy files are automatically merged into the game directory, other files likely need an explicit destination"
                             }
-                        ]
+                        },
+                        "required": [
+                            "path"
+                        ],
+                        "additionalProperties": false
                     }
                 },
                 "patches": {

@@ -57,9 +57,8 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                     'type': 'archive',
                     'strip-components': a.get('strip_components', 1),
                 })
-        for p in args.description['sources'].get('files', []):
-            if isinstance(p, dict):
-                p = p['path']
+        for source in args.description['sources'].get('files', []):
+            p = source['path']
             sources.append({
                 'path': p.as_posix(),
                 'sha256': flatpaker.sha256(p),
@@ -134,10 +133,11 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
         flatpaker.bd_appdata(appdata_file),
     ]
 
-    for p in args.description['sources'].get('files', []):
-        if isinstance(p, dict):
-            modules[0]['build-commands'].append(
-                f'mv {p["path"].name} /app/lib/game/{p["dest"]}')
+    for p in args.description.get('sources', {}).get('files', []):
+        if 'dest' not in p:
+            continue
+        modules[0]['build-commands'].append(
+            f'mv {p["path"].name} /app/lib/game/{p["dest"]}')
 
     icon_src = '/app/lib/game/game/gui/window_icon.png'
     icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
