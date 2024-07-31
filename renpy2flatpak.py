@@ -99,6 +99,28 @@ def bd_build_commands(args: Arguments) -> typing.List[str]:
     return commands
 
 
+def bd_icon(args: Arguments, appid: str) -> typing.Dict[str, typing.Any]:
+    icon_src = '/app/lib/game/game/gui/window_icon.png'
+    icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
+    # Must at least be before the appdata is generated
+
+    _icon_install_cmd: str
+    if args.description.get('workarounds', {}).get('icon_is_webp'):
+        _icon_install_cmd = f'dwebp {icon_src} -o {icon_dst}'
+    else:
+        _icon_install_cmd = f'cp {icon_src} {icon_dst}'
+
+    return {
+        'buildsystem': 'simple',
+        'name': 'icon',
+        'sources': [],
+        'build-commands': [
+            'mkdir -p /app/share/icons/hicolor/256x256/apps/',
+            _icon_install_cmd,
+        ],
+    }
+
+
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
 
     sources: typing.List[typing.Dict[str, object]] = []
@@ -149,36 +171,16 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 '/lib/game/lib/*-i686',
             ],
         },
+        bd_icon(args, appid),
         bd_game(args),
         flatpaker.bd_desktop(desktop_file),
         flatpaker.bd_appdata(appdata_file),
     ]
 
-    icon_src = '/app/lib/game/game/gui/window_icon.png'
-    icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
-    # Must at least be before the appdata is generated
-
-    _icon_install_cmd: str
-    if args.description.get('workarounds', {}).get('icon_is_webp'):
-        _icon_install_cmd = f'dwebp {icon_src} -o {icon_dst}'
-    else:
-        _icon_install_cmd = f'cp {icon_src} {icon_dst}'
-
-    modules.insert(1, {
-        'buildsystem': 'simple',
-        'name': 'icon',
-        'sources': [],
-        'build-commands': [
-            'mkdir -p /app/share/icons/hicolor/256x256/apps/',
-            _icon_install_cmd,
-        ],
-    })
-
     if args.description.get('workarounds', {}).get('use_x11', True):
         finish_args = ['--socket=x11']
     else:
         finish_args = ['--socket=wayland', '--socket=fallback-x11']
-
 
     struct = {
         'sdk': 'org.freedesktop.Sdk',
