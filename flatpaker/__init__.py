@@ -47,7 +47,7 @@ if typing.TYPE_CHECKING:
     class _Archive(typing.TypedDict):
 
         path: pathlib.Path
-        strip_comonents: NotRequired[int]
+        strip_components: NotRequired[int]
 
     Archive = typing.Union[pathlib.Path, _Archive]
 
