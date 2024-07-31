@@ -38,6 +38,20 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
+def bd_game(args: Arguments) -> typing.Dict[str, typing.Any]:
+    sh = _create_game_sh(args.description.get('workarounds', {}).get('use_x11', True))
+    return {
+        'buildsystem': 'simple',
+        'name': 'game_sh',
+        'sources': [],
+        'build-commands': [
+            'mkdir -p /app/bin',
+            f"echo '{sh}' > /app/bin/game.sh",
+            'chmod +x /app/bin/game.sh'
+        ],
+    }
+
+
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
 
     sources: typing.List[typing.Dict[str, object]] = []
@@ -120,16 +134,7 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 '/lib/game/lib/*-i686',
             ],
         },
-        {
-            'buildsystem': 'simple',
-            'name': 'game_sh',
-            'sources': [],
-            'build-commands': [
-                'mkdir -p /app/bin',
-                f"echo '{_create_game_sh(args.description.get('workarounds', {}).get('use_x11', True))}' > /app/bin/game.sh",
-                'chmod +x /app/bin/game.sh'
-            ],
-        },
+        bd_game(args),
         flatpaker.bd_desktop(desktop_file),
         flatpaker.bd_appdata(appdata_file),
     ]
