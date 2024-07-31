@@ -90,7 +90,16 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 # Patch the game to not require sandbox access
                 '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
 
-                'pushd /app/lib/game; ./*.sh . compile --keep-orphan-rpyc; popd',
+                # Recompile all of the rpy files
+                r'''
+                pushd /app/lib/game; \
+                script="$PWD/$(ls *.sh)"; \
+                dirs="$(find . -type f -name '*.rpy' -printf '%h\\\0' | sort -zu | sed -z 's@$@ @')"; \
+                for d in $dirs; do \
+                    bash $script $d compile --keep-orphan-rpyc; \
+                done; \
+                popd;
+                '''
             ],
             'cleanup': [
                 '*.exe',
