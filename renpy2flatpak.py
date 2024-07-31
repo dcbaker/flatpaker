@@ -99,6 +99,14 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                     bash $script $d compile --keep-orphan-rpyc; \
                 done; \
                 popd;
+                ''',
+
+                # Recompile all python py files, so we can remove the py files
+                # form the final distribution
+                '''
+                pushd /app/lib/game;
+                lib/py3-linux-x86_64/python -m compileall -b .;
+                popd;
                 '''
             ],
             'cleanup': [
@@ -107,12 +115,9 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 '*.rpyc.bak',
                 '*.txt',
                 '*.rpy',
-                #'/lib/game/renpy/*.py',
-                '/lib/game/game/*.py',
                 '/lib/game/lib/*darwin-*',
                 '/lib/game/lib/*windows-*',
                 '/lib/game/lib/*-i686',
-                '/lib/game/lib/*.py',
             ],
         },
         {
@@ -177,6 +182,12 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             '--device=dri',
         ],
         'modules': modules,
+        'cleanup-commands': [
+            "find /app/lib/game/game -name '*.py' -delete",
+            "find /app/lib/game/lib -name '*.py' -delete",
+            "find /app/lib/game/renpy -name '*.py' -delete",
+            'find /app/lib/game -name __pycache__ -print | xargs -n1 rm -vrf',
+        ]
     }
 
     with (pathlib.Path(workdir) / f'{appid}.json').open('w') as f:
