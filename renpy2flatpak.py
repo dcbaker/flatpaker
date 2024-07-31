@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-# Copyright © 2022-2023 Dylan Baker
+# Copyright © 2022-2024 Dylan Baker
 
 from __future__ import annotations
 import argparse
