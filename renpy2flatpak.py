@@ -98,6 +98,9 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
 
                 'mv *.rpy /app/lib/game/game/ || true',
 
+                # Move any archives have been stripped down
+                'cp -r */game/* /app/lib/game/game/ || true',
+
                 # Patch the game to not require sandbox access
                 '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
 
