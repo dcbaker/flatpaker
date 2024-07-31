@@ -73,6 +73,31 @@ project.
   # optional
   # in the form "version = date"
   1.0.0 = "2023-01-01"
+
+# Optional, alternatively may be passed on teh command line
+[[sources.archives]]
+  # path must be set if this is provided
+  path = "relative to toml or absolute path"
+
+  # Optional, defaults to 1. How many directory levels to remove from this component
+  strip_comonents = 2
+
+# Optional, cannot be set from command line
+[[sources.patches]]
+  # path must be set if this is provided
+  path = "relative to toml or absolute path"
+
+  # Optional, defaults to 1. How many directory levels to remove from this component
+  strip_comonents = 2
+
+# Optional, cannot be set from command line
+[[sources.files]]
+  # path must be set if this is provided
+  path = "relative to toml or absolute path"
+
+  # Optional, if set the file will be installed to this name
+  # Does not have to be set for .rpy files that go in the game root directory
+  dest = "where to install"
 ```
 
 ## What is required?
