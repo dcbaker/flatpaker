@@ -108,7 +108,7 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 r'''
                 pushd /app/lib/game; \
                 script="$PWD/$(ls *.sh)"; \
-                dirs="$(find . -type f -name '*.rpy' -printf '%h\\\0' | sort -zu | sed -z 's@$@ @')"; \
+                dirs="$(find . -type f -name '*.rpy' -printf '%h\\0' | sort -zu | sed -z 's@$@ @')"; \
                 for d in $dirs; do \
                     bash $script $d compile --keep-orphan-rpyc; \
                 done; \
