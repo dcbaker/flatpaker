@@ -52,6 +52,53 @@ def bd_game(args: Arguments) -> typing.Dict[str, typing.Any]:
     }
 
 
+def bd_build_commands(args: Arguments) -> typing.List[str]:
+    commands: typing.List[str] = [
+        'mkdir -p /app/lib/game',
+
+        # install the main game files
+        'mv *.sh *.py renpy game lib /app/lib/game/',
+
+        'mv *.rpy /app/lib/game/game/ || true',
+
+        # Move any archives have been stripped down
+        'cp -r */game/* /app/lib/game/game/ || true',
+    ]
+
+    # Insert these commands before any rpy and py files are compiled
+    for p in args.description.get('sources', {}).get('files', []):
+        if 'dest' not in p:
+            continue
+        commands.append(
+            f'mv {p["path"].name} /app/lib/game/{p["dest"]}')
+
+    commands.extend([
+        # Patch the game to not require sandbox access
+        '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
+
+        # Recompile all of the rpy files
+        r'''
+        pushd /app/lib/game; \
+        script="$PWD/$(ls *.sh)"; \
+        dirs="$(find . -type f -name '*.rpy' -printf '%h\\0' | sort -zu | sed -z 's@$@ @')"; \
+        for d in $dirs; do \
+            bash $script $d compile --keep-orphan-rpyc; \
+        done; \
+        popd;
+        ''',
+
+        # Recompile all python py files, so we can remove the py files
+        # form the final distribution
+        '''
+        pushd /app/lib/game;
+        lib/py3-linux-x86_64/python -m compileall -b .;
+        popd;
+        '''
+    ])
+
+    return commands
+
+
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
 
     sources: typing.List[typing.Dict[str, object]] = []
@@ -90,39 +137,7 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
             'buildsystem': 'simple',
             'name': flatpaker.sanitize_name(args.description['common']['name']),
             'sources': sources,
-            'build-commands': [
-                'mkdir -p /app/lib/game',
-
-                # install the main game files
-                'mv *.sh *.py renpy game lib /app/lib/game/',
-
-                'mv *.rpy /app/lib/game/game/ || true',
-
-                # Move any archives have been stripped down
-                'cp -r */game/* /app/lib/game/game/ || true',
-
-                # Patch the game to not require sandbox access
-                '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
-
-                # Recompile all of the rpy files
-                r'''
-                pushd /app/lib/game; \
-                script="$PWD/$(ls *.sh)"; \
-                dirs="$(find . -type f -name '*.rpy' -printf '%h\\0' | sort -zu | sed -z 's@$@ @')"; \
-                for d in $dirs; do \
-                    bash $script $d compile --keep-orphan-rpyc; \
-                done; \
-                popd;
-                ''',
-
-                # Recompile all python py files, so we can remove the py files
-                # form the final distribution
-                '''
-                pushd /app/lib/game;
-                lib/py3-linux-x86_64/python -m compileall -b .;
-                popd;
-                '''
-            ],
+            'build-commands': bd_build_commands(args),
             'cleanup': [
                 '*.exe',
                 '*.app',
@@ -138,12 +153,6 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
         flatpaker.bd_desktop(desktop_file),
         flatpaker.bd_appdata(appdata_file),
     ]
-
-    for p in args.description.get('sources', {}).get('files', []):
-        if 'dest' not in p:
-            continue
-        modules[0]['build-commands'].append(
-            f'mv {p["path"].name} /app/lib/game/{p["dest"]}')
 
     icon_src = '/app/lib/game/game/gui/window_icon.png'
     icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
