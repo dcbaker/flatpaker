@@ -5,6 +5,7 @@
 from __future__ import annotations
 import argparse
 import json
+import os
 import pathlib
 import textwrap
 import typing
@@ -60,18 +61,16 @@ def bd_build_commands(args: Arguments) -> typing.List[str]:
         # install the main game files
         'mv *.sh *.py renpy game lib /app/lib/game/',
 
-        'mv *.rpy /app/lib/game/game/ || true',
-
-        # Move any archives have been stripped down
+        # Move archives that have not been strippped as they would conflict
+        # with the main source archive
         'cp -r */game/* /app/lib/game/game/ || true',
     ]
 
     # Insert these commands before any rpy and py files are compiled
     for p in args.description.get('sources', {}).get('files', []):
-        if 'dest' not in p:
-            continue
+        dest = os.path.join('/app/lib/game', p.get('dest', 'game'))
         commands.append(
-            f'mv {p["path"].name} /app/lib/game/{p["dest"]}')
+            f'mv {p["path"].name} {dest}')
 
     commands.extend([
         # Patch the game to not require sandbox access
