@@ -69,8 +69,10 @@ def bd_build_commands(args: Arguments) -> typing.List[str]:
     # Insert these commands before any rpy and py files are compiled
     for p in args.description.get('sources', {}).get('files', []):
         dest = os.path.join('/app/lib/game', p.get('dest', 'game'))
-        commands.append(
-            f'mv {p["path"].name} {dest}')
+        commands.extend([
+            f'mkdir -p {os.path.dirname(dest)}',
+            f'mv {p["path"].name} {dest}',
+        ])
 
     commands.extend([
         # Patch the game to not require sandbox access
