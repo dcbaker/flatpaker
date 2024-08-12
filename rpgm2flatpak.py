@@ -70,7 +70,7 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
         'sdk': 'org.freedesktop.Sdk',
         'runtime': 'org.freedesktop.Platform',
         'runtime-version': '22.08',
-        'app-id': appid,
+        'id': appid,
         'build-options': {
             'no-debuginfo': True,
             'strip': False
