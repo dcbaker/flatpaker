@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import typing
 
-from . import tomllib
+from flatpaker.util import tomllib
 
 if typing.TYPE_CHECKING:
 

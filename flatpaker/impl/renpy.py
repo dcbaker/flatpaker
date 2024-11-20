@@ -8,7 +8,8 @@ import pathlib
 import textwrap
 import typing
 
-import flatpaker
+from flatpaker import util
+import flatpaker.entry
 import flatpaker.config
 
 
@@ -34,7 +35,7 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
-def bd_game(args: flatpaker.Arguments) -> typing.Dict[str, typing.Any]:
+def bd_game(args: util.Arguments) -> typing.Dict[str, typing.Any]:
     sh = _create_game_sh(args.description.get('workarounds', {}).get('use_x11', True))
     return {
         'buildsystem': 'simple',
@@ -48,7 +49,7 @@ def bd_game(args: flatpaker.Arguments) -> typing.Dict[str, typing.Any]:
     }
 
 
-def bd_build_commands(args: flatpaker.Arguments) -> typing.List[str]:
+def bd_build_commands(args: util.Arguments) -> typing.List[str]:
     commands: typing.List[str] = [
         'mkdir -p /app/lib/game',
 
@@ -107,7 +108,7 @@ def bd_build_commands(args: flatpaker.Arguments) -> typing.List[str]:
     return commands
 
 
-def bd_icon(args: flatpaker.Arguments, appid: str) -> typing.Dict[str, typing.Any]:
+def bd_icon(args: util.Arguments, appid: str) -> typing.Dict[str, typing.Any]:
     icon_src = '/app/lib/game/game/gui/window_icon.png'
     icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
     # Must at least be before the appdata is generated
@@ -129,14 +130,14 @@ def bd_icon(args: flatpaker.Arguments, appid: str) -> typing.Dict[str, typing.An
     }
 
 
-def dump_json(args: flatpaker.Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
-    sources = flatpaker.extract_sources(args.description)
+def dump_json(args: util.Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
+    sources = util.extract_sources(args.description)
 
     # TODO: typing requires more thought
     modules: typing.List[typing.Dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
-            'name': flatpaker.sanitize_name(args.description['common']['name']),
+            'name': util.sanitize_name(args.description['common']['name']),
             'sources': sources,
             'build-commands': bd_build_commands(args),
             'cleanup': [
@@ -152,8 +153,8 @@ def dump_json(args: flatpaker.Arguments, workdir: pathlib.Path, appid: str, desk
         },
         bd_icon(args, appid),
         bd_game(args),
-        flatpaker.bd_desktop(desktop_file),
-        flatpaker.bd_appdata(appdata_file),
+        util.bd_desktop(desktop_file),
+        util.bd_appdata(appdata_file),
     ]
 
     if args.description.get('workarounds', {}).get('use_x11', True):

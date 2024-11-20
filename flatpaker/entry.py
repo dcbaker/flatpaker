@@ -7,9 +7,10 @@ import pathlib
 import typing
 
 import flatpaker.config
+import flatpaker.util
 
 if typing.TYPE_CHECKING:
-    JsonWriterImpl = typing.Callable[[flatpaker.Arguments, pathlib.Path, str, pathlib.Path, pathlib.Path], None]
+    JsonWriterImpl = typing.Callable[[flatpaker.util.Arguments, pathlib.Path, str, pathlib.Path, pathlib.Path], None]
 
 
 def main(dump_json: JsonWriterImpl) -> None:
@@ -29,19 +30,19 @@ def main(dump_json: JsonWriterImpl) -> None:
     parser.add_argument('--export', action='store_true', help='Export to the provided repo')
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
-    args = typing.cast('flatpaker.Arguments', parser.parse_args())
+    args = typing.cast('flatpaker.util.Arguments', parser.parse_args())
     # Don't use type for this because it swallows up the exception
-    args.description = flatpaker.load_description(args.description)  # type: ignore
+    args.description = flatpaker.util.load_description(args.description)  # type: ignore
 
     # TODO: This could be common
-    appid = f"{args.description['common']['reverse_url']}.{flatpaker.sanitize_name(args.description['common']['name'])}"
+    appid = f"{args.description['common']['reverse_url']}.{flatpaker.util.sanitize_name(args.description['common']['name'])}"
 
-    with flatpaker.tmpdir(args.description['common']['name'], args.cleanup) as d:
+    with flatpaker.util.tmpdir(args.description['common']['name'], args.cleanup) as d:
         wd = pathlib.Path(d)
-        desktop_file = flatpaker.create_desktop(args.description, wd, appid)
-        appdata_file = flatpaker.create_appdata(args.description, wd, appid)
+        desktop_file = flatpaker.util.create_desktop(args.description, wd, appid)
+        appdata_file = flatpaker.util.create_appdata(args.description, wd, appid)
         dump_json(args, wd, appid, desktop_file, appdata_file)
-        flatpaker.build_flatpak(args, wd, appid)
+        flatpaker.util.build_flatpak(args, wd, appid)
 
 
 def renpy2flatpak() -> None:
