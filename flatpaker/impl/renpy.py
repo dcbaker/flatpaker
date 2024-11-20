@@ -2,7 +2,6 @@
 # Copyright © 2022-2024 Dylan Baker
 
 from __future__ import annotations
-import argparse
 import json
 import os
 import pathlib
@@ -11,7 +10,7 @@ import typing
 
 import flatpaker
 import flatpaker.config
-import flatpaker.entry
+
 
 def _create_game_sh(use_x11: bool) -> str:
     lines: typing.List[str] = [

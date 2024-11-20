@@ -4,7 +4,7 @@
 
 """Convenience wrapper."""
 
-from flatpaker.impl.rpgmaker import main
+from flatpaker.entry import rpgm2flatpak
 
 if __name__ == "__main__":
-	main()
+	rpgm2flatpak()

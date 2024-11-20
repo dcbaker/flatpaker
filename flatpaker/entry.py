@@ -42,3 +42,13 @@ def main(dump_json: JsonWriterImpl) -> None:
         appdata_file = flatpaker.create_appdata(args.description, wd, appid)
         dump_json(args, wd, appid, desktop_file, appdata_file)
         flatpaker.build_flatpak(args, wd, appid)
+
+
+def renpy2flatpak() -> None:
+    from flatpaker.impl.renpy import dump_json
+    main(dump_json)
+
+
+def rpgm2flatpak() -> None:
+    from flatpaker.impl.rpgmaker import dump_json
+    main(dump_json)
