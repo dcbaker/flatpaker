@@ -12,21 +12,12 @@ import flatpaker
 
 if typing.TYPE_CHECKING:
     class Arguments(flatpaker.SharedArguments):
-        input: typing.Optional[pathlib.Path]
         description: flatpaker.Description
         cleanup: bool
 
 
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
-
     sources = flatpaker.extract_sources(args.description)
-    if not sources:
-        assert args.input is not None
-        sources.append({
-            'path': args.input.as_posix(),
-            'sha256': flatpaker.sha256(args.input),
-            'type': 'archive',
-        })
 
     # TODO: typing requires more thought
     modules: typing.List[typing.Dict[str, typing.Any]] = [
@@ -94,16 +85,11 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('description', help="A Toml description file")
-    parser.add_argument('input', nargs='?', help='path to the renpy archive')
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
     parser.add_argument('--gpg', action='store', help='A GPG key to sign the output to when writing to a repo')
-    parser.add_argument('--patches', type=lambda x: tuple(x.split('=')), action='append', default=[],
-                        help="Additional rpy files to install, in the format src=dest")
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     args: Arguments = parser.parse_args()
-    if args.input is not None:
-        args.input = pathlib.Path(args.input).absolute()
     # Don't use type for this because it swallows up the exception
     args.description = flatpaker.load_description(args.description)  # type: ignore
 

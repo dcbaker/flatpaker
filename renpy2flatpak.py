@@ -14,7 +14,6 @@ import flatpaker
 
 if typing.TYPE_CHECKING:
     class Arguments(flatpaker.SharedArguments, typing.Protocol):
-        input: typing.List[pathlib.Path]
         description: flatpaker.Description
         cleanup: bool
 
@@ -136,14 +135,7 @@ def bd_icon(args: Arguments, appid: str) -> typing.Dict[str, typing.Any]:
 
 
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
-
-    sources: typing.List[typing.Dict[str, object]] = flatpaker.extract_sources(args.description)
-    if not sources:
-        sources = [{
-            'path': i.as_posix(),
-            'sha256': flatpaker.sha256(i),
-            'type': 'archive',
-        } for i in args.input]
+    sources = flatpaker.extract_sources(args.description)
 
     # TODO: typing requires more thought
     modules: typing.List[typing.Dict[str, typing.Any]] = [
@@ -205,13 +197,11 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('description', help="A Toml description file")
-    parser.add_argument('input', nargs='*', help='path to the renpy archive, plus archive patches')
     parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
     parser.add_argument('--gpg', action='store', help='A GPG key to sign the output to when writing to a repo')
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     args = typing.cast('Arguments', parser.parse_args())
-    args.input = [pathlib.PosixPath(i).absolute() for i in args.input]
     # Don't use type for this because it swallows up the exception
     args.description = flatpaker.load_description(args.description)  # type: ignore
 
