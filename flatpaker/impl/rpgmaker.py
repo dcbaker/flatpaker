@@ -7,7 +7,6 @@ import pathlib
 import typing
 
 import flatpaker.util as util
-import flatpaker.config
 
 
 def dump_json(args: util.Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
