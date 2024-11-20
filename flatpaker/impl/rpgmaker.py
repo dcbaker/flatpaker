@@ -56,7 +56,7 @@ def dump_json(args: util.Arguments, workdir: pathlib.Path, appid: str, desktop_f
     struct = {
         'sdk': 'org.freedesktop.Sdk',
         'runtime': 'org.freedesktop.Platform',
-        'runtime-version': '23.08',
+        'runtime-version': util.RUNTIME_VERSION,
         'id': appid,
         'build-options': {
             'no-debuginfo': True,
