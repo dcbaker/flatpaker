@@ -21,7 +21,12 @@
                     "type": "array",
                     "description": "Valid categories for the game's desktop file. 'Game' is added automatically",
                     "items": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "Adult", "ActionGame", "AdventureGame", "ArcadeGame", "BoardGame", "BlocksGame",
+                            "CardGame", "KidsGame", "LogicGame", "RolePlaying", "Shooter", "Simulation",
+                            "SportsGame", "StrategyGame"
+                        ]
                     }
                 }
             },
