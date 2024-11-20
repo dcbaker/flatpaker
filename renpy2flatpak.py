@@ -137,30 +137,8 @@ def bd_icon(args: Arguments, appid: str) -> typing.Dict[str, typing.Any]:
 
 def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
 
-    sources: typing.List[typing.Dict[str, object]] = []
-
-    if 'sources' in args.description:
-        for a in args.description['sources']['archives']:
-            sources.append({
-                'path': a['path'].as_posix(),
-                'sha256': flatpaker.sha256(a['path']),
-                'type': 'archive',
-                'strip-components': a.get('strip_components', 1),
-            })
-        for source in args.description['sources'].get('files', []):
-            p = source['path']
-            sources.append({
-                'path': p.as_posix(),
-                'sha256': flatpaker.sha256(p),
-                'type': 'file',
-            })
-        for a in args.description['sources'].get('patches', []):
-            sources.append({
-                'type': 'patch',
-                'path': a['path'].as_posix(),
-                'strip-components': a.get('strip_components', 1),
-            })
-    else:
+    sources: typing.List[typing.Dict[str, object]] = flatpaker.extract_sources(args.description)
+    if not sources:
         sources = [{
             'path': i.as_posix(),
             'sha256': flatpaker.sha256(i),
