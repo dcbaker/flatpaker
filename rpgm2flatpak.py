@@ -39,13 +39,16 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
                 f'mv icon/*.png /app/share/icons/hicolor/256x256/apps/{appid}.png',
                 'rm -r icon',
 
-                'mkdir -p /app/lib/game',
+                # the main executable usually isn't executable
+                'chmod +x nw',
+
+                # Likewise, but seem to only exist for RPGMaker MZ, not MV
+                '[[ -f "chrome_crashpad_handler" ]] && chmod +x chrome_crashpad_handler',
+                '[[ -f "nacl_helper" ]] && chmod +x nacl_helper',
 
                 # install the main game files
+                'mkdir -p /app/lib/game',
                 'mv * /app/lib/game/',
-
-                # the main executable usually isn't executable
-                'chmod +x /app/lib/game/nw',
             ],
             'cleanup': [
                 '*.desktop',  # is incorrect
