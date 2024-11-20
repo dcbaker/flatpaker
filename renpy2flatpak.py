@@ -4,7 +4,7 @@
 
 """Convenience wrapper."""
 
-from flatpaker.impl.renpy import main
+from flatpaker.entry import renpy2flatpak
 
 if __name__ == "__main__":
-	main()
+	renpy2flatpak()

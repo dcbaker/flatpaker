@@ -2,14 +2,12 @@
 # Copyright © 2022-2024 Dylan Baker
 
 from __future__ import annotations
-import argparse
 import json
 import pathlib
 import typing
 
 import flatpaker
 import flatpaker.config
-import flatpaker.entry
 
 
 def dump_json(args: flatpaker.Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
@@ -76,7 +74,3 @@ def dump_json(args: flatpaker.Arguments, workdir: pathlib.Path, appid: str, desk
 
     with (pathlib.Path(workdir) / f'{appid}.json').open('w') as f:
         json.dump(struct, f)
-
-
-def main() -> None:
-    flatpaker.entry.main(dump_json)
