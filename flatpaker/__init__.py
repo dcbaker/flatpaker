@@ -75,6 +75,34 @@ def _subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **ex
     return new
 
 
+def extract_sources(description: Description) -> typing.List[typing.Dict[str, object]]:
+    sources: typing.List[typing.Dict[str, object]] = []
+
+    if 'sources' in description:
+        for a in description['sources']['archives']:
+            sources.append({
+                'path': a['path'].as_posix(),
+                'sha256': sha256(a['path']),
+                'type': 'archive',
+                'strip-components': a.get('strip_components', 1),
+            })
+        for source in description['sources'].get('files', []):
+            p = source['path']
+            sources.append({
+                'path': p.as_posix(),
+                'sha256': sha256(p),
+                'type': 'file',
+            })
+        for a in description['sources'].get('patches', []):
+            sources.append({
+                'type': 'patch',
+                'path': a['path'].as_posix(),
+                'strip-components': a.get('strip_components', 1),
+            })
+
+    return sources
+
+
 def create_appdata(description: Description, workdir: pathlib.Path, appid: str) -> pathlib.Path:
     p = workdir / f'{appid}.metainfo.xml'
 
