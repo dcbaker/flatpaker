@@ -29,7 +29,7 @@ if typing.TYPE_CHECKING:
 
         reverse_url: str
         name: str
-        categories: typing.List[str]
+        categories: NotRequired[typing.List[str]]
 
     class _AppData(typing.TypedDict):
 
@@ -94,7 +94,7 @@ def create_appdata(description: Description, workdir: pathlib.Path, appid: str) 
     _subelem(requires, 'internet', 'offline-only')
 
     categories = ET.SubElement(root, 'categories')
-    for c in ['Game'] + description['common']['categories']:
+    for c in ['Game'] + description['common'].get('categories', []):
         _subelem(categories, 'category', c)
 
     desc = ET.SubElement(root, 'description')
