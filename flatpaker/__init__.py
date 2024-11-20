@@ -200,7 +200,7 @@ def build_flatpak(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
 def load_description(name: str) -> Description:
     relpath = pathlib.Path(name).parent.absolute()
     with open(name, 'rb') as f:
-        d: Description = tomllib.load(f)
+        d = typing.cast('Description', tomllib.load(f))
 
     # Fixup relative paths
     if 'sources' in d:
