@@ -151,11 +151,14 @@ def dump_json(args: util.Arguments, workdir: pathlib.Path, appid: str, desktop_f
                 '/lib/game/lib/*-i686',
             ],
         },
-        bd_icon(args, appid),
+    ]
+    if not args.description.get('workarounds', {}).get('icon', False):
+        modules.append(bd_icon(args, appid))
+    modules.extend([
         bd_game(args),
         util.bd_desktop(desktop_file),
         util.bd_appdata(appdata_file),
-    ]
+    ])
 
     if args.description.get('workarounds', {}).get('use_x11', True):
         finish_args = ['--socket=x11']
