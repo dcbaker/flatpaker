@@ -46,9 +46,6 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
 
                 # the main executable usually isn't executable
                 'chmod +x /app/lib/game/nw',
-
-                # Fix the save file location to use XDG_DATA_HOME
-                'sed -i s@path.dirname\(process.mainModule.filename\)@process.env.XDG_DATA_HOME@g /app/lib/game/www/js/rpg_managers.js',
             ],
             'cleanup': [
                 '*.desktop',  # is incorrect
