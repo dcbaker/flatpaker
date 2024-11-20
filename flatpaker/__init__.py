@@ -20,10 +20,13 @@ except ImportError:
 if typing.TYPE_CHECKING:
     from typing_extensions import NotRequired
 
-    class SharedArguments(typing.Protocol):
-        repo: typing.Optional[str]
+    class Arguments(typing.Protocol):
+        description: Description
+        repo: str
         gpg: typing.Optional[str]
         install: bool
+        export: bool
+        cleanup: bool
 
     class _Common(typing.TypedDict):
 
@@ -178,13 +181,13 @@ def sanitize_name(name: str) -> str:
         .replace("'", '')
 
 
-def build_flatpak(args: SharedArguments, workdir: pathlib.Path, appid: str) -> None:
+def build_flatpak(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
     build_command: typing.List[str] = [
         'flatpak-builder', '--force-clean', '--install-deps-from=flathub', '--user', 'build',
         (workdir / f'{appid}.json').absolute().as_posix(),
     ]
 
-    if args.repo:
+    if args.export:
         build_command.extend(['--repo', args.repo])
         if args.gpg:
             build_command.extend(['--gpg-sign', args.gpg])
