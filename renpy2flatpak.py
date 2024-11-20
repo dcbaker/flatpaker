@@ -11,11 +11,7 @@ import textwrap
 import typing
 
 import flatpaker
-
-if typing.TYPE_CHECKING:
-    class Arguments(flatpaker.SharedArguments, typing.Protocol):
-        description: flatpaker.Description
-        cleanup: bool
+import flatpaker.config
 
 def _create_game_sh(use_x11: bool) -> str:
     lines: typing.List[str] = [
@@ -39,7 +35,7 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
-def bd_game(args: Arguments) -> typing.Dict[str, typing.Any]:
+def bd_game(args: flatpaker.Arguments) -> typing.Dict[str, typing.Any]:
     sh = _create_game_sh(args.description.get('workarounds', {}).get('use_x11', True))
     return {
         'buildsystem': 'simple',
@@ -53,7 +49,7 @@ def bd_game(args: Arguments) -> typing.Dict[str, typing.Any]:
     }
 
 
-def bd_build_commands(args: Arguments) -> typing.List[str]:
+def bd_build_commands(args: flatpaker.Arguments) -> typing.List[str]:
     commands: typing.List[str] = [
         'mkdir -p /app/lib/game',
 
@@ -112,7 +108,7 @@ def bd_build_commands(args: Arguments) -> typing.List[str]:
     return commands
 
 
-def bd_icon(args: Arguments, appid: str) -> typing.Dict[str, typing.Any]:
+def bd_icon(args: flatpaker.Arguments, appid: str) -> typing.Dict[str, typing.Any]:
     icon_src = '/app/lib/game/game/gui/window_icon.png'
     icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
     # Must at least be before the appdata is generated
@@ -134,7 +130,7 @@ def bd_icon(args: Arguments, appid: str) -> typing.Dict[str, typing.Any]:
     }
 
 
-def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
+def dump_json(args: flatpaker.Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     sources = flatpaker.extract_sources(args.description)
 
     # TODO: typing requires more thought
@@ -195,13 +191,23 @@ def dump_json(args: Arguments, workdir: pathlib.Path, appid: str, desktop_file: 
 
 
 def main() -> None:
+    config = flatpaker.config.load_config()
     parser = argparse.ArgumentParser()
     parser.add_argument('description', help="A Toml description file")
-    parser.add_argument('--repo', action='store', help='a flatpak repo to put the result in')
-    parser.add_argument('--gpg', action='store', help='A GPG key to sign the output to when writing to a repo')
+    parser.add_argument(
+        '--repo',
+         default=config['common'].get('repo', 'repo'),
+         action='store',
+         help='a flatpak repo to put the result in')
+    parser.add_argument(
+        '--gpg',
+        default=config['common'].get('gpg-key'),
+        action='store',
+        help='A GPG key to sign the output to when writing to a repo')
+    parser.add_argument('--export', action='store_true', help='Export to the provided repo')
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
-    args = typing.cast('Arguments', parser.parse_args())
+    args = typing.cast('flatpaker.Arguments', parser.parse_args())
     # Don't use type for this because it swallows up the exception
     args.description = flatpaker.load_description(args.description)  # type: ignore
 
