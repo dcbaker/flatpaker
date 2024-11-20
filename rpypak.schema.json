@@ -27,8 +27,7 @@
             },
             "required": [
                 "name",
-                "reverse_url",
-                "categories"
+                "reverse_url"
             ],
             "additionalProperties": false
         },
