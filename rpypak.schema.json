@@ -111,6 +111,7 @@
                 },
                 "releases": {
                     "type": "object",
+                    "description": "A list of releases in the from `version : date`. Date should be YYYY-MM-DD",
                     "additionalProperties": {
                         "type": "string"
                     }
