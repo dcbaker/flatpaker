@@ -32,6 +32,7 @@ if typing.TYPE_CHECKING:
 
         reverse_url: str
         name: str
+        engine: typing.Literal['renpy', 'rpgmaker']
         categories: NotRequired[typing.List[str]]
 
     class _AppData(typing.TypedDict):

@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright © 2024 Dylan Baker
 
-"""Convenience wrapper."""
+"""Convenience wrapper for in tree use."""
 
-from flatpaker.entry import renpy2flatpak
+from flatpaker.entry import main
 
 if __name__ == "__main__":
-	renpy2flatpak()
+    main()

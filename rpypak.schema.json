@@ -17,6 +17,11 @@
                     "type": "string",
                     "description": "A reverse root url for the game. For example, com.github.User. The name will be appended automatically"
                 },
+                "engine": {
+                    "type": "string",
+                    "enum": ["renpy", "rpgmaker"],
+                    "description": "What engine this game is for."
+                },
                 "categories": {
                     "type": "array",
                     "description": "Valid categories for the game's desktop file. 'Game' is added automatically",
@@ -32,7 +37,8 @@
             },
             "required": [
                 "name",
-                "reverse_url"
+                "reverse_url",
+                "engine"
             ],
             "additionalProperties": false
         },
