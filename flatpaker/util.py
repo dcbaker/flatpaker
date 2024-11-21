@@ -21,7 +21,7 @@ if typing.TYPE_CHECKING:
     from typing_extensions import NotRequired
 
     class Arguments(typing.Protocol):
-        description: Description
+        description: str
         repo: str
         gpg: typing.Optional[str]
         install: bool

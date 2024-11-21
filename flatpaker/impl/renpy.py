@@ -35,8 +35,8 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
-def bd_game(args: util.Arguments) -> typing.Dict[str, typing.Any]:
-    sh = _create_game_sh(args.description.get('workarounds', {}).get('use_x11', True))
+def bd_game(description: util.Description) -> typing.Dict[str, typing.Any]:
+    sh = _create_game_sh(description.get('workarounds', {}).get('use_x11', True))
     return {
         'buildsystem': 'simple',
         'name': 'game_sh',
@@ -49,7 +49,7 @@ def bd_game(args: util.Arguments) -> typing.Dict[str, typing.Any]:
     }
 
 
-def bd_build_commands(args: util.Arguments) -> typing.List[str]:
+def bd_build_commands(description: util.Description) -> typing.List[str]:
     commands: typing.List[str] = [
         'mkdir -p /app/lib/game',
 
@@ -62,7 +62,7 @@ def bd_build_commands(args: util.Arguments) -> typing.List[str]:
     ]
 
     # Insert these commands before any rpy and py files are compiled
-    for p in args.description.get('sources', {}).get('files', []):
+    for p in description.get('sources', {}).get('files', []):
         dest = os.path.join('/app/lib/game', p.get('dest', 'game'))
         commands.extend([
             f'mkdir -p {os.path.dirname(dest)}',
@@ -108,13 +108,13 @@ def bd_build_commands(args: util.Arguments) -> typing.List[str]:
     return commands
 
 
-def bd_icon(args: util.Arguments, appid: str) -> typing.Dict[str, typing.Any]:
+def bd_icon(description: util.Description, appid: str) -> typing.Dict[str, typing.Any]:
     icon_src = '/app/lib/game/game/gui/window_icon.png'
     icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
     # Must at least be before the appdata is generated
 
     _icon_install_cmd: str
-    if args.description.get('workarounds', {}).get('icon_is_webp'):
+    if description.get('workarounds', {}).get('icon_is_webp'):
         _icon_install_cmd = f'dwebp {icon_src} -o {icon_dst}'
     else:
         _icon_install_cmd = f'cp {icon_src} {icon_dst}'
@@ -130,16 +130,16 @@ def bd_icon(args: util.Arguments, appid: str) -> typing.Dict[str, typing.Any]:
     }
 
 
-def dump_json(args: util.Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
-    sources = util.extract_sources(args.description)
+def dump_json(description: util.Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
+    sources = util.extract_sources(description)
 
     # TODO: typing requires more thought
     modules: typing.List[typing.Dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
-            'name': util.sanitize_name(args.description['common']['name']),
+            'name': util.sanitize_name(description['common']['name']),
             'sources': sources,
-            'build-commands': bd_build_commands(args),
+            'build-commands': bd_build_commands(description),
             'cleanup': [
                 '*.exe',
                 '*.app',
@@ -152,15 +152,15 @@ def dump_json(args: util.Arguments, workdir: pathlib.Path, appid: str, desktop_f
             ],
         },
     ]
-    if not args.description.get('workarounds', {}).get('icon', False):
-        modules.append(bd_icon(args, appid))
+    if not description.get('workarounds', {}).get('icon', False):
+        modules.append(bd_icon(description, appid))
     modules.extend([
-        bd_game(args),
+        bd_game(description),
         util.bd_desktop(desktop_file),
         util.bd_appdata(appdata_file),
     ])
 
-    if args.description.get('workarounds', {}).get('use_x11', True):
+    if description.get('workarounds', {}).get('use_x11', True):
         finish_args = ['--socket=x11']
     else:
         finish_args = ['--socket=wayland', '--socket=fallback-x11']
@@ -191,7 +191,3 @@ def dump_json(args: util.Arguments, workdir: pathlib.Path, appid: str, desktop_f
 
     with (pathlib.Path(workdir) / f'{appid}.json').open('w') as f:
         json.dump(struct, f, indent=4)
-
-
-def main() -> None:
-    flatpaker.entry.main(dump_json)
