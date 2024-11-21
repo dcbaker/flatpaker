@@ -24,3 +24,7 @@
 
     [project.scripts]
         flatpaker = "flatpaker.entry:main"
+
+[tool.mypy]
+    strict = true
+    modules = "flatpaker"

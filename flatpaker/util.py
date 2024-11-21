@@ -13,9 +13,9 @@ import textwrap
 import typing
 
 try:
-    import tomllib
+    import tomllib as tomllib
 except ImportError:
-    import tomli as tomllib
+    import tomli as tomllib  # type: ignore[import-not-found,no-redef]
 
 if typing.TYPE_CHECKING:
     from typing_extensions import NotRequired
