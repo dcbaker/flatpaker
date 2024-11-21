@@ -1,26 +1,26 @@
 [build-system]
-    requires = ["setuptools", "Setuptools-scm"]
-    build-backend = "setuptools.build_meta"
+    requires = ["flit_core >=3.2,<4"]
+    build-backend = "flit_core.buildapi"
 
 [project]
-    name = "renpy2flatpak"
-    version = "0.0.1"
+    name = "flatpaker"
     authors = [
         { name = "Dylan Baker", email = "dylan@pnwbakers.com" }
     ]
-    description = "Script to simplify creating flatpaks from published renpy projects"
+    dynamic = ["version", "description"]
     readme = "README.md"
     requires-python = ">=3.8"
-    keywords = ["flatpak", "renpy"]
+    keywords = ["flatpak", "renpy", "rpgmaker"]
     license = {text = "MIT"}
     classifiers = [
         "Development Status :: 3 - Alpha",
         "Environment :: Console",
         "Topic :: System :: Archiving :: Packaging",
+        "License :: OSI Approved :: MIT License",
     ]
     dependencies = [
         'tomli; python_version<"3.11"',
     ]
 
-[project.scripts]
-    renpy2flatpak = "renpy2flatpak:main"
+    [project.scripts]
+        flatpaker = "flatpaker.entry:main"
