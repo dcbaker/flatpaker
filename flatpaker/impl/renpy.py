@@ -130,7 +130,7 @@ def bd_icon(description: util.Description, appid: str) -> typing.Dict[str, typin
     }
 
 
-def dump_json(description: util.Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
+def write_rules(description: util.Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     sources = util.extract_sources(description)
 
     # TODO: typing requires more thought

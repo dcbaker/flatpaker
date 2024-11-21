@@ -15,14 +15,14 @@ if typing.TYPE_CHECKING:
 
     class ImplMod(typing.Protocol):
 
-        dump_json: JsonWriterImpl
+        write_rules: JsonWriterImpl
 
 
 
 def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
     mod = typing.cast('ImplMod', importlib.import_module(name, 'flatpaker.impl'))
-    assert hasattr(mod, 'dump_json'), 'should be good enough'
-    return mod.dump_json
+    assert hasattr(mod, 'write_rules'), 'should be good enough'
+    return mod.write_rules
 
 
 def main() -> None:
@@ -49,11 +49,11 @@ def main() -> None:
     # TODO: This could be common
     appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"
 
-    dump_json = select_impl(description['common']['engine'])
+    write_build_rules = select_impl(description['common']['engine'])
 
     with flatpaker.util.tmpdir(description['common']['name'], args.cleanup) as d:
         wd = pathlib.Path(d)
         desktop_file = flatpaker.util.create_desktop(description, wd, appid)
         appdata_file = flatpaker.util.create_appdata(description, wd, appid)
-        dump_json(description, wd, appid, desktop_file, appdata_file)
+        write_build_rules(description, wd, appid, desktop_file, appdata_file)
         flatpaker.util.build_flatpak(args, wd, appid)
