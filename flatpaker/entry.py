@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 import argparse
+import importlib
 import pathlib
 import typing
 
@@ -12,8 +13,18 @@ import flatpaker.util
 if typing.TYPE_CHECKING:
     JsonWriterImpl = typing.Callable[[flatpaker.util.Arguments, pathlib.Path, str, pathlib.Path, pathlib.Path], None]
 
+    class ImplMod(typing.Protocol):
 
-def main(dump_json: JsonWriterImpl) -> None:
+        dump_json: JsonWriterImpl
+
+
+def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
+    mod = typing.cast('ImplMod', importlib.import_module(name, 'flatpaker.impl'))
+    assert hasattr(mod, 'dump_json'), 'should be good enough'
+    return mod.dump_json
+
+
+def main() -> None:
     config = flatpaker.config.load_config()
     parser = argparse.ArgumentParser()
     parser.add_argument('description', help="A Toml description file")
@@ -37,19 +48,11 @@ def main(dump_json: JsonWriterImpl) -> None:
     # TODO: This could be common
     appid = f"{args.description['common']['reverse_url']}.{flatpaker.util.sanitize_name(args.description['common']['name'])}"
 
+    dump_json = select_impl(args.description['common']['engine'])
+
     with flatpaker.util.tmpdir(args.description['common']['name'], args.cleanup) as d:
         wd = pathlib.Path(d)
         desktop_file = flatpaker.util.create_desktop(args.description, wd, appid)
         appdata_file = flatpaker.util.create_appdata(args.description, wd, appid)
         dump_json(args, wd, appid, desktop_file, appdata_file)
         flatpaker.util.build_flatpak(args, wd, appid)
-
-
-def renpy2flatpak() -> None:
-    from flatpaker.impl.renpy import dump_json
-    main(dump_json)
-
-
-def rpgm2flatpak() -> None:
-    from flatpaker.impl.rpgmaker import dump_json
-    main(dump_json)
