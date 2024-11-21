@@ -73,8 +73,8 @@ when most of the process will be exactly the same for every renpy project.
 
 [appdata.releases]
   # optional
-  # in the form "version = date"
-  1.0.0 = "2023-01-01"
+  # in the form "date = version"
+  "2023-01-01" = "1.0.0"
 
 # Optional, alternatively may be passed on teh command line
 [[sources.archives]]
