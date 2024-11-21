@@ -102,6 +102,22 @@ when most of the process will be exactly the same for every renpy project.
   dest = "where to install"
 ```
 
+### Configuration
+
+Some options can be given on the command line or via a configuration file.
+That file must be written to `$XDG_CONFIG_HOME/flatpaker/config.toml` (if unset
+`$XDG_CONFIG_HOME` defaults to `~/.config`).
+
+```toml
+[common]
+  # A gpg private key to sign with, overwritten by the --gpg option
+  gpg-key = "0x123456789"
+
+  # The absolute path to a repo to write to. overwritten by the --repo option
+  repo = "/path/to/a/repo/to/export"
+```
+
+
 ## What is required?
 
 - python 3.11 or a modern version of python3 with tomli
