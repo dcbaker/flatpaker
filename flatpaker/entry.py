@@ -11,11 +11,12 @@ import flatpaker.config
 import flatpaker.util
 
 if typing.TYPE_CHECKING:
-    JsonWriterImpl = typing.Callable[[flatpaker.util.Arguments, pathlib.Path, str, pathlib.Path, pathlib.Path], None]
+    JsonWriterImpl = typing.Callable[[flatpaker.util.Description, pathlib.Path, str, pathlib.Path, pathlib.Path], None]
 
     class ImplMod(typing.Protocol):
 
         dump_json: JsonWriterImpl
+
 
 
 def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
@@ -43,16 +44,16 @@ def main() -> None:
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     args = typing.cast('flatpaker.util.Arguments', parser.parse_args())
     # Don't use type for this because it swallows up the exception
-    args.description = flatpaker.util.load_description(args.description)  # type: ignore
+    description = flatpaker.util.load_description(args.description)
 
     # TODO: This could be common
-    appid = f"{args.description['common']['reverse_url']}.{flatpaker.util.sanitize_name(args.description['common']['name'])}"
+    appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"
 
-    dump_json = select_impl(args.description['common']['engine'])
+    dump_json = select_impl(description['common']['engine'])
 
-    with flatpaker.util.tmpdir(args.description['common']['name'], args.cleanup) as d:
+    with flatpaker.util.tmpdir(description['common']['name'], args.cleanup) as d:
         wd = pathlib.Path(d)
-        desktop_file = flatpaker.util.create_desktop(args.description, wd, appid)
-        appdata_file = flatpaker.util.create_appdata(args.description, wd, appid)
-        dump_json(args, wd, appid, desktop_file, appdata_file)
+        desktop_file = flatpaker.util.create_desktop(description, wd, appid)
+        appdata_file = flatpaker.util.create_appdata(description, wd, appid)
+        dump_json(description, wd, appid, desktop_file, appdata_file)
         flatpaker.util.build_flatpak(args, wd, appid)

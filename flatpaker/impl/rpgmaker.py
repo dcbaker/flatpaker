@@ -9,14 +9,14 @@ import typing
 import flatpaker.util as util
 
 
-def dump_json(args: util.Arguments, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
-    sources = util.extract_sources(args.description)
+def dump_json(description: util.Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
+    sources = util.extract_sources(description)
 
     # TODO: typing requires more thought
     modules: typing.List[typing.Dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
-            'name': util.sanitize_name(args.description['common']['name']),
+            'name': util.sanitize_name(description['common']['name']),
             'sources': sources,
             'build-commands': [
                 'mkdir -p /app/share/icons/hicolor/256x256/apps/',
