@@ -18,7 +18,6 @@ if typing.TYPE_CHECKING:
         write_rules: JsonWriterImpl
 
 
-
 def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
     mod = typing.cast('ImplMod', importlib.import_module(name, 'flatpaker.impl'))
     assert hasattr(mod, 'write_rules'), 'should be good enough'
@@ -31,9 +30,9 @@ def main() -> None:
     parser.add_argument('description', help="A Toml description file")
     parser.add_argument(
         '--repo',
-         default=config['common'].get('repo', 'repo'),
-         action='store',
-         help='a flatpak repo to put the result in')
+        default=config['common'].get('repo', 'repo'),
+        action='store',
+        help='a flatpak repo to put the result in')
     parser.add_argument(
         '--gpg',
         default=config['common'].get('gpg-key'),

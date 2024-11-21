@@ -111,7 +111,7 @@ def extract_sources(description: Description) -> typing.List[typing.Dict[str, ob
 def create_appdata(description: Description, workdir: pathlib.Path, appid: str) -> pathlib.Path:
     p = workdir / f'{appid}.metainfo.xml'
 
-    root =  ET.Element('component', type="desktop-application")
+    root = ET.Element('component', type="desktop-application")
     _subelem(root, 'id', appid)
     _subelem(root, 'name', description['common']['name'])
     _subelem(root, 'summary', description['appdata']['summary'])
@@ -232,15 +232,15 @@ def bd_desktop(file_: pathlib.Path) -> typing.Dict[str, typing.Any]:
         'buildsystem': 'simple',
         'name': 'desktop_file',
         'sources': [
-        {
-            'path': file_.as_posix(),
-            'sha256': sha256(file_),
-            'type': 'file',
-        }
+            {
+                'path': file_.as_posix(),
+                'sha256': sha256(file_),
+                'type': 'file',
+            }
         ],
         'build-commands': [
-        'mkdir -p /app/share/applications',
-        f'cp {file_.name} /app/share/applications',
+            'mkdir -p /app/share/applications',
+            f'cp {file_.name} /app/share/applications',
         ],
     }
 

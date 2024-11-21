@@ -9,8 +9,6 @@ import textwrap
 import typing
 
 from flatpaker import util
-import flatpaker.entry
-import flatpaker.config
 
 
 def _create_game_sh(use_x11: bool) -> str:
