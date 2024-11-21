@@ -1,11 +1,12 @@
-# renpy2flatpak
+# flatpaker
 
-Script to mostly automate creating flatpaks from published renpy projects
+Script to mostly automate creating flatpaks from published Ren'Py and Linux
+builds of RPGMaker MV and MZ. open to additional support
 
 ## What is it?
 
 It's a script that automatically handles much of the task of generating a
-flatpak for pre-built renpy projects, including adding patches or mods. You
+flatpak for pre-built projects, including adding patches or mods. You
 write a small, simple toml file, fetch the sources, and get a ready to publish
 flatpak.
 
@@ -23,11 +24,11 @@ It currently automatically does the following automatically:
 
 ## Why?
 
-I like playing renpy games sometimes. I also don't always trust random
+I like playing Ren'Py games sometimes. I also don't always trust random
 pre-compiled binaries from the internet. Flatpak provides a nice, convenient
-way to sandbox applications. But generating flatpaks by hand is a lot of work,
-especially when most of the process will be exactly the same for every renpy
-project.
+way to sandbox applications. It also makes supporting Steam Deck and Fedora
+immutable a breeze. But generating flatpaks by hand is a lot of work, especially
+when most of the process will be exactly the same for every renpy project.
 
 ## How do I use it?
 
@@ -40,14 +41,15 @@ project.
 
 ```toml
 [common]
-  name = 'Game or VN'
+  name = 'Game or VN'  # use properly formatted name like "The Cool Adventures of Bob", or "Bob's Quest 7: Lawnmower Confusion"
   reverse_url = 'com.example.JDoe'  # name will be appended
   # "Game" is added automatically
   # used freedesktop menu categories. see: https://specifications.freedesktop.org/menu-spec/latest/apas02.html
   categories = ['Simulation']
+  engine = ['renpy']  # Or 'rpgmaker'
 
 [appdata]
-  summary = "A short summary, one setence or so."
+  summary = "A short summary, one sentence or so."
   description = """
     A longer description.
 
@@ -63,11 +65,11 @@ project.
   license = "SPDX identifier"
 
 [appdata.content_rating]
-    # optional
-    # Uses OARS specifications. See: https://hughsie.github.io/oars/
-    # keys should be ids, and the values are must be a rating (as a string):
-    # none, mild, moderate, or intense
-    language-profanity = "mild"
+  # optional
+  # Uses OARS specifications. See: https://hughsie.github.io/oars/
+  # keys should be ids, and the values are must be a rating (as a string):
+  # none, mild, moderate, or intense
+  language-profanity = "mild"
 
 [appdata.releases]
   # optional
@@ -104,3 +106,8 @@ project.
 
 - python 3.11 or a modern version of python3 with tomli
 - flatpak-builder
+
+### Schema
+
+A Json based schema is provided, which can be used with VSCode's EvenBetterToml
+extension. It may be useful elsewhere.
