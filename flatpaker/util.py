@@ -142,8 +142,8 @@ def create_appdata(description: Description, workdir: pathlib.Path, appid: str) 
 
     if 'releases' in description['appdata']:
         cr = ET.SubElement(root, 'releases')
-        for k, v in description['appdata']['releases'].items():
-            _subelem(cr, 'release', version=k, date=v)
+        for date, version in description['appdata']['releases'].items():
+            _subelem(cr, 'release', version=version, date=date)
 
     tree = ET.ElementTree(root)
     ET.indent(tree)
