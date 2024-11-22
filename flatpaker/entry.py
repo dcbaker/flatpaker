@@ -22,7 +22,7 @@ if typing.TYPE_CHECKING:
 
 
 def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
-    mod = typing.cast('ImplMod', importlib.import_module(name, 'flatpaker.impl'))
+    mod = typing.cast('ImplMod', importlib.import_module(f'flatpaker.impl.{name}'))
     assert hasattr(mod, 'write_rules'), 'should be good enough'
     return mod.write_rules
 
