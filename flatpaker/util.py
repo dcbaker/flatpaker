@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
     from .description import Description
 
     class Arguments(typing.Protocol):
-        description: str
+        descriptions: typing.List[str]
         repo: str
         gpg: typing.Optional[str]
         install: bool

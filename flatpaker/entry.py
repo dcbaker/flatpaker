@@ -44,7 +44,7 @@ def build(args: flatpaker.util.Arguments, description: Description) -> None:
 def main() -> None:
     config = flatpaker.config.load_config()
     parser = argparse.ArgumentParser()
-    parser.add_argument('description', help="A Toml description file")
+    parser.add_argument('descriptions', nargs='+', help="A Toml description file")
     parser.add_argument(
         '--repo',
         default=config['common'].get('repo', 'repo'),
@@ -60,6 +60,7 @@ def main() -> None:
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     args = typing.cast('flatpaker.util.Arguments', parser.parse_args())
     # Don't use type for this because it swallows up the exception
-    description = load_description(args.description)
 
-    build(args, description)
+    for d in args.descriptions:
+        description = load_description(d)
+        build(args, description)
