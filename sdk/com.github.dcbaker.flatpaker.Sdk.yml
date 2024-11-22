@@ -1,0 +1,33 @@
+build-runtime: true
+id: "com.github.dcbaker.flatpaker.Sdk"
+    #branch: "1.0"
+runtime-version: "24.08"
+runtime: org.freedesktop.Platform
+sdk: org.freedesktop.Sdk
+modules:
+ - name: "icoutils"
+   buildsystem: "autotools"
+   config-opts:
+    # Not sure why this is required, but /usr/share/man exists and is not a directory?
+    - --mandir=/usr/share/delete
+   cleanup:
+    - /usr/share/delete
+    - /usr/include
+   sources:
+    - type: "archive"
+      url: "https://savannah.nongnu.org/download/icoutils/icoutils-0.32.3.tar.bz2"
+      sha256: "17abe02d043a253b68b47e3af69c9fc755b895db68fdc8811786125df564c6e0"
+ - name: icns
+   #buildsystem: "autotools"
+   config-opts:
+    # Not sure why this is required, but /usr/share/man exists and is not a directory?
+    - --mandir=/usr/share/delete
+   sources:
+     # The last release is super old, and doesn't link against libopenjpeg2 correctly
+     # Patching it proved to be entirely too much effort, so just use git
+     - type: "git"
+       url: "https://git.code.sf.net/p/icns/code"
+       commit: 921f972c461c505e5ac981aaddbdfdde97e8bb2b
+   cleanup:
+    - /usr/include
+    - /usr/share/delete

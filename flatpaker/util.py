@@ -148,7 +148,7 @@ def build_flatpak(args: Arguments, workdir: pathlib.Path, appid: str) -> None:
     if args.install:
         build_command.extend(['--install'])
 
-    subprocess.run(build_command)
+    subprocess.run(build_command, check=True)
 
 
 @contextlib.contextmanager
