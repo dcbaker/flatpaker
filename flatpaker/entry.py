@@ -7,11 +7,14 @@ import importlib
 import pathlib
 import typing
 
+from flatpaker.description import load_description
 import flatpaker.config
 import flatpaker.util
 
 if typing.TYPE_CHECKING:
-    JsonWriterImpl = typing.Callable[[flatpaker.util.Description, pathlib.Path, str, pathlib.Path, pathlib.Path], None]
+    from flatpaker.description import Description
+
+    JsonWriterImpl = typing.Callable[[Description, pathlib.Path, str, pathlib.Path, pathlib.Path], None]
 
     class ImplMod(typing.Protocol):
 
@@ -43,7 +46,7 @@ def main() -> None:
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     args = typing.cast('flatpaker.util.Arguments', parser.parse_args())
     # Don't use type for this because it swallows up the exception
-    description = flatpaker.util.load_description(args.description)
+    description = load_description(args.description)
 
     # TODO: This could be common
     appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"

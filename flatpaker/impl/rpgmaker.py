@@ -6,10 +6,13 @@ import json
 import pathlib
 import typing
 
-import flatpaker.util as util
+from flatpaker import util
+
+if typing.TYPE_CHECKING:
+    from flatpaker.description import Description
 
 
-def write_rules(description: util.Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
+def write_rules(description: Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     sources = util.extract_sources(description)
 
     # TODO: typing requires more thought

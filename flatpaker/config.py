@@ -5,7 +5,10 @@ from __future__ import annotations
 import os
 import typing
 
-from flatpaker.util import tomllib
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib  # type: ignore[import-not-found,no-redef]
 
 if typing.TYPE_CHECKING:
 

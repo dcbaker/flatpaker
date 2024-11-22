@@ -10,6 +10,9 @@ import typing
 
 from flatpaker import util
 
+if typing.TYPE_CHECKING:
+    from flatpaker.description import Description
+
 
 def _create_game_sh(use_x11: bool) -> str:
     lines: typing.List[str] = [
@@ -33,7 +36,7 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
-def bd_game(description: util.Description) -> typing.Dict[str, typing.Any]:
+def bd_game(description: Description) -> typing.Dict[str, typing.Any]:
     sh = _create_game_sh(description.get('workarounds', {}).get('use_x11', True))
     return {
         'buildsystem': 'simple',
@@ -47,7 +50,7 @@ def bd_game(description: util.Description) -> typing.Dict[str, typing.Any]:
     }
 
 
-def bd_build_commands(description: util.Description) -> typing.List[str]:
+def bd_build_commands(description: Description) -> typing.List[str]:
     commands: typing.List[str] = [
         'mkdir -p /app/lib/game',
 
@@ -106,7 +109,7 @@ def bd_build_commands(description: util.Description) -> typing.List[str]:
     return commands
 
 
-def bd_icon(description: util.Description, appid: str) -> typing.Dict[str, typing.Any]:
+def bd_icon(description: Description, appid: str) -> typing.Dict[str, typing.Any]:
     icon_src = '/app/lib/game/game/gui/window_icon.png'
     icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
     # Must at least be before the appdata is generated
@@ -128,7 +131,7 @@ def bd_icon(description: util.Description, appid: str) -> typing.Dict[str, typin
     }
 
 
-def write_rules(description: util.Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
+def write_rules(description: Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     sources = util.extract_sources(description)
 
     # TODO: typing requires more thought
