@@ -27,6 +27,20 @@ def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
     return mod.write_rules
 
 
+def build(args: flatpaker.util.Arguments, description: Description) -> None:
+    # TODO: This could be common
+    appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"
+
+    write_build_rules = select_impl(description['common']['engine'])
+
+    with flatpaker.util.tmpdir(description['common']['name'], args.cleanup) as d:
+        wd = pathlib.Path(d)
+        desktop_file = flatpaker.util.create_desktop(description, wd, appid)
+        appdata_file = flatpaker.util.create_appdata(description, wd, appid)
+        write_build_rules(description, wd, appid, desktop_file, appdata_file)
+        flatpaker.util.build_flatpak(args, wd, appid)
+
+
 def main() -> None:
     config = flatpaker.config.load_config()
     parser = argparse.ArgumentParser()
@@ -48,14 +62,4 @@ def main() -> None:
     # Don't use type for this because it swallows up the exception
     description = load_description(args.description)
 
-    # TODO: This could be common
-    appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"
-
-    write_build_rules = select_impl(description['common']['engine'])
-
-    with flatpaker.util.tmpdir(description['common']['name'], args.cleanup) as d:
-        wd = pathlib.Path(d)
-        desktop_file = flatpaker.util.create_desktop(description, wd, appid)
-        appdata_file = flatpaker.util.create_appdata(description, wd, appid)
-        write_build_rules(description, wd, appid, desktop_file, appdata_file)
-        flatpaker.util.build_flatpak(args, wd, appid)
+    build(args, description)
