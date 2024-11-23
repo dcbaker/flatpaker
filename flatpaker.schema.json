@@ -206,14 +206,6 @@
             "description": "Workarounds for specific ren'py projects that are broken in various ways.",
             "type": "object",
             "properties": {
-                "icon": {
-                    "description": "If set to False then no icon is available for this project.",
-                    "type": "boolean"
-                },
-                "icon_is_webp": {
-                    "description": "The icon is webp, even though it says it's png.",
-                    "type": "boolean"
-                },
                 "use_x11": {
                     "description": "If set to false, then this project can use wayland",
                     "type": "boolean"

@@ -31,8 +31,6 @@ if typing.TYPE_CHECKING:
         license: NotRequired[str]
 
     class _Workarounds(typing.TypedDict, total=False):
-        icon: bool
-        icon_is_webp: bool
         use_x11: bool
 
     class Archive(typing.TypedDict):

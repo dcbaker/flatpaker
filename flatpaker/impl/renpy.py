@@ -50,7 +50,7 @@ def bd_game(description: Description) -> typing.Dict[str, typing.Any]:
     }
 
 
-def bd_build_commands(description: Description) -> typing.List[str]:
+def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
     commands: typing.List[str] = [
         'mkdir -p /app/lib/game',
 
@@ -73,6 +73,36 @@ def bd_build_commands(description: Description) -> typing.List[str]:
     commands.extend([
         # Patch the game to not require sandbox access
         '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
+
+        # Extract the icon file from either a Windows exe or from MacOS resources.
+        # This gives more sizes, and is more likely to exists than the gui/window_icon.png
+        textwrap.dedent(f'''
+            ICNS=$(ls *.app/Contents/Resources/icon.icns)
+            EXE=$(ls *.exe)
+            if [[ -f "${{exe}}" ]]; then
+                wrestool -x --output=. -t14 "${{EXE}}"
+                icotool -x $(ls *.ico)
+            elif [[ -f "${{ICNS}}" ]]; then
+                icns2png -x "${{ICNS}}"
+            fi
+            for icon in $(ls *.png); do
+                if [[ "${{icon}}" =~ "32x32" ]]; then
+                    size="32x23"
+                elif [[ "${{icon}}" =~ "64x64" ]]; then
+                    size="64x64"
+                elif [[ "${{icon}}" =~ "128x128" ]]; then
+                    size="128x128"
+                elif [[ "${{icon}}" =~ "256x256" ]]; then
+                    size="256x256"
+                elif [[ "${{icon}}" =~ "512x512" ]]; then
+                    size="512x512"
+                else
+                    continue
+                fi
+                mkdir -p /app/share/icons/hicolor/${{size}}/apps/
+                cp "${{icon}}" "/app/share/icons/hicolor/${{size}}/apps/{appid}.png"
+            done
+        '''),
 
         # Recompile all of the rpy files
         textwrap.dedent('''
@@ -109,28 +139,6 @@ def bd_build_commands(description: Description) -> typing.List[str]:
     return commands
 
 
-def bd_icon(description: Description, appid: str) -> typing.Dict[str, typing.Any]:
-    icon_src = '/app/lib/game/game/gui/window_icon.png'
-    icon_dst = f'/app/share/icons/hicolor/256x256/apps/{appid}.png'
-    # Must at least be before the appdata is generated
-
-    _icon_install_cmd: str
-    if description.get('workarounds', {}).get('icon_is_webp'):
-        _icon_install_cmd = f'dwebp {icon_src} -o {icon_dst}'
-    else:
-        _icon_install_cmd = f'cp {icon_src} {icon_dst}'
-
-    return {
-        'buildsystem': 'simple',
-        'name': 'icon',
-        'sources': [],
-        'build-commands': [
-            'mkdir -p /app/share/icons/hicolor/256x256/apps/',
-            _icon_install_cmd,
-        ],
-    }
-
-
 def write_rules(description: Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     sources = util.extract_sources(description)
 
@@ -140,7 +148,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             'buildsystem': 'simple',
             'name': util.sanitize_name(description['common']['name']),
             'sources': sources,
-            'build-commands': bd_build_commands(description),
+            'build-commands': bd_build_commands(description, appid),
             'cleanup': [
                 '*.exe',
                 '*.app',
@@ -153,8 +161,6 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             ],
         },
     ]
-    if not description.get('workarounds', {}).get('icon', False):
-        modules.append(bd_icon(description, appid))
     modules.extend([
         bd_game(description),
         util.bd_desktop(desktop_file),
@@ -167,7 +173,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         finish_args = ['--socket=wayland', '--socket=fallback-x11']
 
     struct = {
-        'sdk': 'org.freedesktop.Sdk',
+        'sdk': 'com.github.dcbaker.flatpaker.Sdk//master',
         'runtime': 'org.freedesktop.Platform',
         'runtime-version': util.RUNTIME_VERSION,
         'id': appid,
