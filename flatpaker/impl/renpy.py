@@ -65,6 +65,7 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
     # Insert these commands before any rpy and py files are compiled
     for p in description.get('sources', {}).get('files', []):
         dest = os.path.join('/app/lib/game', p.get('dest', 'game'))
+        # This could be a file or a directory for dest, so we can't use install
         commands.extend([
             f'mkdir -p {os.path.dirname(dest)}',
             f'mv {p["path"].name} {dest}',
@@ -99,8 +100,7 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
                 else
                     continue
                 fi
-                mkdir -p /app/share/icons/hicolor/${{size}}/apps/
-                cp "${{icon}}" "/app/share/icons/hicolor/${{size}}/apps/{appid}.png"
+                install -D -m644 "${{icon}}" "/app/share/icons/hicolor/${{size}}/apps/{appid}.png"
             done
         '''),
 

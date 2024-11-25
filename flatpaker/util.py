@@ -171,8 +171,7 @@ def bd_desktop(file_: pathlib.Path) -> typing.Dict[str, typing.Any]:
             }
         ],
         'build-commands': [
-            'mkdir -p /app/share/applications',
-            f'cp {file_.name} /app/share/applications',
+            f'install -D -m644 {file_.name} -t /app/share/applications',
         ],
     }
 
@@ -189,7 +188,6 @@ def bd_appdata(file_: pathlib.Path) -> typing.Dict[str, typing.Any]:
             }
         ],
         'build-commands': [
-            'mkdir -p /app/share/metainfo',
-            f'cp {file_.name} /app/share/metainfo',
+            f'install -D -m644 {file_.name} -t /app/share/metainfo',
         ],
     }
