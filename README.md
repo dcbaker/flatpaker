@@ -35,7 +35,8 @@ when most of the process will be exactly the same for every renpy project.
 1. Download the compressed project
 2. Download any mods or addons (optional)
 3. Write a toml description
-4. run the program
+4. run `flatpaker --install install-deps`
+5. run `flatpaker --install build *.toml` or `flatpaker --export --gpg-sign build *.toml` (for local install or for export to a shared repo)
 
 ### Toml Format
 

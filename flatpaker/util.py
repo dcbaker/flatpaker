@@ -130,7 +130,7 @@ def sanitize_name(name: str) -> str:
 
 def build_flatpak(args: BuildArguments, workdir: pathlib.Path, appid: str) -> None:
     build_command: typing.List[str] = [
-        'flatpak-builder', '--force-clean', '--install-deps-from=flathub', '--user', 'build',
+        'flatpak-builder', '--force-clean', '--user', 'build',
         (workdir / f'{appid}.json').absolute().as_posix(),
     ]
 

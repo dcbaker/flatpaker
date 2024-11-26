@@ -4,7 +4,10 @@
 from __future__ import annotations
 import argparse
 import importlib
+import importlib.resources
+import os
 import pathlib
+import subprocess
 import typing
 
 from flatpaker.description import load_description
@@ -21,7 +24,7 @@ if typing.TYPE_CHECKING:
         write_rules: JsonWriterImpl
 
     class BaseArguments(typing.Protocol):
-        action: typing.Literal['build']
+        action: typing.Literal['build', 'install-deps']
         repo: str
         gpg: typing.Optional[str]
         install: bool
@@ -74,6 +77,9 @@ def main() -> None:
     build_parser.add_argument('descriptions', nargs='+', help="A Toml description file")
     build_parser.set_defaults(action='build')
 
+    install_deps_parser = subparsers.add_parser('install-deps', help='Install runtime and Sdk dependencies')
+    install_deps_parser.set_defaults(action='install-deps')
+
     args = typing.cast('BaseArguments', parser.parse_args())
 
     if args.action == 'build':
@@ -81,3 +87,24 @@ def main() -> None:
         for d in args.descriptions:
             description = load_description(d)
             build(args, description)
+    if args.action == 'install-deps':
+        command = [
+            'flatpak', 'install', '--no-auto-pin', '--user',
+            f'org.freedesktop.Platform//{flatpaker.util.RUNTIME_VERSION}',
+            f'org.freedesktop.Sdk//{flatpaker.util.RUNTIME_VERSION}',
+        ]
+        subprocess.run(command, check=True)
+
+        sdk_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Sdk.yml'
+        with importlib.resources.as_file(sdk_file) as sdk:
+            build_command: typing.List[str] = [
+                'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
+
+            if args.export:
+                build_command.extend(['--repo', args.repo])
+                if args.gpg:
+                    build_command.extend(['--gpg-sign', args.gpg])
+            if args.install:
+                build_command.extend(['--install'])
+
+            subprocess.run(build_command, check=True)
