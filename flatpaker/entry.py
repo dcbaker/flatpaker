@@ -20,13 +20,16 @@ if typing.TYPE_CHECKING:
 
         write_rules: JsonWriterImpl
 
-    class Arguments(typing.Protocol):
-        descriptions: typing.List[str]
+    class BaseArguments(typing.Protocol):
+        action: typing.Literal['build']
         repo: str
         gpg: typing.Optional[str]
         install: bool
         export: bool
         cleanup: bool
+
+    class BuildArguments(BaseArguments, typing.Protocol):
+        descriptions: typing.List[str]
 
 
 def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
@@ -35,7 +38,7 @@ def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
     return mod.write_rules
 
 
-def build(args: Arguments, description: Description) -> None:
+def build(args: BuildArguments, description: Description) -> None:
     # TODO: This could be common
     appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"
 
@@ -52,7 +55,6 @@ def build(args: Arguments, description: Description) -> None:
 def main() -> None:
     config = flatpaker.config.load_config()
     parser = argparse.ArgumentParser()
-    parser.add_argument('descriptions', nargs='+', help="A Toml description file")
     parser.add_argument(
         '--repo',
         default=config['common'].get('repo', 'repo'),
@@ -66,9 +68,16 @@ def main() -> None:
     parser.add_argument('--export', action='store_true', help='Export to the provided repo')
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
-    args = typing.cast('Arguments', parser.parse_args())
-    # Don't use type for this because it swallows up the exception
 
-    for d in args.descriptions:
-        description = load_description(d)
-        build(args, description)
+    subparsers = parser.add_subparsers()
+    build_parser = subparsers.add_parser('build', help='Build flatpaks from descriptions')
+    build_parser.add_argument('descriptions', nargs='+', help="A Toml description file")
+    build_parser.set_defaults(action='build')
+
+    args = typing.cast('BaseArguments', parser.parse_args())
+
+    if args.action == 'build':
+        args = typing.cast('BuildArguments', parser.parse_args())
+        for d in args.descriptions:
+            description = load_description(d)
+            build(args, description)
