@@ -80,7 +80,7 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
         textwrap.dedent(f'''
             ICNS=$(ls *.app/Contents/Resources/icon.icns)
             EXE=$(ls *.exe)
-            if [[ -f "${{exe}}" ]]; then
+            if [[ -f "${{EXE}}" ]]; then
                 wrestool -x --output=. -t14 "${{EXE}}"
                 icotool -x $(ls *.ico)
             elif [[ -f "${{ICNS}}" ]]; then
@@ -186,6 +186,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             *finish_args,
             '--socket=pulseaudio',
             '--device=dri',
+            '--env=RENPY_NO_STEAM=1'
         ],
         'modules': modules,
         'cleanup-commands': [
