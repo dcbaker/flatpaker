@@ -20,6 +20,14 @@ if typing.TYPE_CHECKING:
 
         write_rules: JsonWriterImpl
 
+    class Arguments(typing.Protocol):
+        descriptions: typing.List[str]
+        repo: str
+        gpg: typing.Optional[str]
+        install: bool
+        export: bool
+        cleanup: bool
+
 
 def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
     mod = typing.cast('ImplMod', importlib.import_module(f'flatpaker.impl.{name}'))
@@ -27,7 +35,7 @@ def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
     return mod.write_rules
 
 
-def build(args: flatpaker.util.Arguments, description: Description) -> None:
+def build(args: Arguments, description: Description) -> None:
     # TODO: This could be common
     appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"
 
@@ -58,7 +66,7 @@ def main() -> None:
     parser.add_argument('--export', action='store_true', help='Export to the provided repo')
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
-    args = typing.cast('flatpaker.util.Arguments', parser.parse_args())
+    args = typing.cast('Arguments', parser.parse_args())
     # Don't use type for this because it swallows up the exception
 
     for d in args.descriptions:

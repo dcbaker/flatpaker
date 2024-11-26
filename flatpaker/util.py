@@ -15,13 +15,7 @@ import typing
 if typing.TYPE_CHECKING:
     from .description import Description
 
-    class Arguments(typing.Protocol):
-        descriptions: typing.List[str]
-        repo: str
-        gpg: typing.Optional[str]
-        install: bool
-        export: bool
-        cleanup: bool
+    from .entry import Arguments
 
 RUNTIME_VERSION = "24.08"
 
