@@ -41,7 +41,7 @@ def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
     return mod.write_rules
 
 
-def build(args: BuildArguments, description: Description) -> None:
+def build(args: BaseArguments, description: Description) -> None:
     # TODO: This could be common
     appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"
 
@@ -83,8 +83,8 @@ def main() -> None:
     args = typing.cast('BaseArguments', parser.parse_args())
 
     if args.action == 'build':
-        args = typing.cast('BuildArguments', parser.parse_args())
-        for d in args.descriptions:
+        descriptions = typing.cast('BuildArguments', args).descriptions
+        for d in descriptions:
             description = load_description(d)
             build(args, description)
     if args.action == 'install-deps':

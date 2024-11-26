@@ -15,7 +15,7 @@ import typing
 if typing.TYPE_CHECKING:
     from .description import Description
 
-    from .entry import BuildArguments
+    from .entry import BaseArguments
 
 RUNTIME_VERSION = "24.08"
 
@@ -128,7 +128,7 @@ def sanitize_name(name: str) -> str:
         .replace("'", '')
 
 
-def build_flatpak(args: BuildArguments, workdir: pathlib.Path, appid: str) -> None:
+def build_flatpak(args: BaseArguments, workdir: pathlib.Path, appid: str) -> None:
     build_command: typing.List[str] = [
         'flatpak-builder', '--force-clean', '--user', 'build',
         (workdir / f'{appid}.json').absolute().as_posix(),
