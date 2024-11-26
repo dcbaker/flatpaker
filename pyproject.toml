@@ -27,6 +27,10 @@
   [project.scripts]
     flatpaker = "flatpaker.entry:main"
 
+  [project.urls]
+    Repository = "https://github.com/dcbaker/flatpaker"
+    Issues = "https://github.com/dcbaker/flatpaker/issues"
+
 [tool.mypy]
   strict = true
   modules = "flatpaker"
