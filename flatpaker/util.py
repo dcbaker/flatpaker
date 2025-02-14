@@ -145,6 +145,8 @@ def build_flatpak(args: BaseArguments, workdir: pathlib.Path, appid: str) -> Non
         build_command.extend(['--install'])
 
     subprocess.run(build_command, check=True)
+    if args.cleanup:
+        shutil.rmtree('build', ignore_errors=True)
 
 
 @contextlib.contextmanager
