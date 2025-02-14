@@ -125,15 +125,23 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
         # I have run into a couple of python2 based ren'py programs that lack
         # the python infrastructure to run with -m, so we'll just open code it to
         # make it more portable
+        #
+        # Because of the way optimizations work in python2 we need to check
+        # whether we have .py, .pyc, or .pyo files, and set the optimiztion
+        # argument appropriately
         textwrap.dedent('''
             pushd /app/lib/game;
             if [ -d "lib/py3-linux-x86_64" ]; then
                 lib/py3-linux-x86_64/python -m compileall -b -f . || exit 1;
             else
-                lib/linux-x86_64/python -c 'import compileall; compileall.main()' -f . || exit 1;
+                opt=""
+                if [ -f "lib/linux-x86_64/lib/python2.7/site.pyo" ]; then
+                    opt="-O"
+                fi
+                lib/linux-x86_64/python "${opt}" -c 'import compileall; compileall.main()' -f . || exit 1;
             fi;
             popd;
-            ''')
+            '''),
     ])
 
     return commands
