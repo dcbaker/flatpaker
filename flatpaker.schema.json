@@ -210,6 +210,10 @@
                     "description": "If set to false, then this project can use wayland",
                     "type": "boolean"
                 },
+                "no_py_recompile": {
+                    "description": "For Ren'Py only. Don't attempt to recompile the .py files.",
+                    "type": "boolean"
+                },
                 "force_window_gui_icon": {
                     "description": "For Ren'Py only. Use the window_gui.png file for the icon instead of extracting from the .exe or icns files.",
                     "type": "boolean"

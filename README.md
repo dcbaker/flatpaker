@@ -113,6 +113,12 @@ of these quirks can be worked around:
   # the .exe of icns. This is useful for games that have the generic Ren'Py
   # icon in the exe, but a custom icon in the tree.
   force_window_gui_icon = true
+
+  # For Ren'Py only:
+  # Don't attempt to recompile .py files to .pyc or .pyo. Some older Ren'Py 6.x
+  # and 7.x (Python2) based projects don't have enough of the stdlib to actually
+  # do the recompile
+  no_py_recompile = true
 ```
 
 Any quirk starting with `x_` or `x-` is an experimental quirk, and may be
