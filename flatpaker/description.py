@@ -34,6 +34,7 @@ if typing.TYPE_CHECKING:
 
         x_use_wayland: bool
         force_window_gui_icon: bool
+        no_py_recompile: bool
 
 
     class Archive(typing.TypedDict):

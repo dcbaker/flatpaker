@@ -141,35 +141,38 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
             done;
             popd;
             '''),
-
-        # Recompile all python py files, so we can remove the py files
-        # form the final distribution
-        #
-        # Use -f to force the files mtimes to be updated, otherwise
-        # flatpak-builder will delete them as "stale"
-        #
-        # Use -b for python3 to allow us to delete the .py files
-        # I have run into a couple of python2 based ren'py programs that lack
-        # the python infrastructure to run with -m, so we'll just open code it to
-        # make it more portable
-        #
-        # Because of the way optimizations work in python2 we need to check
-        # whether we have .py, .pyc, or .pyo files, and set the optimiztion
-        # argument appropriately
-        textwrap.dedent('''
-            pushd /app/lib/game;
-            if [ -d "lib/py3-linux-x86_64" ]; then
-                lib/py3-linux-x86_64/python -m compileall -b -f . || exit 1;
-            else
-                opt=""
-                if [ -f "lib/linux-x86_64/lib/python2.7/site.pyo" ]; then
-                    opt="-O"
-                fi
-                lib/linux-x86_64/python "${opt}" -c 'import compileall; compileall.main()' -f . || exit 1;
-            fi;
-            popd;
-            '''),
     ])
+
+    if description.get('quirks', {}).get('no_py_recompile', False):
+        commands.append(
+            # Recompile all python py files, so we can remove the py files
+            # form the final distribution
+            #
+            # Use -f to force the files mtimes to be updated, otherwise
+            # flatpak-builder will delete them as "stale"
+            #
+            # Use -b for python3 to allow us to delete the .py files
+            # I have run into a couple of python2 based ren'py programs that lack
+            # the python infrastructure to run with -m, so we'll just open code it to
+            # make it more portable
+            #
+            # Because of the way optimizations work in python2 we need to check
+            # whether we have .py, .pyc, or .pyo files, and set the optimiztion
+            # argument appropriately.
+            textwrap.dedent('''
+                pushd /app/lib/game;
+                if [ -d "lib/py3-linux-x86_64" ]; then
+                    lib/py3-linux-x86_64/python -m compileall -b -f . || exit 1;
+                else
+                    opt=""
+                    if [ -f "lib/linux-x86_64/lib/python2.7/site.pyo" ]; then
+                        opt="-O"
+                    fi
+                    lib/linux-x86_64/python "${opt}" -c 'import compileall; compileall.main()' -f . || exit 1;
+                fi;
+                popd;
+                ''')
+        )
 
     return commands
 
