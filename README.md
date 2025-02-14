@@ -115,6 +115,9 @@ of these quirks can be worked around:
   force_window_gui_icon = true
 ```
 
+Any quirk starting with `x_` or `x-` is an experimental quirk, and may be
+removed at any time. If you find yourself relying on them, please open an issue.
+
 ### Configuration
 
 Some options can be given on the command line or via a configuration file.

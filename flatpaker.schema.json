@@ -206,7 +206,7 @@
             "description": "Workarounds for the quirks in games that cannot be easily resolved without flatpaker support.",
             "type": "object",
             "properties": {
-                "use_x11": {
+                "x_use_wayland": {
                     "description": "If set to false, then this project can use wayland",
                     "type": "boolean"
                 },

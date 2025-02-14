@@ -14,14 +14,14 @@ if typing.TYPE_CHECKING:
     from flatpaker.description import Description
 
 
-def _create_game_sh(use_x11: bool) -> str:
+def _create_game_sh(use_wayland: bool) -> str:
     lines: typing.List[str] = [
         '#!/usr/bin/env sh',
         '',
         'export RENPY_PERFORMANCE_TEST=0',
     ]
 
-    if not use_x11:
+    if use_wayland:
         lines.append('export SDL_VIDEODRIVER=wayland')
 
     lines.extend([
@@ -37,7 +37,7 @@ def quote(s: str) -> str:
 
 
 def bd_game(description: Description) -> typing.Dict[str, typing.Any]:
-    sh = _create_game_sh(description.get('quirks', {}).get('use_x11', True))
+    sh = _create_game_sh(description.get('quirks', {}).get('x_use_wayland', False))
     return {
         'buildsystem': 'simple',
         'name': 'game_sh',
@@ -202,10 +202,10 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         util.bd_appdata(appdata_file),
     ])
 
-    if description.get('quirks', {}).get('use_x11', True):
-        finish_args = ['--socket=x11']
-    else:
+    if description.get('quirks', {}).get('x_use_wayland', False):
         finish_args = ['--socket=wayland', '--socket=fallback-x11']
+    else:
+        finish_args = ['--socket=x11']
 
     struct = {
         'sdk': 'com.github.dcbaker.flatpaker.Sdk//master',

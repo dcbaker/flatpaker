@@ -32,7 +32,7 @@ if typing.TYPE_CHECKING:
 
     class _Quirks(typing.TypedDict, total=False):
 
-        use_x11: bool
+        x_use_wayland: bool
         force_window_gui_icon: bool
 
 
