@@ -47,7 +47,7 @@ when most of the process will be exactly the same for every renpy project.
   # "Game" is added automatically
   # used freedesktop menu categories. see: https://specifications.freedesktop.org/menu-spec/latest/apas02.html
   categories = ['Simulation']
-  engine = ['renpy']  # Or 'rpgmaker'
+  engine = 'renpy'  # Or 'rpgmaker'
 
 [appdata]
   summary = "A short summary, one sentence or so."
