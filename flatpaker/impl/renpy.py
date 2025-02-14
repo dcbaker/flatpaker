@@ -104,6 +104,17 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
             done
         '''),
 
+        # Ensure that the python executable is executable
+        textwrap.dedent('''
+            pushd /app/lib/game;
+            if [ -d "lib/py3-linux-x86_64" ]; then
+                chmod +x lib/py3-linux-x86_64/python
+            else
+                chmod +x lib/linux-x86_64/python
+            fi;
+            popd;
+            '''),
+
         # Recompile all of the rpy files
         textwrap.dedent('''
             pushd /app/lib/game;
