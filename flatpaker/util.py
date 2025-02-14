@@ -116,7 +116,10 @@ def create_desktop(description: Description, workdir: pathlib.Path, appid: str) 
 
 def sha256(path: pathlib.Path) -> str:
     with path.open('rb') as f:
-        return hashlib.sha256(f.read()).hexdigest()
+        m = hashlib.sha256()
+        while (chunk := f.read(4096)):
+            m.update(chunk)
+        return m.hexdigest()
 
 
 def sanitize_name(name: str) -> str:
