@@ -21,6 +21,7 @@ It currently automatically does the following automatically:
 - strips .rpy files to save space (keeping the rpyc files)
 - strips windows and macos specific files
 - allows local install or publishing to a repo
+- allows generating static deltas after building
 
 ## Why?
 

@@ -29,6 +29,7 @@ if typing.TYPE_CHECKING:
         install: bool
         export: bool
         cleanup: bool
+        deltas: bool
 
     class BuildArguments(BaseArguments, typing.Protocol):
         descriptions: typing.List[str]
@@ -54,6 +55,16 @@ def build(args: BaseArguments, description: Description) -> None:
         flatpaker.util.build_flatpak(args, wd, appid)
 
 
+def static_deltas(args: BaseArguments) -> None:
+    if not (args.deltas or args.export):
+        return
+    command = ['flatpak', 'build-update-repo', args.repo, '--generate-static-deltas']
+    if args.gpg:
+        command.extend(['--gpg-sign', args.gpg])
+
+    subprocess.run(command, check=True)
+
+
 def main() -> None:
     config = flatpaker.config.load_config()
     parser = argparse.ArgumentParser()
@@ -70,6 +81,7 @@ def main() -> None:
     parser.add_argument('--export', action='store_true', help='Export to the provided repo')
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
+    parser.add_argument('--static-deltas', action='store_true', dest='deltas', help="generate static deltas when exporting")
 
     subparsers = parser.add_subparsers()
     build_parser = subparsers.add_parser('build', help='Build flatpaks from descriptions')
@@ -86,6 +98,8 @@ def main() -> None:
         for d in descriptions:
             description = load_description(d)
             build(args, description)
+        if args.deltas:
+            static_deltas(args)
     if args.action == 'install-deps':
         command = [
             'flatpak', 'install', '--no-auto-pin', '--user',
@@ -107,3 +121,6 @@ def main() -> None:
                 build_command.extend(['--install'])
 
             subprocess.run(build_command, check=True)
+
+        if args.deltas:
+            static_deltas(args)
