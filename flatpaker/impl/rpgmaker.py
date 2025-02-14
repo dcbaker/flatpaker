@@ -4,6 +4,7 @@
 from __future__ import annotations
 import json
 import pathlib
+import textwrap
 import typing
 
 from flatpaker import util
@@ -30,8 +31,14 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
                 'chmod +x nw',
 
                 # Likewise, but seem to only exist for RPGMaker MZ, not MV
-                '[[ -f "chrome_crashpad_handler" ]] && chmod +x chrome_crashpad_handler',
-                '[[ -f "nacl_helper" ]] && chmod +x nacl_helper',
+                textwrap.dedent('''
+                    if [[ -f "chrome_crashpad_handler" ]]; then
+                        chmod +x chrome_crashpad_handler
+                    fi
+                    if [[ -f "nacl_helper" ]]; then
+                        chmod +x nacl_helper
+                    fi
+                    '''),
 
                 # install the main game files
                 'mkdir -p /app/lib/game',
