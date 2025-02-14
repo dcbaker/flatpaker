@@ -33,6 +33,8 @@ if typing.TYPE_CHECKING:
     class _Quirks(typing.TypedDict, total=False):
 
         use_x11: bool
+        force_window_gui_icon: bool
+
 
     class Archive(typing.TypedDict):
 

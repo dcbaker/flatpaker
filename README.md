@@ -104,6 +104,17 @@ when most of the process will be exactly the same for every renpy project.
   dest = "where to install"
 ```
 
+Additionally, some games have quirks that make them difficult to package. Some
+of these quirks can be worked around:
+```toml
+[quirks]
+  # For Ren'Py only:
+  # Force the use of the window_gui.png as the icon, instead of extracting from
+  # the .exe of icns. This is useful for games that have the generic Ren'Py
+  # icon in the exe, but a custom icon in the tree.
+  force_window_gui_icon = true
+```
+
 ### Configuration
 
 Some options can be given on the command line or via a configuration file.
