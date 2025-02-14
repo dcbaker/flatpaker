@@ -209,6 +209,10 @@
                 "use_x11": {
                     "description": "If set to false, then this project can use wayland",
                     "type": "boolean"
+                },
+                "force_window_gui_icon": {
+                    "description": "For Ren'Py only. Use the window_gui.png file for the icon instead of extracting from the .exe or icns files.",
+                    "type": "boolean"
                 }
             }
         }

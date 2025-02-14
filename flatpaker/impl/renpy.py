@@ -71,47 +71,55 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
             f'mv {p["path"].name} {dest}',
         ])
 
-    commands.extend([
-        # Patch the game to not require sandbox access
-        '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py''',
+    # Patch the game to not require sandbox access
+    commands.append(
+        '''sed -i 's@"~/.renpy/"@os.environ.get("XDG_DATA_HOME", "~/.local/share") + "/"@g' /app/lib/game/*.py'''
+    )
 
-        # Extract the icon file from either a Windows exe or from MacOS resources.
-        # This gives more sizes, and is more likely to exists than the gui/window_icon.png
-        # If neither the ICNS or the EXE approach produce anything, then we
-        # fallback to trying the window_icon
-        textwrap.dedent(f'''
-            ICNS=$(ls *.app/Contents/Resources/icon.icns)
-            EXE=$(ls *.exe)
-            if [[ -f "${{EXE}}" ]]; then
-                wrestool -x --output=. -t14 "${{EXE}}"
-                icotool -x $(ls *.ico)
-            elif [[ -f "${{ICNS}}" ]]; then
-                icns2png -x "${{ICNS}}"
-            fi
 
-            PNG=$(ls *png)
-            if [[ ! "${{PNG}}" && -f "/app/lib/game/game/gui/window_icon.png" ]]; then
-                cp /app/lib/game/game/gui/window_icon.png window_iconx256x256.png
-            fi
-
-            for icon in $(ls *.png); do
-                if [[ "${{icon}}" =~ "32x32" ]]; then
-                    size="32x23"
-                elif [[ "${{icon}}" =~ "64x64" ]]; then
-                    size="64x64"
-                elif [[ "${{icon}}" =~ "128x128" ]]; then
-                    size="128x128"
-                elif [[ "${{icon}}" =~ "256x256" ]]; then
-                    size="256x256"
-                elif [[ "${{icon}}" =~ "512x512" ]]; then
-                    size="512x512"
-                else
-                    continue
+    if description.get('quirks', {}).get('force_window_gui_icon', False):
+        commands.append(
+            f'install -D -m644 /app/lib/game/game/gui/window_icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png')
+    else:
+        commands.append(
+            # Extract the icon file from either a Windows exe or from MacOS resources.
+            # This gives more sizes, and is more likely to exists than the gui/window_icon.png
+            # If neither the ICNS or the EXE approach produce anything, then we
+            # fallback to trying the window_icon
+            textwrap.dedent(f'''
+                ICNS=$(ls *.app/Contents/Resources/icon.icns)
+                EXE=$(ls *.exe)
+                if [[ -f "${{EXE}}" ]]; then
+                    wrestool -x --output=. -t14 "${{EXE}}"
+                    icotool -x $(ls *.ico)
+                elif [[ -f "${{ICNS}}" ]]; then
+                    icns2png -x "${{ICNS}}"
                 fi
-                install -D -m644 "${{icon}}" "/app/share/icons/hicolor/${{size}}/apps/{appid}.png"
-            done
-        '''),
 
+                PNG=$(ls *png)
+                if [[ ! "${{PNG}}" && -f "/app/lib/game/game/gui/window_icon.png" ]]; then
+                    cp /app/lib/game/game/gui/window_icon.png window_iconx256x256.png
+                fi
+
+                for icon in $(ls *.png); do
+                    if [[ "${{icon}}" =~ "32x32" ]]; then
+                        size="32x23"
+                    elif [[ "${{icon}}" =~ "64x64" ]]; then
+                        size="64x64"
+                    elif [[ "${{icon}}" =~ "128x128" ]]; then
+                        size="128x128"
+                    elif [[ "${{icon}}" =~ "256x256" ]]; then
+                        size="256x256"
+                    elif [[ "${{icon}}" =~ "512x512" ]]; then
+                        size="512x512"
+                    else
+                        continue
+                    fi
+                    install -D -m644 "${{icon}}" "/app/share/icons/hicolor/${{size}}/apps/{appid}.png"
+                done
+            '''))
+
+    commands.extend([
         # Ensure that the python executable is executable
         textwrap.dedent('''
             pushd /app/lib/game;
