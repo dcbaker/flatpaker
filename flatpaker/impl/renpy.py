@@ -77,6 +77,8 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
 
         # Extract the icon file from either a Windows exe or from MacOS resources.
         # This gives more sizes, and is more likely to exists than the gui/window_icon.png
+        # If neither the ICNS or the EXE approach produce anything, then we
+        # fallback to trying the window_icon
         textwrap.dedent(f'''
             ICNS=$(ls *.app/Contents/Resources/icon.icns)
             EXE=$(ls *.exe)
@@ -86,6 +88,12 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
             elif [[ -f "${{ICNS}}" ]]; then
                 icns2png -x "${{ICNS}}"
             fi
+
+            PNG=$(ls *png)
+            if [[ ! "${{PNG}}" && -f "/app/lib/game/game/gui/window_icon.png" ]]; then
+                cp /app/lib/game/game/gui/window_icon.png window_iconx256x256.png
+            fi
+
             for icon in $(ls *.png); do
                 if [[ "${{icon}}" =~ "32x32" ]]; then
                     size="32x23"
