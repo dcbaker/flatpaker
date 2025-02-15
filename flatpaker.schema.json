@@ -202,8 +202,8 @@
             ],
             "additionalProperties": false
         },
-        "workarounds": {
-            "description": "Workarounds for specific ren'py projects that are broken in various ways.",
+        "quirks": {
+            "description": "Workarounds for the quirks in games that cannot be easily resolved without flatpaker support.",
             "type": "object",
             "properties": {
                 "use_x11": {

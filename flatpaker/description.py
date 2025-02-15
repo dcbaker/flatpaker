@@ -30,7 +30,8 @@ if typing.TYPE_CHECKING:
         releases: NotRequired[typing.Dict[str, str]]
         license: NotRequired[str]
 
-    class _Workarounds(typing.TypedDict, total=False):
+    class _Quirks(typing.TypedDict, total=False):
+
         use_x11: bool
 
     class Archive(typing.TypedDict):
@@ -53,7 +54,7 @@ if typing.TYPE_CHECKING:
 
         common: _Common
         appdata: _AppData
-        workarounds: NotRequired[_Workarounds]
+        quirks: NotRequired[_Quirks]
         sources: NotRequired[Sources]
 
 

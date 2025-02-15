@@ -37,7 +37,7 @@ def quote(s: str) -> str:
 
 
 def bd_game(description: Description) -> typing.Dict[str, typing.Any]:
-    sh = _create_game_sh(description.get('workarounds', {}).get('use_x11', True))
+    sh = _create_game_sh(description.get('quirks', {}).get('use_x11', True))
     return {
         'buildsystem': 'simple',
         'name': 'game_sh',
@@ -194,7 +194,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         util.bd_appdata(appdata_file),
     ])
 
-    if description.get('workarounds', {}).get('use_x11', True):
+    if description.get('quirks', {}).get('use_x11', True):
         finish_args = ['--socket=x11']
     else:
         finish_args = ['--socket=wayland', '--socket=fallback-x11']
