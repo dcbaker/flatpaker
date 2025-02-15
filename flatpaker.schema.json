@@ -211,12 +211,6 @@
                     "type": "boolean"
                 }
             }
-        },
-        "releases": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "string"
-            }
         }
     },
     "required": [
