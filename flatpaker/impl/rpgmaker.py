@@ -40,6 +40,9 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
                     fi
                     '''),
 
+                # The manager has a different name in MZ and MV, rmmz_managers.js in MZ and rpg_managers.js in MV
+                'find . -name "*_managers.js" -exec sed -i "s@path.dirname(process.mainModule.filename)@process.env.XDG_DATA_HOME@g" {} +',
+
                 # install the main game files
                 'mkdir -p /app/lib/game',
                 'mv * /app/lib/game/',
