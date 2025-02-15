@@ -210,12 +210,12 @@
                     "description": "If set to false, then this project can use wayland",
                     "type": "boolean"
                 }
-            },
-            "releases": {
-                "type": "object",
-                "additionalProperties": {
-                    "type": "string"
-                }
+            }
+        },
+        "releases": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
             }
         }
     },
