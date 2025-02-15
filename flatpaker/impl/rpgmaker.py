@@ -24,7 +24,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             'sources': sources,
             'build-commands': [
                 'mkdir -p /app/share/icons/hicolor/256x256/apps/',
-                f'mv icon/*.png /app/share/icons/hicolor/256x256/apps/{appid}.png',
+                f'cp www/icon/*.png /app/share/icons/hicolor/256x256/apps/{appid}.png',
                 'rm -r icon',
 
                 # the main executable usually isn't executable
