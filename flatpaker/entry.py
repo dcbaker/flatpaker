@@ -109,18 +109,20 @@ def main() -> None:
         subprocess.run(command, check=True)
 
         sdk_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Sdk.yml'
-        with importlib.resources.as_file(sdk_file) as sdk:
-            build_command: typing.List[str] = [
-                'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
+        platform_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Platform.yml'
+        for bfile in [sdk_file, platform_file]:
+            with importlib.resources.as_file(bfile) as sdk:
+                build_command: typing.List[str] = [
+                    'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
 
-            if args.export:
-                build_command.extend(['--repo', args.repo])
-                if args.gpg:
-                    build_command.extend(['--gpg-sign', args.gpg])
-            if args.install:
-                build_command.extend(['--install'])
+                if args.export:
+                    build_command.extend(['--repo', args.repo])
+                    if args.gpg:
+                        build_command.extend(['--gpg-sign', args.gpg])
+                if args.install:
+                    build_command.extend(['--install'])
 
-            subprocess.run(build_command, check=True)
+                subprocess.run(build_command, check=True)
 
         if args.deltas:
             static_deltas(args)

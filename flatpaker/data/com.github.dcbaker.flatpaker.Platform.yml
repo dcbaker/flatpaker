@@ -1,0 +1,16 @@
+build-runtime: true
+id: "com.github.dcbaker.flatpaker.Platform"
+#branch: "25.02"
+runtime-version: "24.08"
+runtime: org.freedesktop.Platform
+sdk: org.freedesktop.Sdk
+modules:
+ - name: "nwjs"
+   buildsystem: "simple"
+   sources:
+    - type: "archive"
+      url: "https://dl.nwjs.io/v0.95.0/nwjs-v0.95.0-linux-x64.tar.gz"
+      sha256: "d34179ef48fde465308fe0df4441b9dcf00c5e725dcb9f83949a7fdc37582024"
+   build-commands:
+    - "mkdir /usr/lib/nwjs"
+    - "mv * /usr/lib/nwjs/"

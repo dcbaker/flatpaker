@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright © 2022-2024 Dylan Baker
+# Copyright © 2022-2025 Dylan Baker
 
 from __future__ import annotations
 import json
@@ -24,31 +24,25 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             'sources': sources,
             'build-commands': [
                 'mkdir -p /app/share/icons/hicolor/256x256/apps/',
-                f'cp www/icon/*.png /app/share/icons/hicolor/256x256/apps/{appid}.png',
-                'rm -r icon',
 
-                # the main executable usually isn't executable
-                'chmod +x nw',
-
-                # Likewise, but seem to only exist for RPGMaker MZ, not MV
-                textwrap.dedent('''
-                    if [[ -f "chrome_crashpad_handler" ]]; then
-                        chmod +x chrome_crashpad_handler
+                # in MV www/icon.png is usually the customized icon and icon/icon.png is
+                textwrap.dedent(f'''
+                    if [[ -d "www/icon" ]]; then
+                        cp www/icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
+                    else
+                        cp icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
                     fi
-                    if [[ -f "nacl_helper" ]]; then
-                        chmod +x nacl_helper
-                    fi
-                    '''),
+                '''),
 
                 # The manager has a different name in MZ and MV, rmmz_managers.js in MZ and rpg_managers.js in MV
                 'find . -name "*_managers.js" -exec sed -i "s@path.dirname(process.mainModule.filename)@process.env.XDG_DATA_HOME@g" {} +',
 
                 # install the main game files
                 'mkdir -p /app/lib/game',
-                'mv * /app/lib/game/',
+                'mv package.json www /app/lib/game/',
             ],
             'cleanup': [
-                '*.desktop',  # is incorrect
+                'www/save',
             ],
         },
         {
@@ -57,7 +51,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             'sources': [],
             'build-commands': [
                 'mkdir -p /app/bin',
-                'echo  \'exec /app/lib/game/nw\' > /app/bin/game.sh',
+                "echo  'exec /usr/lib/nwjs/nw /app/lib/game/'  > /app/bin/game.sh",
                 'chmod +x /app/bin/game.sh',
             ],
         },
@@ -65,11 +59,10 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         util.bd_appdata(appdata_file),
     ]
 
-    # TODO: share this somehow?
     struct = {
-        'sdk': 'org.freedesktop.Sdk',
-        'runtime': 'org.freedesktop.Platform',
-        'runtime-version': util.RUNTIME_VERSION,
+        'sdk': 'com.github.dcbaker.flatpaker.Sdk//master',
+        'runtime': 'com.github.dcbaker.flatpaker.Platform',
+        'runtime-version': 'master',
         'id': appid,
         'build-options': {
             'no-debuginfo': True,
