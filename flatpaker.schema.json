@@ -217,6 +217,10 @@
                 "force_window_gui_icon": {
                     "description": "For Ren'Py only. Use the window_gui.png file for the icon instead of extracting from the .exe or icns files.",
                     "type": "boolean"
+                },
+                "x_configure_prologue": {
+                    "description": "A shell snippet to be run before any of the automated build steps. Because sometimes you just need an escape hatch",
+                    "type": "string"
                 }
             }
         }
