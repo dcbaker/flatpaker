@@ -51,7 +51,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             'sources': [],
             'build-commands': [
                 'mkdir -p /app/bin',
-                "echo  'exec /usr/lib/nwjs/nw /app/lib/game/'  > /app/bin/game.sh",
+                "echo  'exec /usr/lib/nwjs/nw /app/lib/game/ --enable-features=UseOzonePlatform --ozone-platform=wayland' > /app/bin/game.sh",
                 'chmod +x /app/bin/game.sh',
             ],
         },
@@ -71,7 +71,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         'command': 'game.sh',
         'finish-args': [
             '--socket=pulseaudio',
-            '--socket=x11',
+            '--socket=wayland',
             '--device=dri',
         ],
         'modules': modules,
