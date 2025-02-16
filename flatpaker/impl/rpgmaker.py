@@ -16,31 +16,36 @@ if typing.TYPE_CHECKING:
 def write_rules(description: Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     sources = util.extract_sources(description)
 
+    commands: list[str] = ['mkdir -p /app/lib/game']
+
+    if (prologue := description.get('quirks', {}).get('x_configure_prologue')) is not None:
+        commands.append(prologue)
+
+    commands.extend([
+        # in MV www/icon.png is usually the customized icon and icon/icon.png is
+        textwrap.dedent(f'''
+            mkdir -p /app/share/icons/hicolor/256x256/apps/
+            if [[ -d "www/icon" ]]; then
+                cp www/icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
+            else
+                cp icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
+            fi
+        '''),
+
+        # The manager has a different name in MZ and MV, rmmz_managers.js in MZ and rpg_managers.js in MV
+        'find . -name "*_managers.js" -exec sed -i "s@path.dirname(process.mainModule.filename)@process.env.XDG_DATA_HOME@g" {} +',
+
+        # install the main game files
+        'mv package.json www /app/lib/game/',
+    ])
+
     # TODO: typing requires more thought
     modules: typing.List[typing.Dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
             'name': util.sanitize_name(description['common']['name']),
             'sources': sources,
-            'build-commands': [
-                'mkdir -p /app/share/icons/hicolor/256x256/apps/',
-
-                # in MV www/icon.png is usually the customized icon and icon/icon.png is
-                textwrap.dedent(f'''
-                    if [[ -d "www/icon" ]]; then
-                        cp www/icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
-                    else
-                        cp icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
-                    fi
-                '''),
-
-                # The manager has a different name in MZ and MV, rmmz_managers.js in MZ and rpg_managers.js in MV
-                'find . -name "*_managers.js" -exec sed -i "s@path.dirname(process.mainModule.filename)@process.env.XDG_DATA_HOME@g" {} +',
-
-                # install the main game files
-                'mkdir -p /app/lib/game',
-                'mv package.json www /app/lib/game/',
-            ],
+            'build-commands': commands,
             'cleanup': [
                 'www/save',
             ],

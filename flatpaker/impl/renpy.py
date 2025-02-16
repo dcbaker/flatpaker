@@ -53,6 +53,12 @@ def bd_game(description: Description) -> typing.Dict[str, typing.Any]:
 def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
     commands: typing.List[str] = [
         'mkdir -p /app/lib/game',
+    ]
+
+    if (prologue := description.get('quirks', {}).get('x_configure_prologue')) is not None:
+        commands.append(prologue)
+
+    commands.extend([
 
         # install the main game files
         'mv *.sh *.py renpy game lib /app/lib/game/',
@@ -60,7 +66,7 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
         # Move archives that have not been strippped as they would conflict
         # with the main source archive
         'cp -r */game/* /app/lib/game/game/ || true',
-    ]
+    ])
 
     # Insert these commands before any rpy and py files are compiled
     for p in description.get('sources', {}).get('files', []):

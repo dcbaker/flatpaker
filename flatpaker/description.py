@@ -32,10 +32,10 @@ if typing.TYPE_CHECKING:
 
     class _Quirks(typing.TypedDict, total=False):
 
-        x_use_wayland: bool
         force_window_gui_icon: bool
         no_py_recompile: bool
-
+        x_configure_prologue: str
+        x_use_wayland: bool
 
     class Archive(typing.TypedDict):
 
