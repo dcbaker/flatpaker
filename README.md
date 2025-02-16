@@ -1,7 +1,7 @@
 # flatpaker
 
 Script to mostly automate creating flatpaks from published Ren'Py and Linux
-builds of RPGMaker MV and MZ. open to additional support
+builds of RPGMaker MV and MZ. Open to additional support
 
 ## What is it?
 
@@ -16,27 +16,36 @@ It currently automatically does the following automatically:
 - Generates a .desktop file
 - Extracts an icon from the game source, and installs it
 - patches the game to honor `$XDG_DATA_HOME` for storing game data inside the sandbox (instead of needing `$HOME` access)
+- allows local install or publishing to a repo
+- allows generating static deltas after building
 - sets up the sandbox to allow audio and display, but nothing else
+
+For Ren'Py:
 - recompiles the program when mods are applied
 - strips .rpy files to save space (keeping the rpyc files)
 - strips windows and macos specific files
-- allows local install or publishing to a repo
-- allows generating static deltas after building
+
+For RPG Maker:
+- provides a runtime with a newer nwjs installed, saving disk space
+- using this nwjs also gives guaranteed wayland support
+- It also allows running MV and MZ games that don't ship Linux builds, using the Windows build
 
 ## Why?
 
-I like playing Ren'Py games sometimes. I also don't always trust random
-pre-compiled binaries from the internet. Flatpak provides a nice, convenient
-way to sandbox applications. It also makes supporting Steam Deck and Fedora
-immutable a breeze. But generating flatpaks by hand is a lot of work, especially
-when most of the process will be exactly the same for every renpy project.
+I like playing Ren'Py and RPG Maker games sometimes. I also don't always trust
+random pre-compiled binaries from the internet. Flatpak provides a nice,
+convenient way to sandbox applications. It also makes supporting Steam Deck and
+Fedora immutable a breeze. But generating flatpaks by hand is a lot of work,
+especially when most of the process will be exactly the same for every project.
+It also has a runtime for RPG Maker MZ and MV games that saves disk space and
+allows for better features.
 
 ## How do I use it?
 
 1. Download the compressed project
 2. Download any mods or addons (optional)
 3. Write a toml description
-4. run `flatpaker --install install-deps`
+4. run `flatpaker --install install-deps` (which adds the runtime and sdk)
 5. run `flatpaker --install build *.toml` or `flatpaker --export --gpg-sign build *.toml` (for local install or for export to a shared repo)
 
 ### Toml Format
