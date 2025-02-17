@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright © 2022-2024 Dylan Baker
+# Copyright © 2022-2025 Dylan Baker
 
 from __future__ import annotations
 from xml.etree import ElementTree as ET
@@ -18,7 +18,7 @@ if typing.TYPE_CHECKING:
     from .entry import BaseArguments
 
 RUNTIME_VERSION = "24.08"
-
+LOGDIR = pathlib.Path('.flatpaker') / 'logs'
 
 def _subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **extra: str) -> ET.Element:
     new = ET.SubElement(elem, tag, extra)
@@ -150,7 +150,11 @@ def build_flatpak(args: BaseArguments, workdir: pathlib.Path, appid: str) -> Non
     if args.install:
         build_command.extend(['--install'])
 
-    subprocess.run(build_command, check=True)
+    with contextlib.ExitStack() as manager:
+        o = None if args.verbose else manager.enter_context((LOGDIR / f'{appid}.stdout').open('wb'))
+        e = None if args.verbose else manager.enter_context((LOGDIR / f'{appid}.stderr').open('wb'))
+        subprocess.run(build_command, check=True, stdout=o, stderr=e)
+
     if args.cleanup:
         shutil.rmtree('build', ignore_errors=True)
 
