@@ -32,6 +32,7 @@ if typing.TYPE_CHECKING:
         cleanup: bool
         deltas: bool
         verbose: bool
+        keep_going: bool
 
     class BuildArguments(BaseArguments, typing.Protocol):
         descriptions: typing.List[str]
@@ -46,6 +47,9 @@ def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
 def build(args: BaseArguments, description: Description) -> None:
     # TODO: This could be common
     appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"
+
+    if not args.verbose:
+        print('Building', appid, end=' ', flush=True)
 
     write_build_rules = select_impl(description['common']['engine'])
 
@@ -85,6 +89,7 @@ def main() -> None:
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     parser.add_argument('--static-deltas', action='store_true', dest='deltas', help="generate static deltas when exporting")
     parser.add_argument('--verbose', action='store_true', help="Print more information to the terminal")
+    parser.add_argument('--keep-going', action='store_true', help="If one flatpak fails to build, continue to the next.")
 
     subparsers = parser.add_subparsers()
     build_parser = subparsers.add_parser('build', help='Build flatpaks from descriptions')
@@ -104,6 +109,8 @@ def main() -> None:
             description = load_description(d)
             build(args, description)
         if args.deltas:
+            if not args.verbose:
+                print('Generating static deltas', flush=True)
             with contextlib.ExitStack() as manager:
                 o = None if args.verbose else manager.enter_context((flatpaker.util.LOGDIR / 'static-deltas.stdout').open('wb'))
                 e = None if args.verbose else manager.enter_context((flatpaker.util.LOGDIR / 'static-deltas.stderr').open('wb'))
@@ -123,6 +130,9 @@ def main() -> None:
             platform_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Platform.yml'
             for bfile in [sdk_file, platform_file]:
                 with importlib.resources.as_file(bfile) as sdk:
+                    if not args.verbose:
+                        print('Building:', sdk.name, end=' ', flush=True)
+
                     build_command: typing.List[str] = [
                         'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
 
@@ -133,7 +143,11 @@ def main() -> None:
                     if args.install:
                         build_command.extend(['--install'])
 
-                    subprocess.run(build_command, check=True, stdout=o, stderr=e)
+                    p = subprocess.run(build_command, stdout=o, stderr=e)
+                    if not args.verbose:
+                        print('Success' if p.returncode == 0 else 'Fail', flush=True)
+                    if p.returncode != 0 and not args.keep_going:
+                        p.check_returncode()
 
             if args.deltas:
                 static_deltas(args, o, e)

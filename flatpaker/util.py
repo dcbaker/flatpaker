@@ -153,7 +153,11 @@ def build_flatpak(args: BaseArguments, workdir: pathlib.Path, appid: str) -> Non
     with contextlib.ExitStack() as manager:
         o = None if args.verbose else manager.enter_context((LOGDIR / f'{appid}.stdout').open('wb'))
         e = None if args.verbose else manager.enter_context((LOGDIR / f'{appid}.stderr').open('wb'))
-        subprocess.run(build_command, check=True, stdout=o, stderr=e)
+        p = subprocess.run(build_command, stdout=o, stderr=e)
+        if not args.verbose:
+            print('Success' if p.returncode == 0 else 'Fail', flush=True)
+        if p.returncode != 0 and not args.keep_going:
+            p.check_returncode()
 
     if args.cleanup:
         shutil.rmtree('build', ignore_errors=True)
