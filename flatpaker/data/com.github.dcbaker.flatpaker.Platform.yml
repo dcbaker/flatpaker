@@ -4,6 +4,11 @@ id: "com.github.dcbaker.flatpaker.Platform"
 runtime-version: "24.08"
 runtime: org.freedesktop.Platform
 sdk: org.freedesktop.Sdk
+inherit-extensions:
+ - "org.freedesktop.Platform.GL"
+ - "org.freedesktop.Platform.GStreamer"
+ - "org.freedesktop.Platform.VAAPI.Intel"
+ - "org.freedesktop.Platform.openh264"
 modules:
  - name: "nwjs"
    buildsystem: "simple"
