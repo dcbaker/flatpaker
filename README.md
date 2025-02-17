@@ -95,6 +95,9 @@ allows for better features.
   # Optional, defaults to 1. How many directory levels to remove from this component
   strip_comonents = 2
 
+  # Optional, will be automatically calculated if not provided, but providing it can speed up building
+  sha256 = "abcd..."
+
 # Optional, cannot be set from command line
 [[sources.patches]]
   # path must be set if this is provided
@@ -111,6 +114,9 @@ allows for better features.
   # Optional, if set the file will be installed to this name
   # Does not have to be set for .rpy files that go in the game root directory
   dest = "where to install"
+
+  # Optional, will be automatically calculated if not provided, but providing it can speed up building
+  sha256 = "abcd..."
 ```
 
 Additionally, some games have quirks that make them difficult to package. Some

@@ -148,6 +148,10 @@
                             },
                             "strip_components": {
                                 "type": "number"
+                            },
+                            "sha256": {
+                                "type": "string",
+                                "description": "Optionally, a sha256 checksum. This will be generated if not provided"
                             }
                         },
                         "required": [
@@ -169,6 +173,10 @@
                             "dest": {
                                 "type": "string",
                                 "description": "Where to install the file. .rpy files are automatically merged into the game directory, other files likely need an explicit destination"
+                            },
+                            "sha256": {
+                                "type": "string",
+                                "description": "Optionally, a sha256 checksum. This will be generated if not provided"
                             }
                         },
                         "required": [

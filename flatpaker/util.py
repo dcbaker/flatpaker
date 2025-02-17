@@ -31,17 +31,23 @@ def extract_sources(description: Description) -> typing.List[typing.Dict[str, ob
 
     if 'sources' in description:
         for a in description['sources']['archives']:
+            sha = a.get('sha256')
+            if sha is None:
+                sha = sha256(a['path'])
             sources.append({
                 'path': a['path'].as_posix(),
-                'sha256': sha256(a['path']),
+                'sha256': sha,
                 'type': 'archive',
                 'strip-components': a.get('strip_components', 1),
             })
         for source in description['sources'].get('files', []):
             p = source['path']
+            sha = source.get('sha256')
+            if sha is None:
+                sha = sha256(p)
             sources.append({
                 'path': p.as_posix(),
-                'sha256': sha256(p),
+                'sha256': sha,
                 'type': 'file',
             })
         for a in description['sources'].get('patches', []):

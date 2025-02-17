@@ -41,11 +41,13 @@ if typing.TYPE_CHECKING:
 
         path: pathlib.Path
         strip_components: NotRequired[int]
+        sha256: NotRequired[str]
 
     class File(typing.TypedDict):
 
         path: pathlib.Path
         dest: NotRequired[str]
+        sha256: NotRequired[str]
 
     class Sources(typing.TypedDict):
 
