@@ -164,35 +164,30 @@ def tmpdir(name: str, cleanup: bool = True) -> typing.Iterator[pathlib.Path]:
         shutil.rmtree(tdir)
 
 
-def bd_desktop(file_: pathlib.Path) -> typing.Dict[str, typing.Any]:
+def bd_metadata(desktop: pathlib.Path, appdata: pathlib.Path, game: list[str]) -> dict[str, typing.Any]:
     return {
         'buildsystem': 'simple',
-        'name': 'desktop_file',
+        'name': 'metadata',
         'sources': [
             {
-                'path': file_.as_posix(),
-                'sha256': sha256(file_),
+                'path': desktop.as_posix(),
+                'sha256': sha256(desktop),
                 'type': 'file',
+            },
+            {
+                'path': appdata.as_posix(),
+                'sha256': sha256(appdata),
+                'type': 'file',
+            },
+            {
+                'type': 'script',
+                'dest-filename': 'game.sh',
+                'commands': game,
             }
         ],
         'build-commands': [
-            f'install -D -m644 {file_.name} -t /app/share/applications',
-        ],
-    }
-
-
-def bd_appdata(file_: pathlib.Path) -> typing.Dict[str, typing.Any]:
-    return {
-        'buildsystem': 'simple',
-        'name': 'appdata_file',
-        'sources': [
-            {
-                'path': file_.as_posix(),
-                'sha256': sha256(file_),
-                'type': 'file',
-            }
-        ],
-        'build-commands': [
-            f'install -D -m644 {file_.name} -t /app/share/metainfo',
+            f'install -D -m644 {desktop.name} -t /app/share/applications',
+            f'install -D -m644 {appdata.name} -t /app/share/metainfo',
+            'install -Dm755 game.sh -t /app/bin',
         ],
     }
