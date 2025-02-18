@@ -149,7 +149,7 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
             '''),
     ])
 
-    if description.get('quirks', {}).get('no_py_recompile', False):
+    if not description.get('quirks', {}).get('no_py_recompile', False):
         commands.append(
             # Recompile all python py files, so we can remove the py files
             # form the final distribution
