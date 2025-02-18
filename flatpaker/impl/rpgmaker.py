@@ -53,11 +53,17 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         {
             'buildsystem': 'simple',
             'name': 'game_sh',
-            'sources': [],
+            'sources': [
+                {
+                    'type': 'script',
+                    'dest-filename': 'game.sh',
+                    'commands': [
+                        'exec /usr/lib/nwjs/nw /app/lib/game/ --enable-features=UseOzonePlatform --ozone-platform=wayland'
+                    ]
+                }
+            ],
             'build-commands': [
-                'mkdir -p /app/bin',
-                "echo  'exec /usr/lib/nwjs/nw /app/lib/game/ --enable-features=UseOzonePlatform --ozone-platform=wayland' > /app/bin/game.sh",
-                'chmod +x /app/bin/game.sh',
+                'install -Dm755 game.sh -t /app/bin'
             ],
         },
         util.bd_desktop(desktop_file),
