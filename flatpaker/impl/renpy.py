@@ -35,24 +35,6 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
-def bd_game(description: Description) -> typing.Dict[str, typing.Any]:
-    sh = _create_game_sh(description.get('quirks', {}).get('x_use_wayland', False))
-    return {
-        'buildsystem': 'simple',
-        'name': 'game_sh',
-        'sources': [
-            {
-                'type': 'script',
-                'dest-filename': 'game.sh',
-                'commands': sh,
-            }
-        ],
-        'build-commands': [
-            'install -Dm755 game.sh -t /app/bin'
-        ]
-    }
-
-
 def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
     commands: typing.List[str] = [
         'mkdir -p /app/lib/game',
@@ -215,9 +197,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         },
     ]
     modules.extend([
-        bd_game(description),
-        util.bd_desktop(desktop_file),
-        util.bd_appdata(appdata_file),
+        util.bd_metadata(desktop_file, appdata_file, _create_game_sh(description.get('quirks', {}).get('x_use_wayland', False)))
     ])
 
     if description.get('quirks', {}).get('x_use_wayland', False):
