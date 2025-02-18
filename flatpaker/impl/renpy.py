@@ -14,10 +14,8 @@ if typing.TYPE_CHECKING:
     from flatpaker.description import Description
 
 
-def _create_game_sh(use_wayland: bool) -> str:
+def _create_game_sh(use_wayland: bool) -> list[str]:
     lines: typing.List[str] = [
-        '#!/usr/bin/env sh',
-        '',
         'export RENPY_PERFORMANCE_TEST=0',
         'export RENPY_NO_STEAM=1',
     ]
@@ -30,7 +28,7 @@ def _create_game_sh(use_wayland: bool) -> str:
         'exec sh *.sh',
     ])
 
-    return '\n'.join(lines)
+    return lines
 
 
 def quote(s: str) -> str:
@@ -42,11 +40,16 @@ def bd_game(description: Description) -> typing.Dict[str, typing.Any]:
     return {
         'buildsystem': 'simple',
         'name': 'game_sh',
-        'sources': [],
-        'build-commands': [
-            f"echo '{sh}' > game.sh",
-            'install -Dm755 -t /app/bin/'
+        'sources': [
+            {
+                'type': 'script',
+                'dest-filename': 'game.sh',
+                'commands': sh,
+            }
         ],
+        'build-commands': [
+            'install -Dm755 game.sh -t /app/bin'
+        ]
     }
 
 
