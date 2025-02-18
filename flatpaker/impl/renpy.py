@@ -44,9 +44,8 @@ def bd_game(description: Description) -> typing.Dict[str, typing.Any]:
         'name': 'game_sh',
         'sources': [],
         'build-commands': [
-            'mkdir -p /app/bin',
-            f"echo '{sh}' > /app/bin/game.sh",
-            'chmod +x /app/bin/game.sh'
+            f"echo '{sh}' > game.sh",
+            'install -Dm755 -t /app/bin/'
         ],
     }
 
@@ -82,10 +81,7 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
     for p in description.get('sources', {}).get('files', []):
         dest = os.path.join('/app/lib/game', p.get('dest', 'game'))
         # This could be a file or a directory for dest, so we can't use install
-        commands.extend([
-            f'mkdir -p {os.path.dirname(dest)}',
-            f'mv {p["path"].name} {dest}',
-        ])
+        commands.append(f'install -Dm644 {p["path"].name} {dest}')
 
     # Patch the game to not require sandbox access
     commands.append(
