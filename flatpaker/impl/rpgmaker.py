@@ -58,7 +58,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
                     'type': 'script',
                     'dest-filename': 'game.sh',
                     'commands': [
-                        'exec /usr/lib/nwjs/nw /app/lib/game/ --enable-features=UseOzonePlatform --ozone-platform=wayland'
+                        'exec /usr/lib/nwjs/nw /app/lib/game/ --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"'
                     ]
                 }
             ],
