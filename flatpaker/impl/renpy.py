@@ -19,6 +19,7 @@ def _create_game_sh(use_wayland: bool) -> str:
         '#!/usr/bin/env sh',
         '',
         'export RENPY_PERFORMANCE_TEST=0',
+        'export RENPY_NO_STEAM=1',
     ]
 
     if use_wayland:
@@ -239,7 +240,6 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             *finish_args,
             '--socket=pulseaudio',
             '--device=dri',
-            '--env=RENPY_NO_STEAM=1'
         ],
         'modules': modules,
         'cleanup-commands': [
