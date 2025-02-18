@@ -59,6 +59,15 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
         commands.append(prologue)
 
     commands.extend([
+        # Delete 00steam.rpy if it exists
+        textwrap.dedent('''
+            if [[ -f "renpy/common/00steam.rpy" ]]; then
+                rm renpy/common/00steam.rpy
+            fi
+            if [[ -f "renpy/common/00steam.rpyc" ]]; then
+                rm renpy/common/00steam.rpyc
+            fi
+            '''),
 
         # install the main game files
         'mv *.sh *.py renpy game lib /app/lib/game/',

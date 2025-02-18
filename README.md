@@ -24,6 +24,7 @@ For Ren'Py:
 - recompiles the program when mods are applied
 - strips .rpy files to save space (keeping the rpyc files)
 - strips windows and macos specific files
+- remove steam integration, which breaks some games
 
 For RPG Maker:
 - provides a runtime with a newer nwjs installed, saving disk space
