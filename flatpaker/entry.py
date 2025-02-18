@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 import argparse
+import contextlib
 import importlib
 import importlib.resources
 import pathlib
@@ -30,6 +31,8 @@ if typing.TYPE_CHECKING:
         export: bool
         cleanup: bool
         deltas: bool
+        verbose: bool
+        keep_going: bool
 
     class BuildArguments(BaseArguments, typing.Protocol):
         descriptions: typing.List[str]
@@ -45,6 +48,9 @@ def build(args: BaseArguments, description: Description) -> None:
     # TODO: This could be common
     appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"
 
+    if not args.verbose:
+        print('Building', appid, end=' ', flush=True)
+
     write_build_rules = select_impl(description['common']['engine'])
 
     with flatpaker.util.tmpdir(description['common']['name'], args.cleanup) as d:
@@ -55,14 +61,14 @@ def build(args: BaseArguments, description: Description) -> None:
         flatpaker.util.build_flatpak(args, wd, appid)
 
 
-def static_deltas(args: BaseArguments) -> None:
+def static_deltas(args: BaseArguments, out: None | typing.BinaryIO, err: None | typing.BinaryIO) -> None:
     if not (args.deltas or args.export):
         return
     command = ['flatpak', 'build-update-repo', args.repo, '--generate-static-deltas']
     if args.gpg:
         command.extend(['--gpg-sign', args.gpg])
 
-    subprocess.run(command, check=True)
+    subprocess.run(command, check=True, stdout=out, stderr=err)
 
 
 def main() -> None:
@@ -82,6 +88,8 @@ def main() -> None:
     parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     parser.add_argument('--static-deltas', action='store_true', dest='deltas', help="generate static deltas when exporting")
+    parser.add_argument('--verbose', action='store_true', help="Print more information to the terminal")
+    parser.add_argument('--keep-going', action='store_true', help="If one flatpak fails to build, continue to the next.")
 
     subparsers = parser.add_subparsers()
     build_parser = subparsers.add_parser('build', help='Build flatpaks from descriptions')
@@ -93,36 +101,53 @@ def main() -> None:
 
     args = typing.cast('BaseArguments', parser.parse_args())
 
+    flatpaker.util.LOGDIR.mkdir(parents=True, exist_ok=True)
+
     if args.action == 'build':
         descriptions = typing.cast('BuildArguments', args).descriptions
         for d in descriptions:
             description = load_description(d)
             build(args, description)
         if args.deltas:
-            static_deltas(args)
+            if not args.verbose:
+                print('Generating static deltas', flush=True)
+            with contextlib.ExitStack() as manager:
+                o = None if args.verbose else manager.enter_context((flatpaker.util.LOGDIR / 'static-deltas.stdout').open('wb'))
+                e = None if args.verbose else manager.enter_context((flatpaker.util.LOGDIR / 'static-deltas.stderr').open('wb'))
+                static_deltas(args, o, e)
     if args.action == 'install-deps':
-        command = [
-            'flatpak', 'install', '--no-auto-pin', '--user',
-            f'org.freedesktop.Platform//{flatpaker.util.RUNTIME_VERSION}',
-            f'org.freedesktop.Sdk//{flatpaker.util.RUNTIME_VERSION}',
-        ]
-        subprocess.run(command, check=True)
+        with contextlib.ExitStack() as manager:
+            o = None if args.verbose else manager.enter_context((flatpaker.util.LOGDIR / 'runtime.stdout').open('wb'))
+            e = None if args.verbose else manager.enter_context((flatpaker.util.LOGDIR / 'runtime.stderr').open('wb'))
+            command = [
+                'flatpak', 'install', '--no-auto-pin', '--user',
+                f'org.freedesktop.Platform//{flatpaker.util.RUNTIME_VERSION}',
+                f'org.freedesktop.Sdk//{flatpaker.util.RUNTIME_VERSION}',
+            ]
+            subprocess.run(command, check=True, stdout=o, stderr=e)
 
-        sdk_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Sdk.yml'
-        platform_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Platform.yml'
-        for bfile in [sdk_file, platform_file]:
-            with importlib.resources.as_file(bfile) as sdk:
-                build_command: typing.List[str] = [
-                    'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
+            sdk_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Sdk.yml'
+            platform_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Platform.yml'
+            for bfile in [sdk_file, platform_file]:
+                with importlib.resources.as_file(bfile) as sdk:
+                    if not args.verbose:
+                        print('Building:', sdk.name, end=' ', flush=True)
 
-                if args.export:
-                    build_command.extend(['--repo', args.repo])
-                    if args.gpg:
-                        build_command.extend(['--gpg-sign', args.gpg])
-                if args.install:
-                    build_command.extend(['--install'])
+                    build_command: typing.List[str] = [
+                        'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
 
-                subprocess.run(build_command, check=True)
+                    if args.export:
+                        build_command.extend(['--repo', args.repo])
+                        if args.gpg:
+                            build_command.extend(['--gpg-sign', args.gpg])
+                    if args.install:
+                        build_command.extend(['--install'])
 
-        if args.deltas:
-            static_deltas(args)
+                    p = subprocess.run(build_command, stdout=o, stderr=e)
+                    if not args.verbose:
+                        print('Success' if p.returncode == 0 else 'Fail', flush=True)
+                    if p.returncode != 0 and not args.keep_going:
+                        p.check_returncode()
+
+            if args.deltas:
+                static_deltas(args, o, e)
