@@ -24,11 +24,10 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
     commands.extend([
         # in MV www/icon.png is usually the customized icon and icon/icon.png is
         textwrap.dedent(f'''
-            mkdir -p /app/share/icons/hicolor/256x256/apps/
             if [[ -d "www/icon" ]]; then
-                cp www/icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
+                install -Dm644 www/icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
             else
-                cp icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
+                install -Dm644 icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
             fi
         '''),
 
