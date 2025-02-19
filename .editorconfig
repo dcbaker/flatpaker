@@ -13,3 +13,6 @@ insert_final_newline = true
 
 [*.toml]
 indent_size = 2
+
+[*.yml]
+indent_size = 2

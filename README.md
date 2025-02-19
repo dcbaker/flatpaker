@@ -58,7 +58,7 @@ allows for better features.
   # "Game" is added automatically
   # used freedesktop menu categories. see: https://specifications.freedesktop.org/menu-spec/latest/apas02.html
   categories = ['Simulation']
-  engine = 'renpy'  # Or 'rpgmaker'
+  engine = 'renpy8'  # Or 'rpgmaker', 'renpy7', 'renpy7-py2'
 
 [appdata]
   summary = "A short summary, one sentence or so."

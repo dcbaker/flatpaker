@@ -1,0 +1,36 @@
+--- PyGame_SDL2/setup.py	2024-12-05 06:22:31.000000000 -0800
++++ PyGame_SDL2/setup.py	2025-02-20 15:57:28.240752616 -0800
+@@ -30,7 +30,6 @@
+ import platform
+ import shutil
+ import sys
+-import pathlib
+
+
+ def setup_env(name):
+@@ -160,18 +159,13 @@
+         os.unlink(os.path.join(os.path.dirname(__file__), "src", "pygame_sdl2", i))
+
+     if headers:
+-
+-        virtual_env = os.environ.get("VIRTUAL_ENV", None)
+-
+-        if virtual_env:
+-            headers_dir = pathlib.Path(virtual_env) / "include" / "pygame_sdl2"
+-        else:
+-            headers_dir = pathlib.Path(sysconfig.get_paths()['include']) / "pygame_sdl2"
+-
+-        headers_dir.mkdir(parents=True, exist_ok=True)
++        headers_dir = os.path.join(os.environ['FLATPAK_DEST'], 'include', 'pygame_sdl2')
++        try:
++            os.makedirs(headers_dir)
++        except:
++            pass
+
+         for header in headers:
+-            srcpath = pathlib.Path(header)
+-            dstpath = headers_dir / srcpath.name
++            dstpath = os.path.join(headers_dir, os.path.basename(header))
+
+-            shutil.copy(srcpath, dstpath)
++            shutil.copy(header, dstpath)

@@ -1,0 +1,10 @@
+--- PyGame_SDL2/setup.py	2024-10-24 21:45:23.000000000 -0700
++++ PyGame_SDL2/setup.py	2025-02-18 11:03:12.025657582 -0800
+@@ -30,6 +30,7 @@
+ import platform
+ import shutil
+ import sys
++import sysconfig
+ import pathlib
+
+

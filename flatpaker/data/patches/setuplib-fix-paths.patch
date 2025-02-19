@@ -1,0 +1,11 @@
+--- RenPy/module/setuplib.py	2025-02-18 16:05:48.162861005 -0800
++++ RenPy/module/setuplib.py	2025-02-18 16:11:43.949962656 -0800
+@@ -165,7 +165,7 @@
+
+     for i in install:
+
+-        for ldir in [i, os.path.join(i, "lib"), os.path.join(i, "lib64"), os.path.join(i, "lib32") ]:
++        for ldir in [i, os.path.join(i, "lib/x86_64-linux-gnu")]:
+
+             for suffix in (".so", ".a", ".dll.a", ".dylib"):
+

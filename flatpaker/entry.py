@@ -35,8 +35,9 @@ if typing.TYPE_CHECKING:
         descriptions: typing.List[str]
 
 
-def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
-    mod = typing.cast('ImplMod', importlib.import_module(f'flatpaker.impl.{name}'))
+def select_impl(name: typing.Literal['renpy8', 'renpy7', 'renpy7-py2', 'rpgmaker']) -> JsonWriterImpl:
+    name_ = 'renpy' if name.startswith('renpy') else 'rpgmaker'
+    mod = typing.cast('ImplMod', importlib.import_module(f'flatpaker.impl.{name_}'))
     assert hasattr(mod, 'write_rules'), 'should be good enough'
     return mod.write_rules
 
@@ -108,9 +109,16 @@ def main() -> None:
         ]
         subprocess.run(command, check=True)
 
-        sdk_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Sdk.yml'
-        platform_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Platform.yml'
-        for bfile in [sdk_file, platform_file]:
+        datadir =  importlib.resources.files('flatpaker') / 'data'
+        basename = 'com.github.dcbaker.flatpaker'
+        runtimes = [
+            datadir / f'{basename}.RPGM.Platform.yml',
+            datadir / f'{basename}.RenPy.8.Sdk.yml',
+            datadir / f'{basename}.RenPy.7.py3.Sdk.yml',
+            datadir / f'{basename}.RenPy.7.py2.Sdk.yml',
+        ]
+
+        for bfile in runtimes:
             with importlib.resources.as_file(bfile) as sdk:
                 build_command: typing.List[str] = [
                     'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]

@@ -19,7 +19,7 @@ if typing.TYPE_CHECKING:
 
         reverse_url: str
         name: str
-        engine: typing.Literal['renpy', 'rpgmaker']
+        engine: typing.Literal['renpy8', 'renpy7', 'renpy7-py2', 'rpgmaker']
         categories: NotRequired[typing.List[str]]
 
     class _AppData(typing.TypedDict):

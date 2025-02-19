@@ -1,0 +1,10 @@
+name: "python3-cython0"
+buildsystem: "simple"
+build-commands:
+  - pip3 install --prefix=${FLATPAK_DEST} --no-deps . --verbose
+sources:
+  - type: "git"
+    url: "https://github.com/dcbaker/cython.git"
+    branch: "cython0"
+cleanup-platform:
+  - '*'

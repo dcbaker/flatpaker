@@ -1,0 +1,11 @@
+--- RenPy/module/generate_styles.py	2024-08-22 21:43:28.700000000 -0700
++++ RenPy/module/generate_styles.py.new	2025-02-20 16:14:43.649784214 -0800
+@@ -36,7 +36,7 @@
+ ROOT = os.path.dirname(BASE)
+ 
+ import setuplib
+-module_gen = "module/" + setuplib.gen
++module_gen = setuplib.gen
+ 
+ 
+ def sorted_dict(**kwargs):

@@ -19,7 +19,7 @@
                 },
                 "engine": {
                     "type": "string",
-                    "enum": ["renpy", "rpgmaker"],
+                    "enum": ["renpy8", "renpy7", "renpy7-py2", "rpgmaker"],
                     "description": "What engine this game is for."
                 },
                 "categories": {
