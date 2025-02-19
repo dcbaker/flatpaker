@@ -12,4 +12,4 @@ don't need access to the user home directory. This increases security and is
 generally beneficial for end users.
 """
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
