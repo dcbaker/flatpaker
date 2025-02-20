@@ -100,7 +100,7 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
 
                 for icon in $(ls *.png); do
                     if [[ "${{icon}}" =~ "32x32" ]]; then
-                        size="32x23"
+                        size="32x32"
                     elif [[ "${{icon}}" =~ "64x64" ]]; then
                         size="64x64"
                     elif [[ "${{icon}}" =~ "128x128" ]]; then
