@@ -23,7 +23,7 @@ if typing.TYPE_CHECKING:
         write_rules: JsonWriterImpl
 
     class BaseArguments(typing.Protocol):
-        action: typing.Literal['build', 'install-deps']
+        action: typing.Literal['build', 'build-runtimes']
         repo: str
         gpg: typing.Optional[str]
         install: bool
@@ -89,8 +89,8 @@ def main() -> None:
     build_parser.add_argument('descriptions', nargs='+', help="A Toml description file")
     build_parser.set_defaults(action='build')
 
-    install_deps_parser = subparsers.add_parser('install-deps', help='Install runtime and Sdk dependencies')
-    install_deps_parser.set_defaults(action='install-deps')
+    runtimes_parser = subparsers.add_parser('build-runtimes', help='Build custom Platforms and Sdks')
+    runtimes_parser.set_defaults(action='build-runtimes')
 
     args = typing.cast('BaseArguments', parser.parse_args())
 
@@ -101,7 +101,7 @@ def main() -> None:
             build(args, description)
         if args.deltas:
             static_deltas(args)
-    if args.action == 'install-deps':
+    if args.action == 'build-runtimes':
         command = [
             'flatpak', 'install', '--no-auto-pin', '--user',
             f'org.freedesktop.Platform//{flatpaker.util.RUNTIME_VERSION}',
