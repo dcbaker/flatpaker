@@ -1,0 +1,81 @@
+build-runtime: true
+id: com.github.dcbaker.flatpaker.RenPy.Sdk
+id-platform: com.github.dcbaker.flatpaker.RenPy.Platform
+branch: "7"
+runtime-version: "24.08"
+runtime: org.freedesktop.Platform
+sdk: org.freedesktop.Sdk
+inherit-extensions:
+  - "org.freedesktop.Platform.GL"
+modules:
+  - "modules/renpy-shared.yml"
+  - "modules/python-2.7.json"
+  - "modules/python2-requirements.json"
+  - name: "python2-cython0"
+    buildsystem: "simple"
+    build-commands:
+      - pip2 install --prefix=${FLATPAK_DEST} --no-deps . --verbose
+      - ln -s ${FLATPAK_DEST}/lib/python2.7/site-packages/cython0.py ${FLATPAK_DEST}/lib/python2.7/site-packages/cython.py
+    sources:
+      - type: "git"
+        url: "https://github.com/dcbaker/cython.git"
+        branch: "cython0"
+    cleanup-platform:
+      - ${FLATPAK_DEST}/bin
+  - name: PyGame_SDL2
+    buildsystem: simple
+    build-commands:
+      - pip2 install --prefix=${FLATPAK_DEST} --no-deps .
+    sources:
+      - type: archive
+        url: https://www.renpy.org/dl/7.8.4/pygame_sdl2-2.1.0+renpy7.8.4.tar.gz
+        sha256: 5b16fe3ef6b8387ea7c0403c368df6dad0fa3aae8acd40eddb1c5fb26da8936b
+      - type: patch
+        path: patches/pygame-sdl2-7-remove-pathlib.patch
+      - type: patch
+        path: patches/pygame-sdl2-7-use-correct-cython.patch
+      - type: patch
+        path: patches/pygame-sdl2-7-install-headers.patch
+  - name: RenPy
+    buildsystem: simple
+    build-commands:
+      - RENPY_CYTHON=cython0 RENPY_DEPS_INSTALL="${FLATPAK_DEST}" python2 module/setup.py install --prefix=${FLATPAK_DEST} || exit 1
+
+      # If this is initialized it tries to write files into a readonly location
+      # and causes a crash. It's also not useful since there is no steam in the
+      # sandbox
+      - rm renpy/common/00steam.rpy* || true
+
+      # TODO: calculate where site packages is instead of hardocding
+      - cp -rv renpy ${FLATPAK_DEST}/lib/python2.7/site-packages || exit 1
+      - python -m compileall ${FLATPAK_DEST}/lib/python2.7/site-packages/renpy || exit 1
+      - sed -i s@python3@python2@g renpy-bin || exit 1
+      - install -Dm755 renpy-bin -t ${FLATPAK_DEST}/bin/ || exit 1
+
+      # the renpy script gets mad that /app/lib/game doesn't exist, use the
+      # demo game as we need something complex enough to get the compile script
+      # to compile everything
+      # renpy-bin needs the extra fake arguments
+      - |
+        mkdir -p /app/lib/game/ || exit 1
+        mv the_question /app/lib/game/game || exit 1
+        pushd ${FLATPAK_DEST}/lib/python2.7/site-packages/renpy || exit 1
+        ${FLATPAK_DEST}/bin/renpy-bin 'dummy' 'dummy' "/app/lib/game" compile || exit 1
+        popd
+        rm -r /app/lib/game || exit 1
+    sources:
+      - type: archive
+        url: https://www.renpy.org/dl/7.8.4/renpy-7.8.4-source.tar.bz2
+        sha256: a5ed1d326e8b9850c604f7e7bdd10ce6a0d0e41ad04d7d295a2e5189da8638f8
+      - type: patch
+        path: patches/renpy-setuplib-fix-paths.patch
+      - type: patch
+        path: patches/renpy-ffmpeg-7.patch
+      - type: patch
+        path: patches/renpy-7-fix-styles-dirname.patch
+      - type: file
+        path: files/renpy.py
+        dest-filename: renpy-bin
+    cleanup:
+      - /app
+
