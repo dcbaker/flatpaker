@@ -1,0 +1,65 @@
+build-runtime: true
+id: com.github.dcbaker.flatpaker.RenPy.Sdk
+id-platform: com.github.dcbaker.flatpaker.RenPy.Platform
+branch: "8"
+runtime-version: "24.08"
+runtime: org.freedesktop.Platform
+sdk: org.freedesktop.Sdk
+inherit-extensions:
+  - "org.freedesktop.Platform.GL"
+modules:
+  - "modules/renpy-shared.yml"
+  - "modules/python3-requirements.json"
+  - "modules/python3-cython0.yml"
+  - name: PyGame_SDL2
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-deps .
+    sources:
+      - type: archive
+        url: https://www.renpy.org/dl/8.3.4/pygame_sdl2-2.1.0+renpy8.3.4.tar.gz
+        sha256: 18ce9cc7dc8fe5b80a58c4983a4652f61137dff1c99ecbf82a6941db78db92a8
+      - type: patch
+        path: patches/pygame-sdl2-import-sysconfig.patch
+      - type: patch
+        path: patches/pygame-sdl2-fix-header-install-path.patch
+  - name: RenPy
+    buildsystem: simple
+    build-commands:
+      - RENPY_CYTHON=cython0 RENPY_DEPS_INSTALL="${FLATPAK_DEST}" pip3 install --prefix=${FLATPAK_DEST} --no-deps ./module || exit 1
+
+      # If this is initialized it tries to write files into a readonly location
+      # and causes a crash It's also not useful since there is no steam in the
+      # sandbox
+      - rm renpy/common/00steam.rpy* || true
+
+      # TODO: calculate where site packages is instead of hardocding
+      - cp -rv renpy ${FLATPAK_DEST}/lib/python3.12/site-packages || exit 1
+      - python -m compileall ${FLATPAK_DEST}/lib/python3.12/site-packages/renpy || exit 1
+      - install -Dm755 renpy-bin -t ${FLATPAK_DEST}/bin/ || exit 1
+
+      # the renpy script gets mad that /app/lib/game doesn't exist, use the
+      # demo game as we need something complex enough to get the compile script
+      # to compile everything
+      # renpy-bin needs the extra fake arguments
+      - |
+        mkdir -p /app/lib/game/ || exit 1
+        mv the_question /app/lib/game/game || exit 1
+        pushd ${FLATPAK_DEST}/lib/python3.12/site-packages/renpy || exit 1
+        ${FLATPAK_DEST}/bin/renpy-bin 'dummy' 'dummy' "/app/lib/game" compile || exit 1
+        popd
+        rm -r /app/lib/game || exit 1
+    sources:
+      - type: archive
+        url: https://www.renpy.org/dl/8.3.4/renpy-8.3.4-source.tar.bz2
+        sha256: a814ff436082f7dab97037044d53c78fbd11accca1d53a0b9d6dc384f25e1862
+      - type: patch
+        path: patches/renpy-setuplib-fix-paths.patch
+      - type: patch
+        path: patches/renpy-ffmpeg-7.patch
+      - type: file
+        path: files/renpy.py
+        dest-filename: renpy-bin
+    cleanup:
+      - /app
+

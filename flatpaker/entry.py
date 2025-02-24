@@ -35,8 +35,9 @@ if typing.TYPE_CHECKING:
         descriptions: typing.List[str]
 
 
-def select_impl(name: typing.Literal['renpy', 'rpgmaker']) -> JsonWriterImpl:
-    mod = typing.cast('ImplMod', importlib.import_module(f'flatpaker.impl.{name}'))
+def select_impl(name: typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']) -> JsonWriterImpl:
+    name_ = 'renpy' if name.startswith('renpy') else 'rpgmaker'
+    mod = typing.cast('ImplMod', importlib.import_module(f'flatpaker.impl.{name_}'))
     assert hasattr(mod, 'write_rules'), 'should be good enough'
     return mod.write_rules
 
@@ -108,13 +109,15 @@ def main() -> None:
         ]
         subprocess.run(command, check=True)
 
-        datadir =  importlib.resources.files('flatpaker') / 'data'
         basename = 'com.github.dcbaker.flatpaker'
         runtimes = [
-            f'{basename}.Sdk.yml',
-            f'{basename}.RPGM.Platform.yml',
+            # f'{basename}.RPGM.Platform.yml',
+            # f'{basename}.RenPy.8.Sdk.yml',
+            # f'{basename}.RenPy.7.py3.Sdk.yml',
+            f'{basename}.RenPy.7.py2.Sdk.yml',
         ]
 
+        datadir =  importlib.resources.files('flatpaker') / 'data'
         for bfile in runtimes:
             with importlib.resources.as_file(datadir / bfile) as sdk:
                 build_command: typing.List[str] = [
@@ -128,6 +131,26 @@ def main() -> None:
                     build_command.extend(['--install'])
 
                 subprocess.run(build_command, check=True)
+
+                # Work around https://github.com/flatpak/flatpak-builder/issues/630
+                if args.install and 'Sdk' in sdk.name:
+                    if '8' in sdk.name:
+                        branch = '8'
+                    elif '7.py2' in sdk.name:
+                        branch = '7'
+                    elif '7.py3' in sdk.name:
+                        branch = '7-PY3'
+                    else:
+                        raise RuntimeError('Unexpected Sdk')
+
+                    repo = args.repo if args.export else pathlib.Path('.flatpak-builder/cache').absolute().as_posix()
+                    platform_id = '.'.join(sdk.name.split('.', maxsplit=5)[:-1])
+
+                    install_command = [
+                        'flatpak', 'install', '--user', '-y', '--noninteractive',
+                        '--reinstall', repo, f'{platform_id}.Platform//{branch}',
+                    ]
+                    subprocess.run(install_command, check=True)
 
         if args.deltas:
             static_deltas(args)

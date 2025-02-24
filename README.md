@@ -21,10 +21,9 @@ It currently automatically does the following automatically:
 - sets up the sandbox to allow audio and display, but nothing else
 
 For Ren'Py:
-- recompiles the program when mods are applied
+- provides a runtime with up to date renpy and deps, built against the freedesktop Platform libraries.
+  using the shared runtime saves space, as well as ensures that all games can be run with Wayland support.
 - strips .rpy files to save space (keeping the rpyc files)
-- strips windows and macos specific files
-- remove steam integration, which breaks some games
 
 For RPG Maker:
 - provides a runtime with a newer nwjs installed, saving disk space
@@ -58,7 +57,7 @@ allows for better features.
   # "Game" is added automatically
   # used freedesktop menu categories. see: https://specifications.freedesktop.org/menu-spec/latest/apas02.html
   categories = ['Simulation']
-  engine = 'renpy'  # Or 'rpgmaker'
+  engine = 'renpy8'  # Or 'rpgmaker', 'renpy7', 'renpy7-py3'
 
 [appdata]
   summary = "A short summary, one sentence or so."
@@ -129,12 +128,6 @@ of these quirks can be worked around:
   # the .exe of icns. This is useful for games that have the generic Ren'Py
   # icon in the exe, but a custom icon in the tree.
   force_window_gui_icon = true
-
-  # For Ren'Py only:
-  # Don't attempt to recompile .py files to .pyc or .pyo. Some older Ren'Py 6.x
-  # and 7.x (Python2) based projects don't have enough of the stdlib to actually
-  # do the recompile
-  no_py_recompile = true
 ```
 
 Any quirk starting with `x_` or `x-` is an experimental quirk, and may be

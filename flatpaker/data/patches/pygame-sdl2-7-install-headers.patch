@@ -1,0 +1,14 @@
+--- pygame_sdl2-2.1.0+renpy7.8.4/setup.py	2024-12-05 06:22:31.000000000 -0800
++++ pygame_sdl2-2.1.0+renpy7.8.4/setup.py	2025-02-20 19:19:57.348964025 -0800
+@@ -141,11 +141,6 @@
+
+ if __name__ == "__main__":
+
+-
+-    if sys.version_info.major <= 3 and sys.version_info.minor <= 11:
+-        py_headers = headers
+-        headers = [ ]
+-
+     setup(
+         "pygame_sdl2",
+         VERSION,

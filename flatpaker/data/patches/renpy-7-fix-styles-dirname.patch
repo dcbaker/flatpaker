@@ -1,0 +1,12 @@
+--- RenPy/module/generate_styles.py	2024-08-22 21:43:28.700000000 -0700
++++ RenPy/module/generate_styles.py	2025-02-20 16:19:00.161792042 -0800
+@@ -481,6 +481,9 @@
+             if old == text:
+                 return
+
++        dirname = os.path.dirname(self.filename)
++        if not os.path.exists(dirname):
++            os.makedirs(dirname)
+         with open(self.filename, "w") as f:
+             f.write(text)
+

@@ -19,7 +19,7 @@ if typing.TYPE_CHECKING:
 
         reverse_url: str
         name: str
-        engine: typing.Literal['renpy', 'rpgmaker']
+        engine: typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']
         categories: NotRequired[typing.List[str]]
 
     class _AppData(typing.TypedDict):
@@ -33,9 +33,7 @@ if typing.TYPE_CHECKING:
     class _Quirks(typing.TypedDict, total=False):
 
         force_window_gui_icon: bool
-        no_py_recompile: bool
         x_configure_prologue: str
-        x_use_wayland: bool
 
     class Archive(typing.TypedDict):
 

@@ -1,0 +1,14 @@
+--- PyGame_SDL2/setuplib.py	2024-10-24 21:45:23.000000000 -0700
++++ PyGame_SDL2/setuplib.py	2025-02-20 15:59:42.943756727 -0800
+@@ -59,10 +59,7 @@
+ windows = platform.win32_ver()[0]
+
+ # The cython command.
+-if windows:
+-    cython_command = os.path.join(os.path.dirname(sys.executable), "Scripts", "cython.exe")
+-else:
+-    cython_command = "cython"
++cython_command = "cython0"
+
+ if sys.version_info[0] >= 3:
+     gen = "gen3"
