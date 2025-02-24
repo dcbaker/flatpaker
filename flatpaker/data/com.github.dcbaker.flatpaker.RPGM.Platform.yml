@@ -1,14 +1,10 @@
 build-runtime: true
-id: "com.github.dcbaker.flatpaker.Platform"
-#branch: "25.02"
+id: com.github.dcbaker.flatpaker.RPGM.Platform
 runtime-version: "24.08"
 runtime: org.freedesktop.Platform
 sdk: org.freedesktop.Sdk
 inherit-extensions:
  - "org.freedesktop.Platform.GL"
- - "org.freedesktop.Platform.GStreamer"
- - "org.freedesktop.Platform.VAAPI.Intel"
- - "org.freedesktop.Platform.openh264"
 modules:
  - name: "nwjs"
    buildsystem: "simple"
@@ -16,6 +12,8 @@ modules:
     - type: "archive"
       url: "https://dl.nwjs.io/v0.95.0/nwjs-v0.95.0-linux-x64.tar.gz"
       sha256: "d34179ef48fde465308fe0df4441b9dcf00c5e725dcb9f83949a7fdc37582024"
+      only_arches:
+       - x86_64
    build-commands:
     - "mkdir /usr/lib/nwjs"
     - "mv * /usr/lib/nwjs/"

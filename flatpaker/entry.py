@@ -108,10 +108,15 @@ def main() -> None:
         ]
         subprocess.run(command, check=True)
 
-        sdk_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Sdk.yml'
-        platform_file = importlib.resources.files('flatpaker') / 'data' / 'com.github.dcbaker.flatpaker.Platform.yml'
-        for bfile in [sdk_file, platform_file]:
-            with importlib.resources.as_file(bfile) as sdk:
+        datadir =  importlib.resources.files('flatpaker') / 'data'
+        basename = 'com.github.dcbaker.flatpaker'
+        runtimes = [
+            f'{basename}.Sdk.yml',
+            f'{basename}.RPGM.Platform.yml',
+        ]
+
+        for bfile in runtimes:
+            with importlib.resources.as_file(datadir / bfile) as sdk:
                 build_command: typing.List[str] = [
                     'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
 
