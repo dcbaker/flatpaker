@@ -10,7 +10,7 @@ flatpak for pre-built projects, including adding patches or mods. You
 write a small, simple toml file, fetch the sources, and get a ready to publish
 flatpak.
 
-It currently automatically does the following automatically:
+It currently does the following automatically:
 
 - Generates an appstream xml file
 - Generates a .desktop file
