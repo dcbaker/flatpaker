@@ -111,9 +111,9 @@ def main() -> None:
 
         basename = 'com.github.dcbaker.flatpaker'
         runtimes = [
-            # f'{basename}.RPGM.Platform.yml',
-            # f'{basename}.RenPy.8.Sdk.yml',
-            # f'{basename}.RenPy.7.py3.Sdk.yml',
+            f'{basename}.RPGM.Platform.yml',
+            f'{basename}.RenPy.8.Sdk.yml',
+            f'{basename}.RenPy.7.py3.Sdk.yml',
             f'{basename}.RenPy.7.py2.Sdk.yml',
         ]
 
