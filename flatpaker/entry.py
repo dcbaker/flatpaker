@@ -68,28 +68,33 @@ def static_deltas(args: BaseArguments) -> None:
 
 def main() -> None:
     config = flatpaker.config.load_config()
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
+
+    # An inheritable parser instance used to add arguments to both build and build-runtimes
+    pp = argparse.ArgumentParser(add_help=False)
+    pp.add_argument(
         '--repo',
         default=config['common'].get('repo', 'repo'),
         action='store',
         help='a flatpak repo to put the result in')
-    parser.add_argument(
+    pp.add_argument(
         '--gpg',
         default=config['common'].get('gpg-key'),
         action='store',
         help='A GPG key to sign the output to when writing to a repo')
-    parser.add_argument('--export', action='store_true', help='Export to the provided repo')
-    parser.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
-    parser.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
-    parser.add_argument('--static-deltas', action='store_true', dest='deltas', help="generate static deltas when exporting")
+    pp.add_argument('--export', action='store_true', help='Export to the provided repo')
+    pp.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
+    pp.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
+    pp.add_argument('--static-deltas', action='store_true', dest='deltas', help="generate static deltas when exporting")
 
+    parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
-    build_parser = subparsers.add_parser('build', help='Build flatpaks from descriptions')
+    build_parser = subparsers.add_parser(
+        'build', help='Build flatpaks from descriptions', parents=[pp])
     build_parser.add_argument('descriptions', nargs='+', help="A Toml description file")
     build_parser.set_defaults(action='build')
 
-    runtimes_parser = subparsers.add_parser('build-runtimes', help='Build custom Platforms and Sdks')
+    runtimes_parser = subparsers.add_parser(
+        'build-runtimes', help='Build custom Platforms and Sdks', parents=[pp])
     runtimes_parser.set_defaults(action='build-runtimes')
 
     args = typing.cast('BaseArguments', parser.parse_args())
