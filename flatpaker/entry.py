@@ -42,7 +42,7 @@ def select_impl(name: typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker
     return mod.write_rules
 
 
-def build(args: BaseArguments, description: Description) -> None:
+def _build(args: BaseArguments, description: Description) -> None:
     # TODO: This could be common
     appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"
 
@@ -54,6 +54,12 @@ def build(args: BaseArguments, description: Description) -> None:
         appdata_file = flatpaker.util.create_appdata(description, wd, appid)
         write_build_rules(description, wd, appid, desktop_file, appdata_file)
         flatpaker.util.build_flatpak(args, wd, appid)
+
+
+def build(args: BuildArguments) -> None:
+    for d in args.descriptions:
+        description = load_description(d)
+        _build(args, description)
 
 
 def static_deltas(args: BaseArguments) -> None:
@@ -100,10 +106,7 @@ def main() -> None:
     args = typing.cast('BaseArguments', parser.parse_args())
 
     if args.action == 'build':
-        descriptions = typing.cast('BuildArguments', args).descriptions
-        for d in descriptions:
-            description = load_description(d)
-            build(args, description)
+        build(typing.cast('BuildArguments', args))
         if args.deltas:
             static_deltas(args)
     if args.action == 'build-runtimes':
