@@ -7,6 +7,7 @@ import importlib
 import importlib.resources
 import pathlib
 import subprocess
+import sys
 import typing
 
 from flatpaker.description import load_description
@@ -30,6 +31,7 @@ if typing.TYPE_CHECKING:
         export: bool
         cleanup: bool
         deltas: bool
+        keep_going: bool
 
     class BuildArguments(BaseArguments, typing.Protocol):
         descriptions: typing.List[str]
@@ -56,10 +58,19 @@ def _build(args: BaseArguments, description: Description) -> None:
         flatpaker.util.build_flatpak(args, wd, appid)
 
 
-def build(args: BuildArguments) -> None:
+def build(args: BuildArguments) -> bool:
+    success = True
+
     for d in args.descriptions:
-        description = load_description(d)
-        _build(args, description)
+        try:
+            description = load_description(d)
+            _build(args, description)
+        except Exception:
+            if not args.keep_going:
+                raise
+            success = False
+
+    return success
 
 
 def _build_runtime(args: BaseArguments, sdk: pathlib.Path) -> None:
@@ -96,7 +107,7 @@ def _build_runtime(args: BaseArguments, sdk: pathlib.Path) -> None:
         subprocess.run(install_command, check=True)
 
 
-def build_runtimes(args: BaseArguments) -> None:
+def build_runtimes(args: BaseArguments) -> bool:
     command = [
         'flatpak', 'install', '--no-auto-pin', '--user',
         f'org.freedesktop.Platform//{flatpaker.util.RUNTIME_VERSION}',
@@ -112,10 +123,19 @@ def build_runtimes(args: BaseArguments) -> None:
         f'{basename}.RenPy.7.py2.Sdk.yml',
     ]
 
+    success = True
+
     datadir =  importlib.resources.files('flatpaker') / 'data'
     for runtime in runtimes:
-        with importlib.resources.as_file(datadir / runtime) as sdk:
-            _build_runtime(args, sdk)
+        try:
+            with importlib.resources.as_file(datadir / runtime) as sdk:
+                _build_runtime(args, sdk)
+        except Exception:
+            if not args.keep_going:
+                raise
+            success = False
+
+    return success
 
 
 def static_deltas(args: BaseArguments) -> None:
@@ -147,6 +167,7 @@ def main() -> None:
     pp.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
     pp.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     pp.add_argument('--static-deltas', action='store_true', dest='deltas', help="generate static deltas when exporting")
+    pp.add_argument('--keep-going', action='store_true', help="Don't stop if building a runtime or app fails.")
 
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
@@ -160,12 +181,15 @@ def main() -> None:
     runtimes_parser.set_defaults(action='build-runtimes')
 
     args = typing.cast('BaseArguments', parser.parse_args())
+    success = True
 
     if args.action == 'build':
-        build(typing.cast('BuildArguments', args))
+        success = build(typing.cast('BuildArguments', args))
         if args.deltas:
             static_deltas(args)
     if args.action == 'build-runtimes':
-        build_runtimes(args)
+        success = build_runtimes(args)
         if args.deltas:
             static_deltas(args)
+
+    sys.exit(0 if success else 1)
