@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright © 2022-2024 Dylan Baker
+# Copyright © 2022-2025 Dylan Baker
 
 from __future__ import annotations
 import argparse
@@ -62,6 +62,62 @@ def build(args: BuildArguments) -> None:
         _build(args, description)
 
 
+def _build_runtime(args: BaseArguments, sdk: pathlib.Path) -> None:
+    build_command: typing.List[str] = [
+        'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
+
+    if args.export:
+        build_command.extend(['--repo', args.repo])
+        if args.gpg:
+            build_command.extend(['--gpg-sign', args.gpg])
+    if args.install:
+        build_command.extend(['--install'])
+
+    subprocess.run(build_command, check=True)
+
+    # Work around https://github.com/flatpak/flatpak-builder/issues/630
+    if args.install and 'Sdk' in sdk.name:
+        if '8' in sdk.name:
+            branch = '8'
+        elif '7.py2' in sdk.name:
+            branch = '7'
+        elif '7.py3' in sdk.name:
+            branch = '7-PY3'
+        else:
+            raise RuntimeError('Unexpected Sdk')
+
+        repo = args.repo if args.export else pathlib.Path('.flatpak-builder/cache').absolute().as_posix()
+        platform_id = '.'.join(sdk.name.split('.', maxsplit=5)[:-1])
+
+        install_command = [
+            'flatpak', 'install', '--user', '-y', '--noninteractive',
+            '--reinstall', repo, f'{platform_id}.Platform//{branch}',
+        ]
+        subprocess.run(install_command, check=True)
+
+
+def build_runtimes(args: BaseArguments) -> None:
+    command = [
+        'flatpak', 'install', '--no-auto-pin', '--user',
+        f'org.freedesktop.Platform//{flatpaker.util.RUNTIME_VERSION}',
+        f'org.freedesktop.Sdk//{flatpaker.util.RUNTIME_VERSION}',
+    ]
+    subprocess.run(command, check=True)
+
+    basename = 'com.github.dcbaker.flatpaker'
+    runtimes = [
+        f'{basename}.RPGM.Platform.yml',
+        f'{basename}.RenPy.8.Sdk.yml',
+        f'{basename}.RenPy.7.py3.Sdk.yml',
+        f'{basename}.RenPy.7.py2.Sdk.yml',
+    ]
+
+    datadir =  importlib.resources.files('flatpaker') / 'data'
+    for runtime in runtimes:
+        with importlib.resources.as_file(datadir / runtime) as sdk:
+            _build_runtime(args, sdk)
+
+
 def static_deltas(args: BaseArguments) -> None:
     if not (args.deltas or args.export):
         return
@@ -110,55 +166,6 @@ def main() -> None:
         if args.deltas:
             static_deltas(args)
     if args.action == 'build-runtimes':
-        command = [
-            'flatpak', 'install', '--no-auto-pin', '--user',
-            f'org.freedesktop.Platform//{flatpaker.util.RUNTIME_VERSION}',
-            f'org.freedesktop.Sdk//{flatpaker.util.RUNTIME_VERSION}',
-        ]
-        subprocess.run(command, check=True)
-
-        basename = 'com.github.dcbaker.flatpaker'
-        runtimes = [
-            f'{basename}.RPGM.Platform.yml',
-            f'{basename}.RenPy.8.Sdk.yml',
-            f'{basename}.RenPy.7.py3.Sdk.yml',
-            f'{basename}.RenPy.7.py2.Sdk.yml',
-        ]
-
-        datadir =  importlib.resources.files('flatpaker') / 'data'
-        for bfile in runtimes:
-            with importlib.resources.as_file(datadir / bfile) as sdk:
-                build_command: typing.List[str] = [
-                    'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
-
-                if args.export:
-                    build_command.extend(['--repo', args.repo])
-                    if args.gpg:
-                        build_command.extend(['--gpg-sign', args.gpg])
-                if args.install:
-                    build_command.extend(['--install'])
-
-                subprocess.run(build_command, check=True)
-
-                # Work around https://github.com/flatpak/flatpak-builder/issues/630
-                if args.install and 'Sdk' in sdk.name:
-                    if '8' in sdk.name:
-                        branch = '8'
-                    elif '7.py2' in sdk.name:
-                        branch = '7'
-                    elif '7.py3' in sdk.name:
-                        branch = '7-PY3'
-                    else:
-                        raise RuntimeError('Unexpected Sdk')
-
-                    repo = args.repo if args.export else pathlib.Path('.flatpak-builder/cache').absolute().as_posix()
-                    platform_id = '.'.join(sdk.name.split('.', maxsplit=5)[:-1])
-
-                    install_command = [
-                        'flatpak', 'install', '--user', '-y', '--noninteractive',
-                        '--reinstall', repo, f'{platform_id}.Platform//{branch}',
-                    ]
-                    subprocess.run(install_command, check=True)
-
+        build_runtimes(args)
         if args.deltas:
             static_deltas(args)
