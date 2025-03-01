@@ -37,8 +37,8 @@ random pre-compiled binaries from the internet. Flatpak provides a nice,
 convenient way to sandbox applications. It also makes supporting Steam Deck and
 Fedora immutable a breeze. But generating flatpaks by hand is a lot of work,
 especially when most of the process will be exactly the same for every project.
-It also has a runtime for RPG Maker MZ and MV games that saves disk space and
-allows for better features.
+The use of up-to-date runtimes saves more disk space and allows for the sandbox
+to provide even better security by using Wayland instead of X11 (or XWayland).
 
 ## How do I use it?
 
