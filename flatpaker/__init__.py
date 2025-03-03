@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright © 2024 Dylan Baker
+# Copyright © 2024-2025 Dylan Baker
 
 """Utilities to convert various kinds of native binaries into flatpaks.
 
@@ -12,4 +12,4 @@ don't need access to the user home directory. This increases security and is
 generally beneficial for end users.
 """
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"
