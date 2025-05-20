@@ -36,6 +36,9 @@ if typing.TYPE_CHECKING:
     class BuildArguments(BaseArguments, typing.Protocol):
         descriptions: typing.List[str]
 
+    class BuildRuntimeArguments(BaseArguments, typing.Protocol):
+        runtimes: typing.List[typing.Literal['renpy-8', 'renpy-7', 'renpy-7.py2', 'rpgmaker']]
+
 
 def select_impl(name: typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']) -> JsonWriterImpl:
     name_ = 'renpy' if name.startswith('renpy') else 'rpgmaker'
@@ -107,7 +110,7 @@ def _build_runtime(args: BaseArguments, sdk: pathlib.Path) -> None:
         subprocess.run(install_command, check=True)
 
 
-def build_runtimes(args: BaseArguments) -> bool:
+def build_runtimes(args: BuildRuntimeArguments) -> bool:
     command = [
         'flatpak', 'install', '--no-auto-pin', '--user',
         f'org.freedesktop.Platform//{flatpaker.util.RUNTIME_VERSION}',
@@ -116,12 +119,15 @@ def build_runtimes(args: BaseArguments) -> bool:
     subprocess.run(command, check=True)
 
     basename = 'com.github.dcbaker.flatpaker'
-    runtimes = [
-        f'{basename}.RPGM.Platform.yml',
-        f'{basename}.RenPy.8.Sdk.yml',
-        f'{basename}.RenPy.7.py3.Sdk.yml',
-        f'{basename}.RenPy.7.py2.Sdk.yml',
-    ]
+    runtimes: typing.List[str] = []
+    if 'rpgmaker' in args.runtimes:
+        runtimes.append(f'{basename}.RPGM.Platform.yml')
+    if 'renpy-8' in args.runtimes:
+        runtimes.append(f'{basename}.RenPy.8.Sdk.yml')
+    if 'renpy-7' in args.runtimes:
+        runtimes.append(f'{basename}.RenPy.7.py3.Sdk.yml')
+    if 'renpy-7.py2' in args.runtimes:
+        runtimes.append(f'{basename}.RenPy.7.py2.Sdk.yml')
 
     success = True
 
@@ -176,8 +182,16 @@ def main() -> None:
     build_parser.add_argument('descriptions', nargs='+', help="A Toml description file")
     build_parser.set_defaults(action='build')
 
+    _all_runtimes = ['renpy-8', 'renpy-7', 'renpy-7.py2', 'rpgmaker']
     runtimes_parser = subparsers.add_parser(
         'build-runtimes', help='Build custom Platforms and Sdks', parents=[pp])
+    runtimes_parser.add_argument(
+        'runtimes',
+        nargs='*',
+        choices=_all_runtimes,
+        default=_all_runtimes,
+        help="Which runtimes to build",
+    )
     runtimes_parser.set_defaults(action='build-runtimes')
 
     args = typing.cast('BaseArguments', parser.parse_args())
@@ -188,7 +202,7 @@ def main() -> None:
         if args.deltas:
             static_deltas(args)
     if args.action == 'build-runtimes':
-        success = build_runtimes(args)
+        success = build_runtimes(typing.cast('BuildRuntimeArguments', args))
         if args.deltas:
             static_deltas(args)
 
