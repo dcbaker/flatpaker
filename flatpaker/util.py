@@ -157,7 +157,7 @@ def build_flatpak(args: BaseArguments, workdir: pathlib.Path, appid: str) -> Non
 
 @contextlib.contextmanager
 def tmpdir(name: str, cleanup: bool = True) -> typing.Iterator[pathlib.Path]:
-    tdir = pathlib.Path(tempfile.gettempdir()) / name
+    tdir = pathlib.Path(tempfile.gettempdir()) / 'flatpaker' / name
     tdir.mkdir(parents=True, exist_ok=True)
     yield tdir
     if cleanup:
