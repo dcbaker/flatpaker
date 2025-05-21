@@ -45,8 +45,8 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
 1. Download the compressed project
 2. Download any mods or addons (optional)
 3. Write a toml description
-4. run `flatpaker --install install-runtimes` (which adds the runtimes and sdks)
-5. run `flatpaker --install build *.toml` or `flatpaker --export --gpg-sign build *.toml` (for local install or for export to a shared repo)
+4. run `flatpaker build-runtimes --install` (which adds the runtimes and sdks)
+5. run `flatpaker build --install *.toml` or `flatpaker build --export --gpg-sign *.toml` (for local install or for export to a shared repo)
 
 ### Toml Format
 
