@@ -1,14 +1,22 @@
---- pygame_sdl2-2.1.0+renpy7.8.4/setup.py	2024-12-05 06:22:31.000000000 -0800
-+++ pygame_sdl2-2.1.0+renpy7.8.4/setup.py	2025-02-20 19:19:57.348964025 -0800
-@@ -141,11 +141,6 @@
-
+--- PyGame_SDL2/setup.py.orig	2025-05-21 11:52:40.074234086 -0700
++++ PyGame_SDL2/setup.py	2025-05-21 11:53:04.653766647 -0700
+@@ -139,18 +139,10 @@
+     ]
+ 
  if __name__ == "__main__":
-
+-
 -
 -    if sys.version_info.major <= 3 and sys.version_info.minor <= 11:
 -        py_headers = headers
 -        headers = [ ]
+-    else:
+-        py_headers = [ ]
 -
      setup(
          "pygame_sdl2",
          VERSION,
+-        headers=py_headers,
++        headers=headers,
+         url="https://github.com/renpy/pygame_sdl2",
+         maintainer="Tom Rothamel",
+         maintainer_email="tom@rothamel.us",
