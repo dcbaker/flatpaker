@@ -179,7 +179,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(required=True)
     build_parser = subparsers.add_parser(
         'build', help='Build flatpaks from descriptions', parents=[pp])
     build_parser.add_argument('descriptions', nargs='+', help="A Toml description file")
