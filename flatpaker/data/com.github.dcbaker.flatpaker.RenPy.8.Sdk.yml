@@ -17,10 +17,8 @@ modules:
       - pip3 install --prefix=${FLATPAK_DEST} --no-deps .
     sources:
       - type: archive
-        url: https://www.renpy.org/dl/8.3.4/pygame_sdl2-2.1.0+renpy8.3.4.tar.gz
-        sha256: 18ce9cc7dc8fe5b80a58c4983a4652f61137dff1c99ecbf82a6941db78db92a8
-      - type: patch
-        path: patches/pygame-sdl2-import-sysconfig.patch
+        url: https://www.renpy.org/dl/8.3.7/pygame_sdl2-2.1.0+renpy8.3.7.tar.gz
+        sha256: 4630b82d7e9ff3e5a864cd3693b4ef093a8ae9e87c3c7cb9ff5ca7e69299febf
       - type: patch
         path: patches/pygame-sdl2-fix-header-install-path.patch
   - name: RenPy
@@ -51,8 +49,8 @@ modules:
         rm -r /app/lib/game || exit 1
     sources:
       - type: archive
-        url: https://www.renpy.org/dl/8.3.4/renpy-8.3.4-source.tar.bz2
-        sha256: a814ff436082f7dab97037044d53c78fbd11accca1d53a0b9d6dc384f25e1862
+        url: https://www.renpy.org/dl/8.3.7/renpy-8.3.7-source.tar.bz2
+        sha256: fd33248d5eea506ff9017c535b5b77e17edf7a77ddaf1bcf542b9cd261ff3fe5
       - type: patch
         path: patches/renpy-setuplib-fix-paths.patch
       - type: patch
