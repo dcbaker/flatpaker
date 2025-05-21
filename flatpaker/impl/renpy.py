@@ -45,7 +45,7 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
     ])
 
     # Insert these commands before any rpy and py files are compiled
-    for p in description.get('sources', {}).get('files', []):
+    for p in description['sources'].get('files', []):
         dest = os.path.join('$FLATPAK_DEST/lib/game', p.get('dest', 'game'))
         # This could be a file or a directory for dest, so we can't use install
         commands.append(f'install -Dm644 {p["path"].name} {dest}')

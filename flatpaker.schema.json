@@ -227,7 +227,8 @@
     },
     "required": [
         "common",
-        "appdata"
+        "appdata",
+        "sources"
     ],
     "additionalProperties": false,
     "$defs": {

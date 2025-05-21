@@ -29,33 +29,32 @@ def _subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **ex
 def extract_sources(description: Description) -> typing.List[typing.Dict[str, object]]:
     sources: typing.List[typing.Dict[str, object]] = []
 
-    if 'sources' in description:
-        for a in description['sources']['archives']:
-            sha = a.get('sha256')
-            if sha is None:
-                sha = sha256(a['path'])
-            sources.append({
-                'path': a['path'].as_posix(),
-                'sha256': sha,
-                'type': 'archive',
-                'strip-components': a.get('strip_components', 1),
-            })
-        for source in description['sources'].get('files', []):
-            p = source['path']
-            sha = source.get('sha256')
-            if sha is None:
-                sha = sha256(p)
-            sources.append({
-                'path': p.as_posix(),
-                'sha256': sha,
-                'type': 'file',
-            })
-        for a in description['sources'].get('patches', []):
-            sources.append({
-                'type': 'patch',
-                'path': a['path'].as_posix(),
-                'strip-components': a.get('strip_components', 1),
-            })
+    for a in description['sources']['archives']:
+        sha = a.get('sha256')
+        if sha is None:
+            sha = sha256(a['path'])
+        sources.append({
+            'path': a['path'].as_posix(),
+            'sha256': sha,
+            'type': 'archive',
+            'strip-components': a.get('strip_components', 1),
+        })
+    for source in description['sources'].get('files', []):
+        p = source['path']
+        sha = source.get('sha256')
+        if sha is None:
+            sha = sha256(p)
+        sources.append({
+            'path': p.as_posix(),
+            'sha256': sha,
+            'type': 'file',
+        })
+    for a in description['sources'].get('patches', []):
+        sources.append({
+            'type': 'patch',
+            'path': a['path'].as_posix(),
+            'strip-components': a.get('strip_components', 1),
+        })
 
     return sources
 

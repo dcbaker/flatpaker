@@ -58,7 +58,7 @@ if typing.TYPE_CHECKING:
         common: _Common
         appdata: _AppData
         quirks: NotRequired[_Quirks]
-        sources: NotRequired[Sources]
+        sources: Sources
 
 
 def load_description(name: str) -> Description:
@@ -67,14 +67,13 @@ def load_description(name: str) -> Description:
         d = typing.cast('Description', tomllib.load(f))
 
     # Fixup relative paths
-    if 'sources' in d:
-        for a in d['sources']['archives']:
+    for a in d['sources']['archives']:
+        a['path'] = relpath / a['path']
+    if 'files' in d['sources']:
+        for s in d['sources']['files']:
+            s['path'] = relpath / s['path']
+    if 'patches' in d['sources']:
+        for a in d['sources']['patches']:
             a['path'] = relpath / a['path']
-        if 'files' in d['sources']:
-            for s in d['sources']['files']:
-                s['path'] = relpath / s['path']
-        if 'patches' in d['sources']:
-            for a in d['sources']['patches']:
-                a['path'] = relpath / a['path']
 
     return d
