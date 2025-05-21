@@ -153,6 +153,7 @@ That file must be written to `$XDG_CONFIG_HOME/flatpaker/config.toml` (if unset
 
 - python 3.11 or a modern version of python3 with tomli
 - flatpak-builder
+- flatpak
 
 ### Schema
 
