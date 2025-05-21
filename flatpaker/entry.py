@@ -175,7 +175,10 @@ def main() -> None:
     pp.add_argument('--static-deltas', action='store_true', dest='deltas', help="generate static deltas when exporting")
     pp.add_argument('--keep-going', action='store_true', help="Don't stop if building a runtime or app fails.")
 
+    from . import __version__
+
     parser = argparse.ArgumentParser()
+    parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
     subparsers = parser.add_subparsers()
     build_parser = subparsers.add_parser(
         'build', help='Build flatpaks from descriptions', parents=[pp])
