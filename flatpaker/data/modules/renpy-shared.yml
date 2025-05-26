@@ -40,3 +40,14 @@ modules:
       - type: "git"
         url: "https://github.com/sebastic/rpatool.git"
         commit: "1ccda7a6dfa0617d3b4f2135a6def814b0ae17c4"
+
+  - name: unrpa
+    buildsystem: "simple"
+    build-commands:
+      - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}" --prefix=${FLATPAK_DEST} "unrpa" --no-build-isolation
+    cleanup-platform:
+      - '*'
+    sources:
+      - type: "file"
+        url: https://files.pythonhosted.org/packages/59/c7/eac5f1c131f8e4e41268944bbfe60cb42dfcea2ec8fc5a0ee8476fd8b6bd/unrpa-2.3.0-py3-none-any.whl
+        sha256: 17b024050e19edf470eb9abd91fa5fb2be63aa73c01f44d2ef9cf6978289eea9
