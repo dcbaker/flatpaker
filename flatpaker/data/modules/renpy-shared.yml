@@ -28,3 +28,15 @@ modules:
       - type: "git"
         url: "https://git.code.sf.net/p/icns/code"
         commit: 921f972c461c505e5ac981aaddbdfdde97e8bb2b
+
+  - name: rpatool
+    buildsystem: "simple"
+    build-commands:
+      - install -Dm755 rpatool -t ${FLATPAK_DEST}/bin
+    cleanup-platform:
+      - '*'
+    sources:
+      # Pointing to a fork with support for newer DMA archives
+      - type: "git"
+        url: "https://github.com/sebastic/rpatool.git"
+        commit: "1ccda7a6dfa0617d3b4f2135a6def814b0ae17c4"
