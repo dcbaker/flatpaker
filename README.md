@@ -129,7 +129,16 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
   ]
 ```
 
-#### Quirks
+Sources will be evaluated by:
+  1. archives, with their command entry
+  2. files, with their command entry
+  3. patches
+
+#### Quirk        if (cmds := a.get('commands')) is not None:
+            sources.append({
+                'type': 'shell',
+                'commands': cmds,
+            })s
 
 Additionally, some games have quirks that make them difficult to package. Some
 of these quirks can be worked around.
