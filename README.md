@@ -98,6 +98,11 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
   # Optional, will be automatically calculated if not provided, but providing it can speed up building
   sha256 = "abcd..."
 
+  # Optional, will run these shell commands after extracting this archive
+  commands = [
+    'sed -i s/foo/bar/ extracted_source',
+  ]
+
 # Optional, cannot be set from command line
 [[sources.patches]]
   # path must be set if this is provided
@@ -117,6 +122,11 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
 
   # Optional, will be automatically calculated if not provided, but providing it can speed up building
   sha256 = "abcd..."
+
+  # Optional, will run these shell commands after this file is added
+  commands = [
+    'sed -i s@/bin/bash@/usr/bin/env bash@ script.sh',
+  ]
 ```
 
 #### Quirks
@@ -138,7 +148,7 @@ For example:
 
   - `x_configure_prologue: string`: A block of shell commands to run after
     unpacking all of the sources and applying patches, but before any build
-    steps take place
+    steps take place. This is slated for removal as the `commands` argument to archives and files should be able to fix all of this.
 
 
 ##### Renpy
