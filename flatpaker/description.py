@@ -35,23 +35,28 @@ if typing.TYPE_CHECKING:
         force_window_gui_icon: bool
         x_configure_prologue: str
 
-    class Archive(typing.TypedDict):
+    class Patch(typing.TypedDict):
 
         path: pathlib.Path
         strip_components: NotRequired[int]
         sha256: NotRequired[str]
+
+    class Archive(Patch):
+
+        commands: NotRequired[typing.List[str]]
 
     class File(typing.TypedDict):
 
         path: pathlib.Path
         dest: NotRequired[str]
         sha256: NotRequired[str]
+        commands: NotRequired[typing.List[str]]
 
     class Sources(typing.TypedDict):
 
         archives: typing.List[Archive]
         files: NotRequired[typing.List[File]]
-        patches: NotRequired[typing.List[Archive]]
+        patches: NotRequired[typing.List[Patch]]
 
     class Description(typing.TypedDict):
 
@@ -73,7 +78,7 @@ def load_description(name: str) -> Description:
         for s in d['sources']['files']:
             s['path'] = relpath / s['path']
     if 'patches' in d['sources']:
-        for a in d['sources']['patches']:
-            a['path'] = relpath / a['path']
+        for p in d['sources']['patches']:
+            p['path'] = relpath / p['path']
 
     return d

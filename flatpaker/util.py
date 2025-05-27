@@ -29,16 +29,21 @@ def _subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **ex
 def extract_sources(description: Description) -> typing.List[typing.Dict[str, object]]:
     sources: typing.List[typing.Dict[str, object]] = []
 
-    for a in description['sources']['archives']:
-        sha = a.get('sha256')
+    for archive in description['sources']['archives']:
+        sha = archive.get('sha256')
         if sha is None:
-            sha = sha256(a['path'])
+            sha = sha256(archive['path'])
         sources.append({
-            'path': a['path'].as_posix(),
+            'path': archive['path'].as_posix(),
             'sha256': sha,
             'type': 'archive',
-            'strip-components': a.get('strip_components', 1),
+            'strip-components': archive.get('strip_components', 1),
         })
+        if (cmds := archive.get('commands')) is not None:
+            sources.append({
+                'type': 'shell',
+                'commands': cmds,
+            })
     for source in description['sources'].get('files', []):
         p = source['path']
         sha = source.get('sha256')
@@ -49,11 +54,16 @@ def extract_sources(description: Description) -> typing.List[typing.Dict[str, ob
             'sha256': sha,
             'type': 'file',
         })
-    for a in description['sources'].get('patches', []):
+        if (cmds := source.get('commands')) is not None:
+            sources.append({
+                'type': 'shell',
+                'commands': cmds,
+            })
+    for patch in description['sources'].get('patches', []):
         sources.append({
             'type': 'patch',
-            'path': a['path'].as_posix(),
-            'strip-components': a.get('strip_components', 1),
+            'path': patch['path'].as_posix(),
+            'strip-components': patch.get('strip_components', 1),
         })
 
     return sources

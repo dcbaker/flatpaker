@@ -152,6 +152,10 @@
                             "sha256": {
                                 "type": "string",
                                 "description": "Optionally, a sha256 checksum. This will be generated if not provided"
+                            },
+                            "commands": {
+                                "type": "array",
+                                "items": "string"
                             }
                         },
                         "required": [
@@ -177,6 +181,10 @@
                             "sha256": {
                                 "type": "string",
                                 "description": "Optionally, a sha256 checksum. This will be generated if not provided"
+                            },
+                            "commands": {
+                                "type": "array",
+                                "items": "string"
                             }
                         },
                         "required": [
