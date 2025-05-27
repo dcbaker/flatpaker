@@ -229,6 +229,10 @@
                 "x_configure_prologue": {
                     "description": "A shell snippet to be run before any of the automated build steps. Because sometimes you just need an escape hatch",
                     "type": "string"
+                },
+                "x_rpgmaker_repack_www": {
+                    "description": "Automatically pack an exploded layout into a www/ layout",
+                    "type": "boolean"
                 }
             }
         }
