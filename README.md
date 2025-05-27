@@ -119,19 +119,34 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
   sha256 = "abcd..."
 ```
 
+#### Quirks
+
 Additionally, some games have quirks that make them difficult to package. Some
-of these quirks can be worked around:
-```toml
-[quirks]
-  # For Ren'Py only:
-  # Force the use of the window_gui.png as the icon, instead of extracting from
-  # the .exe of icns. This is useful for games that have the generic Ren'Py
-  # icon in the exe, but a custom icon in the tree.
-  force_window_gui_icon = true
-```
+of these quirks can be worked around.
 
 Any quirk starting with `x_` or `x-` is an experimental quirk, and may be
 removed at any time. If you find yourself relying on them, please open an issue.
+
+For example:
+```toml
+[quirks]
+  force_window_gui_icon = true
+```
+
+
+##### Generic
+
+  - `x_configure_prologue: string`: A block of shell commands to run after
+    unpacking all of the sources and applying patches, but before any build
+    steps take place
+
+
+##### Renpy
+
+  - `force_window_gui_icon: bool`. Use `game/gui/window_icon.png` instead
+    of extracting icons from the exe or icns files. This is generally
+    unnecessary, but some games have customized window_icons but not exe icons.
+
 
 ### Configuration
 
