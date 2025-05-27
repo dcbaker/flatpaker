@@ -87,7 +87,7 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
   # in the form "date = version"
   "2023-01-01" = "1.0.0"
 
-# Optional, alternatively may be passed on teh command line
+# Requires at least one entry
 [[sources.archives]]
   # path must be set if this is provided
   path = "relative to toml or absolute path"
@@ -103,7 +103,7 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
     'sed -i s/foo/bar/ extracted_source',
   ]
 
-# Optional, cannot be set from command line
+# Optional
 [[sources.patches]]
   # path must be set if this is provided
   path = "relative to toml or absolute path"
@@ -111,7 +111,7 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
   # Optional, defaults to 1. How many directory levels to remove from this component
   strip_comonents = 2
 
-# Optional, cannot be set from command line
+# Optional
 [[sources.files]]
   # path must be set if this is provided
   path = "relative to toml or absolute path"
