@@ -129,6 +129,11 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
   ]
 ```
 
+Sources will be evaluated by:
+  1. archives, with their command entry
+  2. files, with their command entry
+  3. patches
+
 #### Quirks
 
 Additionally, some games have quirks that make them difficult to package. Some
