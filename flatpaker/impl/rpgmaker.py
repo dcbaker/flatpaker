@@ -37,6 +37,13 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         ])
 
     commands.extend([
+        # Automatically rewrite the name and window title. This is very often
+        # blank or an ugly default
+        f'''
+            jq '.name = "{description['common']['name']}" | .window.title = .name' package.json > package.json.tmp
+            mv package.json.tmp package.json
+        ''',
+
         # in MV www/icon.png is usually the customized icon and icon/icon.png is
         textwrap.dedent(f'''
             if [[ -d "www/icon" ]]; then
