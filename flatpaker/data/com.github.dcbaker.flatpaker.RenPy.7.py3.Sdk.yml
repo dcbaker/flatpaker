@@ -35,6 +35,8 @@ modules:
       # sandbox
       - rm renpy/common/00steam.rpy* || true
 
+      - mv 00enabledebug.rpy renpy/common/
+
       # TODO: calculate where site packages is instead of hardocding
       - cp -rv renpy ${FLATPAK_DEST}/lib/python3.12/site-packages || exit 1
       - python -m compileall ${FLATPAK_DEST}/lib/python3.12/site-packages/renpy || exit 1
@@ -64,6 +66,8 @@ modules:
       - type: file
         path: files/renpy.py
         dest-filename: renpy-bin
+      - type: file
+        path: files/00enabledebug.rpy
     cleanup:
       - /app
 
