@@ -51,3 +51,18 @@ modules:
       - type: "file"
         url: https://files.pythonhosted.org/packages/59/c7/eac5f1c131f8e4e41268944bbfe60cb42dfcea2ec8fc5a0ee8476fd8b6bd/unrpa-2.3.0-py3-none-any.whl
         sha256: 17b024050e19edf470eb9abd91fa5fb2be63aa73c01f44d2ef9cf6978289eea9
+
+  - name: unrar
+    buildsystem: "simple"
+    build-commands:
+      # Use system cflags
+      - sed -e '/CXXFLAGS=/d' -e '/LDFLAGS=/d' -i makefile
+
+      - make -j$FLATPAK_BUILDER_N_JOBS
+      - DESTDIR="${FLATPAK_DEST}" make install
+    cleanup-platform:
+      - '*'
+    sources:
+      - type: "archive"
+        url: https://www.rarlab.com/rar/unrarsrc-7.1.6.tar.gz
+        sha256: ca5e1da37dd6fa1b78bb5ed675486413f79e4a917709744aa04b6f93dfd914f0
