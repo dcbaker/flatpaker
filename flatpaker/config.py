@@ -5,10 +5,7 @@ from __future__ import annotations
 import os
 import typing
 
-try:
-    import tomllib
-except ImportError:
-    import tomli as tomllib  # type: ignore[import-not-found,no-redef]
+import tomlkit
 
 if typing.TYPE_CHECKING:
 
@@ -31,7 +28,7 @@ def load_config() -> Config:
     raw: typing.Dict[str, typing.Any]
     if os.path.exists(conf):
         with open(conf, 'rb') as f:
-            raw = tomllib.load(f)
+            raw = tomlkit.load(f)
         assert isinstance(raw, dict), 'invalid config file?'
     else:
         raw = {}

@@ -7,10 +7,7 @@ from __future__ import annotations
 import pathlib
 import typing
 
-try:
-    import tomllib
-except ImportError:
-    import tomli as tomllib  # type: ignore[import-not-found,no-redef]
+import tomlkit
 
 if typing.TYPE_CHECKING:
     from typing_extensions import NotRequired
@@ -69,7 +66,7 @@ if typing.TYPE_CHECKING:
 def load_description(name: str) -> Description:
     relpath = pathlib.Path(name).parent.absolute()
     with open(name, 'rb') as f:
-        d = typing.cast('Description', tomllib.load(f))
+        d = typing.cast('Description', tomlkit.load(f))
 
     # Fixup relative paths
     for a in d['sources']['archives']:

@@ -22,7 +22,7 @@
     "Programming Language :: Python :: 3.13",
     "Topic :: System :: Archiving :: Packaging",
   ]
-  dependencies = ['tomli; python_version<"3.11"']
+  dependencies = ['tomlkit']
 
   [project.scripts]
     flatpaker = "flatpaker.entry:main"
