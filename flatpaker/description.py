@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright © 2022-2024 Dylan Baker
+# Copyright © 2022-2025 Dylan Baker
 
 """Loader for toml descriptions."""
 
