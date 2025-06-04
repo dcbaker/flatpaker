@@ -32,7 +32,7 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
         'mkdir -p $FLATPAK_DEST/lib/game',
     ]
 
-    if (prologue := description.get('quirks', {}).get('x_configure_prologue')) is not None:
+    if (prologue := description.quirks.x_configure_prologue) is not None:
         commands.append(prologue)
 
     commands.extend([
@@ -45,12 +45,12 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
     ])
 
     # Insert these commands before any rpy and py files are compiled
-    for p in description['sources'].get('files', []):
-        dest = os.path.join('$FLATPAK_DEST/lib/game', p.get('dest', 'game'))
+    for p in description.sources.files:
+        dest = os.path.join('$FLATPAK_DEST/lib/game', p.dest)
         # This could be a file or a directory for dest, so we can't use install
-        commands.append(f'install -Dm644 {p["path"].name} {dest}')
+        commands.append(f'install -Dm644 {p.path.name} {dest}')
 
-    if description.get('quirks', {}).get('force_window_gui_icon', False):
+    if description.quirks.force_window_gui_icon:
         commands.append(
             f'install -D -m644 $FLATPAK_DEST/lib/game/game/gui/window_icon.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/{appid}.png')
     else:
@@ -107,7 +107,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
     modules: typing.List[typing.Dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
-            'name': util.sanitize_name(description['common']['name']),
+            'name': util.sanitize_name(description.common.name),
             'sources': sources,
             'build-commands': bd_build_commands(description, appid),
             'cleanup': [
@@ -116,10 +116,10 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             ],
         },
         util.bd_metadata(desktop_file, appdata_file,
-                         _create_game_sh(description['common']['name'])),
+                         _create_game_sh(description.common.name)),
     ]
 
-    engine = description['common']['engine']
+    engine = description.common.engine
     if engine == "renpy8":
         sdkver = '8'
     elif engine == 'renpy7':

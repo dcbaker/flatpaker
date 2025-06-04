@@ -4,78 +4,116 @@
 """Loader for toml descriptions."""
 
 from __future__ import annotations
+import dataclasses
 import pathlib
 import typing
 
 import tomlkit
 
 if typing.TYPE_CHECKING:
-    from typing_extensions import NotRequired
+    EngineName = typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']
+    ContentRating = typing.Literal['none', 'mild', 'moderate', 'intense']
 
-    class _Common(typing.TypedDict):
+@dataclasses.dataclass
+class Common:
 
-        reverse_url: str
-        name: str
-        engine: typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']
-        categories: NotRequired[typing.List[str]]
+    reverse_url: str
+    name: str
+    engine: EngineName
+    categories: list[str] = dataclasses.field(default_factory=list)
 
-    class _AppData(typing.TypedDict):
 
-        summary: str
-        description: str
-        content_rating: NotRequired[typing.Dict[str, typing.Literal['none', 'mild', 'moderate', 'intense']]]
-        releases: NotRequired[typing.Dict[str, str]]
-        license: NotRequired[str]
+@dataclasses.dataclass
+class AppData:
 
-    class _Quirks(typing.TypedDict, total=False):
+    summary: str
+    description: str
+    content_rating: dict[str, ContentRating] = dataclasses.field(default_factory=dict)
+    releases: dict[str, str] = dataclasses.field(default_factory=dict)
+    license: str = 'LicenseRef-Proprietary'
 
-        force_window_gui_icon: bool
-        x_configure_prologue: str
+@dataclasses.dataclass
+class File:
 
-    class Patch(typing.TypedDict):
+    path: pathlib.Path
+    dest: str = 'game'
+    sha256: str | None = None
+    commands: list[str] = dataclasses.field(default_factory=list)
 
-        path: pathlib.Path
-        strip_components: NotRequired[int]
-        sha256: NotRequired[str]
 
-    class Archive(Patch):
+@dataclasses.dataclass
+class Patch:
 
-        commands: NotRequired[typing.List[str]]
+    path: pathlib.Path
+    sha256: str | None = None
+    strip_components: int = 1
 
-    class File(typing.TypedDict):
 
-        path: pathlib.Path
-        dest: NotRequired[str]
-        sha256: NotRequired[str]
-        commands: NotRequired[typing.List[str]]
+@dataclasses.dataclass
+class Archive:
 
-    class Sources(typing.TypedDict):
+    path: pathlib.Path
+    sha256: str | None = None
+    commands: list[str] = dataclasses.field(default_factory=list)
+    strip_components: int = 1
 
-        archives: typing.List[Archive]
-        files: NotRequired[typing.List[File]]
-        patches: NotRequired[typing.List[Patch]]
 
-    class Description(typing.TypedDict):
+@dataclasses.dataclass
+class Sources:
 
-        common: _Common
-        appdata: _AppData
-        quirks: NotRequired[_Quirks]
-        sources: Sources
+    archives: list[Archive] = dataclasses.field(default_factory=list)
+    patches: list[Patch] = dataclasses.field(default_factory=list)
+    files: list[File] = dataclasses.field(default_factory=list)
+
+
+@dataclasses.dataclass
+class Quirks:
+
+    force_window_gui_icon: bool = False
+    x_configure_prologue: str | None = None
+    x_rpgmaker_repack_www: bool = False
+
+
+@dataclasses.dataclass
+class Description:
+
+    common: Common
+    appdata: AppData
+    quirks: Quirks
+    sources: Sources
 
 
 def load_description(name: str) -> Description:
     relpath = pathlib.Path(name).parent.absolute()
+
+    # TODO: the cast to Any leaves us with the same
+    #       validation problem with had previous, but without the hints.
+    #       I wish python had something like serde
     with open(name, 'rb') as f:
-        d = typing.cast('Description', tomlkit.load(f))
+        d = typing.cast('typing.Any', tomlkit.load(f))
+
+    quirks = Quirks(**d.get('quirks', {}))
+    appdata = AppData(**d['appdata'])
+    common = Common(**d['common'])
+    sources = Sources()
 
     # Fixup relative paths
     for a in d['sources']['archives']:
-        a['path'] = relpath / a['path']
+        sources.archives.append(Archive(
+            relpath / a.pop('path'),
+            **a,
+        ))
     if 'files' in d['sources']:
         for s in d['sources']['files']:
-            s['path'] = relpath / s['path']
+            sources.files.append(File(
+                relpath / s.pop('path'),
+                **s,
+            ))
     if 'patches' in d['sources']:
         for p in d['sources']['patches']:
-            p['path'] = relpath / p['path']
+            sources.patches.append(Patch(
+                relpath / p.pop('path'),
+                **p,
+            ))
 
-    return d
+    return Description(common, appdata, quirks, sources)
