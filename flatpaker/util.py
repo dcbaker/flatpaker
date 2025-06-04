@@ -29,24 +29,24 @@ def _subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **ex
 def extract_sources(description: Description) -> typing.List[typing.Dict[str, object]]:
     sources: typing.List[typing.Dict[str, object]] = []
 
-    for archive in description['sources']['archives']:
-        sha = archive.get('sha256')
+    for archive in description.sources.archives:
+        sha = archive.sha256
         if sha is None:
-            sha = sha256(archive['path'])
+            sha = sha256(archive.path)
         sources.append({
-            'path': archive['path'].as_posix(),
+            'path': archive.path.as_posix(),
             'sha256': sha,
             'type': 'archive',
-            'strip-components': archive.get('strip_components', 1),
+            'strip-components': archive.strip_components,
         })
-        if (cmds := archive.get('commands')) is not None:
+        if archive.commands:
             sources.append({
                 'type': 'shell',
-                'commands': cmds,
+                'commands': archive.commands
             })
-    for source in description['sources'].get('files', []):
-        p = source['path']
-        sha = source.get('sha256')
+    for source in description.sources.files:
+        p = source.path
+        sha = source.sha256
         if sha is None:
             sha = sha256(p)
         sources.append({
@@ -54,16 +54,16 @@ def extract_sources(description: Description) -> typing.List[typing.Dict[str, ob
             'sha256': sha,
             'type': 'file',
         })
-        if (cmds := source.get('commands')) is not None:
+        if source.commands:
             sources.append({
                 'type': 'shell',
-                'commands': cmds,
+                'commands': source.commands
             })
-    for patch in description['sources'].get('patches', []):
+    for patch in description.sources.patches:
         sources.append({
             'type': 'patch',
-            'path': patch['path'].as_posix(),
-            'strip-components': patch.get('strip_components', 1),
+            'path': patch.path.as_posix(),
+            'strip-components': patch.strip_components,
         })
 
     return sources
@@ -74,10 +74,10 @@ def create_appdata(description: Description, workdir: pathlib.Path, appid: str) 
 
     root = ET.Element('component', type="desktop-application")
     _subelem(root, 'id', appid)
-    _subelem(root, 'name', description['common']['name'])
-    _subelem(root, 'summary', description['appdata']['summary'])
+    _subelem(root, 'name', description.common.name)
+    _subelem(root, 'summary', description.appdata.summary)
     _subelem(root, 'metadata_license', 'CC0-1.0')
-    _subelem(root, 'project_license', description['appdata'].get('license', 'LicenseRef-Proprietary'))
+    _subelem(root, 'project_license', description.appdata.license)
 
     recommends = ET.SubElement(root, 'recommends')
     for c in ['pointing', 'keyboard', 'touch', 'gamepad']:
@@ -88,23 +88,23 @@ def create_appdata(description: Description, workdir: pathlib.Path, appid: str) 
     _subelem(requires, 'internet', 'offline-only')
 
     categories = ET.SubElement(root, 'categories')
-    for c in ['Game'] + description['common'].get('categories', []):
+    for c in ['Game'] + description.common.categories:
         _subelem(categories, 'category', c)
 
     desc = ET.SubElement(root, 'description')
-    _subelem(desc, 'p', description['appdata']['description'])
+    _subelem(desc, 'p', description.appdata.description)
     _subelem(root, 'launchable', f'{appid}.desktop', type="desktop-id")
 
     # There is an oars-1.1, but it doesn't appear to be supported by KDE
     # discover yet
-    if 'content_rating' in description['appdata']:
+    if description.appdata.content_rating:
         cr = ET.SubElement(root, 'content_rating', type="oars-1.0")
-        for k, r in description['appdata']['content_rating'].items():
+        for k, r in description.appdata.content_rating.items():
             _subelem(cr, 'content_attribute', r, id=k)
 
-    if 'releases' in description['appdata']:
+    if description.appdata.releases:
         cr = ET.SubElement(root, 'releases')
-        for date, version in description['appdata']['releases'].items():
+        for date, version in description.appdata.releases.items():
             _subelem(cr, 'release', version=version, date=date)
 
     tree = ET.ElementTree(root)
@@ -119,10 +119,10 @@ def create_desktop(description: Description, workdir: pathlib.Path, appid: str) 
     with p.open('w') as f:
         f.write(textwrap.dedent(f'''\
             [Desktop Entry]
-            Name={description['common']['name']}
+            Name={description.common.name}
             Exec=game.sh
             Type=Application
-            Categories={';'.join(['Game'] + description['common'].get('categories', []))};
+            Categories={';'.join(['Game'] + description.common.categories)};
             Icon={appid}
             '''))
 

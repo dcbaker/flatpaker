@@ -18,10 +18,10 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
 
     commands: list[str] = ['mkdir -p /app/lib/game']
 
-    if (prologue := description.get('quirks', {}).get('x_configure_prologue')) is not None:
+    if (prologue := description.quirks.x_configure_prologue) is not None:
         commands.append(prologue)
 
-    if description.get('quirks', {}).get('x_rpgmaker_repack_www', False):
+    if description.quirks.x_rpgmaker_repack_www:
         commands.extend([
             'mkdir www',
             'mv effects data img js fonts index.html audio css www/',
@@ -40,7 +40,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         # Automatically rewrite the name and window title. This is very often
         # blank or an ugly default
         f'''
-            jq '.name = "{description['common']['name']}" | .window.title = .name' package.json > package.json.tmp
+            jq '.name = "{description.common.name}" | .window.title = .name' package.json > package.json.tmp
             mv package.json.tmp package.json
         ''',
 
@@ -68,7 +68,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
     modules: typing.List[typing.Dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
-            'name': util.sanitize_name(description['common']['name']),
+            'name': util.sanitize_name(description.common.name),
             'sources': sources,
             'build-commands': commands,
             'cleanup': [

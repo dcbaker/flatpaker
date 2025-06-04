@@ -49,11 +49,11 @@ def select_impl(name: typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker
 
 def _build(args: BaseArguments, description: Description) -> None:
     # TODO: This could be common
-    appid = f"{description['common']['reverse_url']}.{flatpaker.util.sanitize_name(description['common']['name'])}"
+    appid = f"{description.common.reverse_url}.{flatpaker.util.sanitize_name(description.common.name)}"
 
-    write_build_rules = select_impl(description['common']['engine'])
+    write_build_rules = select_impl(description.common.engine)
 
-    with flatpaker.util.tmpdir(description['common']['name'], args.cleanup) as d:
+    with flatpaker.util.tmpdir(description.common.name, args.cleanup) as d:
         wd = pathlib.Path(d)
         desktop_file = flatpaker.util.create_desktop(description, wd, appid)
         appdata_file = flatpaker.util.create_appdata(description, wd, appid)
