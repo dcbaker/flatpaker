@@ -12,7 +12,7 @@ from flatpaker import util
 from flatpaker.description import load_description
 
 if typing.TYPE_CHECKING:
-    from flatpaker.description import Description
+    from flatpaker.description import Description, EngineName
     from flatpaker.entry import BaseArguments, BuildArguments
 
     JsonWriterImpl = typing.Callable[[Description, pathlib.Path, str, pathlib.Path, pathlib.Path], None]
@@ -22,7 +22,7 @@ if typing.TYPE_CHECKING:
         write_rules: JsonWriterImpl
 
 
-def select_impl(name: typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']) -> JsonWriterImpl:
+def select_impl(name: EngineName) -> JsonWriterImpl:
     name_ = 'renpy' if name.startswith('renpy') else 'rpgmaker'
     mod = typing.cast('ImplMod', importlib.import_module(f'flatpaker.impl.{name_}'))
     assert hasattr(mod, 'write_rules'), 'should be good enough'
