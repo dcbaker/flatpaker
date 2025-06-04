@@ -44,9 +44,10 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
 
 1. Download the compressed project
 2. Download any mods or addons (optional)
-3. Write a toml description
-4. run `flatpaker build-runtimes --install` (which adds the runtimes and sdks)
-5. run `flatpaker build --install *.toml` or `flatpaker build --export --gpg-sign *.toml` (for local install or for export to a shared repo)
+3. Generate a toml description `flatpaker generate com.developer.game "Game Name" engine archive.zip`
+4. Edit the generated description to fill in missing information
+5. run `flatpaker build-runtimes --install` (which adds the runtimes and sdks)
+6. run `flatpaker build --install *.toml` or `flatpaker build --export --gpg-sign *.toml` (for local install or for export to a shared repo)
 
 ### Toml Format
 

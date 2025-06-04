@@ -10,10 +10,10 @@ import typing
 from flatpaker import util
 
 if typing.TYPE_CHECKING:
-    from ..entry import BaseArguments, BuildRuntimeArguments
+    from ..entry import BaseBuildArguments, BuildRuntimeArguments
 
 
-def _build_runtime(args: BaseArguments, sdk: pathlib.Path) -> None:
+def _build_runtime(args: BaseBuildArguments, sdk: pathlib.Path) -> None:
     build_command: typing.List[str] = [
         'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
 

@@ -9,13 +9,16 @@ import typing
 
 from flatpaker.actions.build_runtime import build_runtimes
 from flatpaker.actions.build_flatpak import build_flatpak
+from flatpaker.actions.generate import generate
 import flatpaker.config
 
 if typing.TYPE_CHECKING:
     from flatpaker.description import EngineName
 
     class BaseArguments(typing.Protocol):
-        action: typing.Literal['build', 'build-runtimes']
+        action: typing.Literal['build', 'build-runtimes', 'generate']
+
+    class BaseBuildArguments(BaseArguments, typing.Protocol):
         repo: str
         gpg: typing.Optional[str]
         install: bool
@@ -24,14 +27,23 @@ if typing.TYPE_CHECKING:
         deltas: bool
         keep_going: bool
 
-    class BuildArguments(BaseArguments, typing.Protocol):
+    class BuildArguments(BaseBuildArguments, typing.Protocol):
         descriptions: typing.List[str]
 
-    class BuildRuntimeArguments(BaseArguments, typing.Protocol):
+    class BuildRuntimeArguments(BaseBuildArguments, typing.Protocol):
         runtimes: typing.List[EngineName]
 
+    class GenerateArguments(BaseArguments, typing.Protocol):
+        url: str
+        appname: str
+        engine: EngineName
+        archive: str
+        archives: typing.List[str]
+        patches: typing.List[str]
+        files: typing.List[str]
 
-def static_deltas(args: BaseArguments) -> None:
+
+def static_deltas(args: BaseBuildArguments) -> None:
     if not (args.deltas or args.export):
         return
     command = ['flatpak', 'build-update-repo', args.repo, '--generate-static-deltas']
@@ -84,16 +96,53 @@ def main() -> None:
     )
     runtimes_parser.set_defaults(action='build-runtimes')
 
+    generate_parser = subparsers.add_parser(
+        'generate', help='Generate a new TOML description file')
+    generate_parser.add_argument(
+        'url',
+        help='The reverse url of of the project. Example: com.github.dcbaker.flatpaker'
+    )
+    generate_parser.add_argument('appname', help='The name of the application')
+    generate_parser.add_argument(
+        'engine',
+        choices=_all_runtimes,
+        help='The engine the application is built with'
+    )
+    generate_parser.add_argument('archive', help='The main game archive')
+    generate_parser.add_argument(
+        '--archives',
+        action='append',
+        default=[],
+        help='Additional archives'
+    )
+    generate_parser.add_argument(
+        '--patches',
+        action='append',
+        default=[],
+        help='Additional archives'
+    )
+    generate_parser.add_argument(
+        '--files',
+        action='append',
+        default=[],
+        help='Additional archives'
+    )
+    generate_parser.set_defaults(action='generate')
+
     args = typing.cast('BaseArguments', parser.parse_args())
     success = True
 
     if args.action == 'build':
-        success = build_flatpak(typing.cast('BuildArguments', args))
-        if args.deltas:
-            static_deltas(args)
+        bargs = typing.cast('BuildArguments', args)
+        success = build_flatpak(bargs)
+        if bargs.deltas:
+            static_deltas(bargs)
     if args.action == 'build-runtimes':
-        success = build_runtimes(typing.cast('BuildRuntimeArguments', args))
-        if args.deltas:
-            static_deltas(args)
+        brargs = typing.cast('BuildRuntimeArguments', args)
+        success = build_runtimes(brargs)
+        if brargs.deltas:
+            static_deltas(brargs)
+    if args.action == 'generate':
+        success = generate(typing.cast('GenerateArguments', args))
 
     sys.exit(0 if success else 1)
