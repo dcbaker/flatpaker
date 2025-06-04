@@ -59,11 +59,11 @@ def build_runtimes(args: BuildRuntimeArguments) -> bool:
     runtimes: typing.List[str] = []
     if 'rpgmaker' in args.runtimes:
         runtimes.append(f'{basename}.RPGM.Platform.yml')
-    if 'renpy-8' in args.runtimes:
+    if 'renpy8' in args.runtimes:
         runtimes.append(f'{basename}.RenPy.8.Sdk.yml')
-    if 'renpy-7' in args.runtimes:
+    if 'renpy7' in args.runtimes:
         runtimes.append(f'{basename}.RenPy.7.py2.Sdk.yml')
-    if 'renpy-7.py3' in args.runtimes:
+    if 'renpy7-py3' in args.runtimes:
         runtimes.append(f'{basename}.RenPy.7.py3.Sdk.yml')
 
     success = True

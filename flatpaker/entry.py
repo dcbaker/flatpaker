@@ -12,6 +12,7 @@ from flatpaker.actions.build_flatpak import build_flatpak
 import flatpaker.config
 
 if typing.TYPE_CHECKING:
+    from flatpaker.description import EngineName
 
     class BaseArguments(typing.Protocol):
         action: typing.Literal['build', 'build-runtimes']
@@ -27,7 +28,7 @@ if typing.TYPE_CHECKING:
         descriptions: typing.List[str]
 
     class BuildRuntimeArguments(BaseArguments, typing.Protocol):
-        runtimes: typing.List[typing.Literal['renpy-8', 'renpy-7', 'renpy-7.py3', 'rpgmaker']]
+        runtimes: typing.List[EngineName]
 
 
 def static_deltas(args: BaseArguments) -> None:
@@ -71,7 +72,7 @@ def main() -> None:
     build_parser.add_argument('descriptions', nargs='+', help="A Toml description file")
     build_parser.set_defaults(action='build')
 
-    _all_runtimes = ['renpy-8', 'renpy-7', 'renpy-7.py3', 'rpgmaker']
+    _all_runtimes = ['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']
     runtimes_parser = subparsers.add_parser(
         'build-runtimes', help='Build custom Platforms and Sdks', parents=[pp])
     runtimes_parser.add_argument(
