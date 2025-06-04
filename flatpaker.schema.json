@@ -1,8 +1,8 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://github.com.com/dcbaker/renpy2flatpak/rpypak.schema.json",
-    "title": "Renpy2Flatpak",
-    "description": "A Description of a Ren'py to build as a Flatpak",
+    "$id": "https://github.com.com/dcbaker/flatpaker/flatpaker.schema.json",
+    "title": "flatpaker",
+    "description": "A description of a Ren'py or RPGMaker game to package as a Flatpak",
     "type": "object",
     "properties": {
         "common": {
