@@ -3,25 +3,15 @@
 
 from __future__ import annotations
 import argparse
-import importlib
-import pathlib
 import subprocess
 import sys
 import typing
 
 from flatpaker.actions.build_runtime import build_runtimes
-from flatpaker.description import load_description
+from flatpaker.actions.build_flatpak import build_flatpak
 import flatpaker.config
-import flatpaker.util
 
 if typing.TYPE_CHECKING:
-    from flatpaker.description import Description
-
-    JsonWriterImpl = typing.Callable[[Description, pathlib.Path, str, pathlib.Path, pathlib.Path], None]
-
-    class ImplMod(typing.Protocol):
-
-        write_rules: JsonWriterImpl
 
     class BaseArguments(typing.Protocol):
         action: typing.Literal['build', 'build-runtimes']
@@ -38,42 +28,6 @@ if typing.TYPE_CHECKING:
 
     class BuildRuntimeArguments(BaseArguments, typing.Protocol):
         runtimes: typing.List[typing.Literal['renpy-8', 'renpy-7', 'renpy-7.py3', 'rpgmaker']]
-
-
-def select_impl(name: typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']) -> JsonWriterImpl:
-    name_ = 'renpy' if name.startswith('renpy') else 'rpgmaker'
-    mod = typing.cast('ImplMod', importlib.import_module(f'flatpaker.impl.{name_}'))
-    assert hasattr(mod, 'write_rules'), 'should be good enough'
-    return mod.write_rules
-
-
-def _build(args: BaseArguments, description: Description) -> None:
-    # TODO: This could be common
-    appid = f"{description.common.reverse_url}.{flatpaker.util.sanitize_name(description.common.name)}"
-
-    write_build_rules = select_impl(description.common.engine)
-
-    with flatpaker.util.tmpdir(description.common.name, args.cleanup) as d:
-        wd = pathlib.Path(d)
-        desktop_file = flatpaker.util.create_desktop(description, wd, appid)
-        appdata_file = flatpaker.util.create_appdata(description, wd, appid)
-        write_build_rules(description, wd, appid, desktop_file, appdata_file)
-        flatpaker.util.build_flatpak(args, wd, appid)
-
-
-def build(args: BuildArguments) -> bool:
-    success = True
-
-    for d in args.descriptions:
-        try:
-            description = load_description(d)
-            _build(args, description)
-        except Exception:
-            if not args.keep_going:
-                raise
-            success = False
-
-    return success
 
 
 def static_deltas(args: BaseArguments) -> None:
@@ -133,7 +87,7 @@ def main() -> None:
     success = True
 
     if args.action == 'build':
-        success = build(typing.cast('BuildArguments', args))
+        success = build_flatpak(typing.cast('BuildArguments', args))
         if args.deltas:
             static_deltas(args)
     if args.action == 'build-runtimes':

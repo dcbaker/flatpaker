@@ -7,15 +7,12 @@ import contextlib
 import hashlib
 import pathlib
 import shutil
-import subprocess
 import tempfile
 import textwrap
 import typing
 
 if typing.TYPE_CHECKING:
     from .description import Description
-
-    from .entry import BaseArguments
 
 RUNTIME_VERSION = "24.08"
 
@@ -144,24 +141,6 @@ def sanitize_name(name: str) -> str:
         .replace("&", '_') \
         .replace(':', '') \
         .replace("'", '')
-
-
-def build_flatpak(args: BaseArguments, workdir: pathlib.Path, appid: str) -> None:
-    build_command: typing.List[str] = [
-        'flatpak-builder', '--force-clean', '--user', 'build',
-        (workdir / f'{appid}.json').absolute().as_posix(),
-    ]
-
-    if args.export:
-        build_command.extend(['--repo', args.repo])
-        if args.gpg:
-            build_command.extend(['--gpg-sign', args.gpg])
-    if args.install:
-        build_command.extend(['--install'])
-
-    subprocess.run(build_command, check=True)
-    if args.cleanup:
-        shutil.rmtree('build', ignore_errors=True)
 
 
 @contextlib.contextmanager
