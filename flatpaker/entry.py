@@ -37,7 +37,7 @@ if typing.TYPE_CHECKING:
         descriptions: typing.List[str]
 
     class BuildRuntimeArguments(BaseArguments, typing.Protocol):
-        runtimes: typing.List[typing.Literal['renpy-8', 'renpy-7', 'renpy-7.py2', 'rpgmaker']]
+        runtimes: typing.List[typing.Literal['renpy-8', 'renpy-7', 'renpy-7.py3', 'rpgmaker']]
 
 
 def select_impl(name: typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']) -> JsonWriterImpl:
@@ -125,9 +125,9 @@ def build_runtimes(args: BuildRuntimeArguments) -> bool:
     if 'renpy-8' in args.runtimes:
         runtimes.append(f'{basename}.RenPy.8.Sdk.yml')
     if 'renpy-7' in args.runtimes:
-        runtimes.append(f'{basename}.RenPy.7.py3.Sdk.yml')
-    if 'renpy-7.py2' in args.runtimes:
         runtimes.append(f'{basename}.RenPy.7.py2.Sdk.yml')
+    if 'renpy-7.py3' in args.runtimes:
+        runtimes.append(f'{basename}.RenPy.7.py3.Sdk.yml')
 
     success = True
 
@@ -185,7 +185,7 @@ def main() -> None:
     build_parser.add_argument('descriptions', nargs='+', help="A Toml description file")
     build_parser.set_defaults(action='build')
 
-    _all_runtimes = ['renpy-8', 'renpy-7', 'renpy-7.py2', 'rpgmaker']
+    _all_runtimes = ['renpy-8', 'renpy-7', 'renpy-7.py3', 'rpgmaker']
     runtimes_parser = subparsers.add_parser(
         'build-runtimes', help='Build custom Platforms and Sdks', parents=[pp])
     runtimes_parser.add_argument(
