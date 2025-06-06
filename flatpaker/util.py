@@ -101,7 +101,9 @@ def create_appdata(description: Description, workdir: pathlib.Path, appid: str) 
 
     if description.appdata.releases:
         cr = ET.SubElement(root, 'releases')
-        for date, version in description.appdata.releases.items():
+        # Releases must be sorted in newest to oldest order
+        # https://www.freedesktop.org/software/appstream/docs/sect-Metadata-Releases.html#spec-releases
+        for date, version in sorted(description.appdata.releases.items(), reverse=True, key=lambda x: x[0]):
             _subelem(cr, 'release', version=version, date=date)
 
     tree = ET.ElementTree(root)
