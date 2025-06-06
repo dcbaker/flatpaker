@@ -82,7 +82,7 @@ def generate(args: GenerateArguments) -> bool:
     # move files after writing the toml, so we don't move things then fail
     for src in [args.archive] + args.archives + args.patches + args.files:
         dest = sourcedir / pathlib.Path(src).name
-        if src != dest:
+        if not dest.samefile(src):
             shutil.move(src, sourcedir)
 
     return True
