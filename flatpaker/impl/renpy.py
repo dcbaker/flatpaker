@@ -27,7 +27,7 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
-def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
+def bd_build_commands(description: Description) -> typing.List[str]:
     commands: typing.List[str] = [
         'mkdir -p $FLATPAK_DEST/lib/game',
     ]
@@ -52,7 +52,7 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
 
     if description.quirks.force_window_gui_icon:
         commands.append(
-            f'install -D -m644 $FLATPAK_DEST/lib/game/game/gui/window_icon.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/{appid}.png')
+            'install -D -m644 $FLATPAK_DEST/lib/game/game/gui/window_icon.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png')
     else:
         commands.append(
             # Extract the icon file from either a Windows exe or from MacOS resources.
@@ -88,7 +88,7 @@ def bd_build_commands(description: Description, appid: str) -> typing.List[str]:
                     else
                         continue
                     fi
-                    install -D -m644 "${{icon}}" "$FLATPAK_DEST/share/icons/hicolor/${{size}}/apps/{appid}.png"
+                    install -D -m644 "${{icon}}" "$FLATPAK_DEST/share/icons/hicolor/${{size}}/apps/$FLATPAK_ID.png"
                 done
             '''))
 
@@ -109,7 +109,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             'buildsystem': 'simple',
             'name': util.sanitize_name(description.common.name),
             'sources': sources,
-            'build-commands': bd_build_commands(description, appid),
+            'build-commands': bd_build_commands(description),
             'cleanup': [
                 '*.rpy',
                 '*.rpyc.bak',

@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
 def write_rules(description: Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     sources = util.extract_sources(description)
 
-    commands: list[str] = ['mkdir -p /app/lib/game']
+    commands: list[str] = ['mkdir -p $FLATPAK_DEST/lib/game']
 
     if (prologue := description.quirks.x_configure_prologue) is not None:
         commands.append(prologue)
@@ -47,9 +47,9 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         # in MV www/icon.png is usually the customized icon and icon/icon.png is
         textwrap.dedent(f'''
             if [[ -d "www/icon" ]]; then
-                install -Dm644 www/icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
+                install -Dm644 www/icon/icon.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png
             else
-                install -Dm644 icon/icon.png /app/share/icons/hicolor/256x256/apps/{appid}.png
+                install -Dm644 icon/icon.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png
             fi
         '''),
 
@@ -57,7 +57,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         'find . -name "*_managers.js" -exec sed -i "s@path.dirname(process.mainModule.filename)@process.env.XDG_DATA_HOME@g" {} +',
 
         # install the main game files
-        'mv package.json www /app/lib/game/',
+        'mv package.json www $FLATPAK_DEST/lib/game/',
     ])
 
     game_sh_contents = [
