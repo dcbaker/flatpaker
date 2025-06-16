@@ -3,13 +3,12 @@
 
 """Utilities to convert various kinds of native binaries into flatpaks.
 
-Current support includes Ren'Py and some versions of RPGMaker (MV and MZ, when
-they have Linux packages).
+Current support includes Ren'Py and some versions of RPGMaker (MV and MZ).
 
-Attempts to make some optimizations of the packages, such as recompiling
-bytecode, and patches various games to honor XDG variables, so that flatpaks
-don't need access to the user home directory. This increases security and is
-generally beneficial for end users.
+Uses shared runtimes to optimize space savings and allow for more advanced
+features like Wayland support. Additionally patches the runtimes or games to
+honor XDG variables, so that the games don't need access to the user's home
+directory. This increases security and is generally beneficial for end users.
 """
 
 __version__ = "0.0.10"
