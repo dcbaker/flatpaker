@@ -230,10 +230,6 @@
                     "description": "A shell snippet to be run before any of the automated build steps. Because sometimes you just need an escape hatch",
                     "type": "string"
                 },
-                "x_rpgmaker_repack_www": {
-                    "description": "Automatically pack an exploded layout into a www/ layout",
-                    "type": "boolean"
-                },
                 "x_renpy_archived_window_gui_icon": {
                     "description": "Extract a windows_gui.png icon from the named .rpa",
                     "type": "string"

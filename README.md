@@ -168,12 +168,6 @@ For example:
     This is generally unnecessary, but see above.
 
 
-##### RPGMaker
-
-  - `x_rpgmaker_repack_www: bool`. Repack rpgmaker games into a www/ structure
-    and rewrite the package.json to reflect this.
-
-
 ### Configuration
 
 Some options can be given on the command line or via a configuration file.

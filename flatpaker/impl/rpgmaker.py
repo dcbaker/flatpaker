@@ -21,21 +21,6 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
     if (prologue := description.quirks.x_configure_prologue) is not None:
         commands.append(prologue)
 
-    if description.quirks.x_rpgmaker_repack_www:
-        commands.extend([
-            'mkdir www',
-            'mv effects data img js fonts index.html audio css www/',
-            '''
-                if [ -f "www/icon.png" ]; then
-                    ICON="www/icon.png"
-                else
-                    ICON="www/icon/icon.png"
-                fi
-                jq --arg icon "$ICON" '.main = "www/index.html" | .window.icon = $icon' package.json > package.json.tmp
-                mv package.json.tmp package.json
-            ''',
-        ])
-
     commands.extend([
         # Automatically rewrite the name and window title. This is very often
         # blank or an ugly default
