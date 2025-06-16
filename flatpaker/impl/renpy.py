@@ -64,36 +64,36 @@ def bd_build_commands(description: Description) -> typing.List[str]:
             # This gives more sizes, and is more likely to exists than the gui/window_icon.png
             # If neither the ICNS or the EXE approach produce anything, then we
             # fallback to trying the window_icon
-            textwrap.dedent(f'''
+            textwrap.dedent('''
                 ICNS=$(ls *.app/Contents/Resources/icon.icns)
                 EXE=$(ls *.exe)
-                if [[ -f "${{EXE}}" ]]; then
-                    wrestool -x --output=. -t14 "${{EXE}}"
+                if [[ -f "${EXE}" ]]; then
+                    wrestool -x --output=. -t14 "${EXE}"
                     icotool -x $(ls *.ico)
-                elif [[ -f "${{ICNS}}" ]]; then
-                    icns2png -x "${{ICNS}}"
+                elif [[ -f "${ICNS}" ]]; then
+                    icns2png -x "${ICNS}"
                 fi
 
                 PNG=$(ls *png)
-                if [[ ! "${{PNG}}" && -f "$FLATPAK_DEST/lib/game/game/gui/window_icon.png" ]]; then
+                if [[ ! "${PNG}" && -f "$FLATPAK_DEST/lib/game/game/gui/window_icon.png" ]]; then
                     cp $FLATPAK_DEST/lib/game/game/gui/window_icon.png window_iconx256x256.png
                 fi
 
                 for icon in $(ls *.png); do
-                    if [[ "${{icon}}" =~ "32x32" ]]; then
+                    if [[ "${icon}" =~ "32x32" ]]; then
                         size="32x32"
-                    elif [[ "${{icon}}" =~ "64x64" ]]; then
+                    elif [[ "${icon}" =~ "64x64" ]]; then
                         size="64x64"
-                    elif [[ "${{icon}}" =~ "128x128" ]]; then
+                    elif [[ "${icon}" =~ "128x128" ]]; then
                         size="128x128"
-                    elif [[ "${{icon}}" =~ "256x256" ]]; then
+                    elif [[ "${icon}" =~ "256x256" ]]; then
                         size="256x256"
-                    elif [[ "${{icon}}" =~ "512x512" ]]; then
+                    elif [[ "${icon}" =~ "512x512" ]]; then
                         size="512x512"
                     else
                         continue
                     fi
-                    install -D -m644 "${{icon}}" "$FLATPAK_DEST/share/icons/hicolor/${{size}}/apps/$FLATPAK_ID.png"
+                    install -D -m644 "${icon}" "$FLATPAK_DEST/share/icons/hicolor/${size}/apps/$FLATPAK_ID.png"
                 done
             '''))
 
