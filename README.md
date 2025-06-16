@@ -163,6 +163,10 @@ For example:
     of extracting icons from the exe or icns files. This is generally
     unnecessary, but some games have customized window_icons but not exe icons.
 
+  - `x_renpy_archived_window_gui_icon: string`. Extract a `gui/window_icon.png` file
+    from the named archive instead of extracting from the exe or icns files.
+    This is generally unnecessary, but see above.
+
 
 ##### RPGMaker
 
