@@ -45,7 +45,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         ''',
 
         # in MV www/icon.png is usually the customized icon and icon/icon.png is
-        textwrap.dedent(f'''
+        textwrap.dedent('''
             if [[ -d "www/icon" ]]; then
                 install -Dm644 www/icon/icon.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png
             else
