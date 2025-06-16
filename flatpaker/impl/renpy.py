@@ -53,6 +53,11 @@ def bd_build_commands(description: Description) -> typing.List[str]:
     if description.quirks.force_window_gui_icon:
         commands.append(
             'install -D -m644 $FLATPAK_DEST/lib/game/game/gui/window_icon.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png')
+    elif (arch := description.quirks.x_renpy_archived_window_gui_icon) is not None:
+        commands.extend([
+            f'rpatool $FLATPAK_DEST/lib/game/game/{arch} -x $FLATPAK_ID.png=gui/window_icon.png || exit 1',
+            'install -Dm644 ${FLATPAK_ID}.png -t ${FLATPAK_DEST}/share/icons/hicolor/256x256/apps || exit 1',
+        ])
     else:
         commands.append(
             # Extract the icon file from either a Windows exe or from MacOS resources.

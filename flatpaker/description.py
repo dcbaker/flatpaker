@@ -72,6 +72,11 @@ class Quirks:
     force_window_gui_icon: bool = False
     x_configure_prologue: str | None = None
     x_rpgmaker_repack_www: bool = False
+    x_renpy_archived_window_gui_icon: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.force_window_gui_icon and self.x_renpy_archived_window_gui_icon:
+            raise RuntimeError('Cannot require both an unpacked windows_gui.png and a packed windows_gui.png!')
 
 
 @dataclasses.dataclass
