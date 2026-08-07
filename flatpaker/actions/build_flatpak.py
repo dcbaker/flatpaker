@@ -41,7 +41,7 @@ def _build(args: BaseBuildArguments, description: Description) -> None:
         appdata_file = util.create_appdata(description, workdir, appid)
         write_build_rules(description, workdir, appid, desktop_file, appdata_file)
 
-        build_command: typing.List[str] = [
+        build_command: list[str] = [
             'flatpak-builder', '--force-clean', '--user', 'build',
             (workdir / f'{appid}.json').absolute().as_posix(),
         ]

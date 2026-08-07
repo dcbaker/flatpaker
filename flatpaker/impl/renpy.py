@@ -27,8 +27,8 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
-def bd_build_commands(description: Description) -> typing.List[str]:
-    commands: typing.List[str] = [
+def bd_build_commands(description: Description) -> list[str]:
+    commands: list[str] = [
         'mkdir -p $FLATPAK_DEST/lib/game',
     ]
 
@@ -109,7 +109,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
     sources = util.extract_sources(description)
 
     # TODO: typing requires more thought
-    modules: typing.List[typing.Dict[str, typing.Any]] = [
+    modules: list[dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
             'name': util.sanitize_name(description.common.name),

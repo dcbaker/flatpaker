@@ -17,14 +17,14 @@ if typing.TYPE_CHECKING:
 RUNTIME_VERSION = "24.08"
 
 
-def _subelem(elem: ET.Element, tag: str, text: typing.Optional[str] = None, **extra: str) -> ET.Element:
+def _subelem(elem: ET.Element, tag: str, text: str | None = None, **extra: str) -> ET.Element:
     new = ET.SubElement(elem, tag, extra)
     new.text = text
     return new
 
 
-def extract_sources(description: Description) -> typing.List[typing.Dict[str, object]]:
-    sources: typing.List[typing.Dict[str, object]] = []
+def extract_sources(description: Description) -> list[dict[str, object]]:
+    sources: list[dict[str, object]] = []
 
     for archive in description.sources.archives:
         sha = archive.sha256
