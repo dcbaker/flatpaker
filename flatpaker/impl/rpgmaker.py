@@ -50,7 +50,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
     ]
 
     # TODO: typing requires more thought
-    modules: typing.List[typing.Dict[str, typing.Any]] = [
+    modules: list[dict[str, typing.Any]] = [
         {
             'buildsystem': 'simple',
             'name': util.sanitize_name(description.common.name),

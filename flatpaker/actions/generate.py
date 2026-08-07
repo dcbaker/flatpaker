@@ -43,7 +43,7 @@ def generate(args: GenerateArguments) -> bool:
     add(appdata, 'releases', tomlkit.table(), comment='Optionally, add release information')
     doc.add('appdata', appdata)
 
-    archives: typing.List[tomlkit.items.Table] = []
+    archives: list[tomlkit.items.Table] = []
     for src in [args.archive] + args.archives:
         archive = tomlkit.table()
         add(archive, 'path', sourcedir.joinpath(pathlib.Path(src).name).as_posix())
@@ -54,7 +54,7 @@ def generate(args: GenerateArguments) -> bool:
     sources.add('archives', archives)
 
     if args.patches:
-        patches: typing.List[tomlkit.items.Table] = []
+        patches: list[tomlkit.items.Table] = []
         for src in args.patches:
             patch = tomlkit.table()
             add(patch, 'path', sourcedir.joinpath(pathlib.Path(src).name).as_posix())
@@ -62,7 +62,7 @@ def generate(args: GenerateArguments) -> bool:
         sources.add('patches', patches)
 
     if args.files:
-        files: typing.List[tomlkit.items.Table] = []
+        files: list[tomlkit.items.Table] = []
         for src in args.patches:
             file = tomlkit.table()
             add(file, 'path', sourcedir.joinpath(pathlib.Path(src).name).as_posix())

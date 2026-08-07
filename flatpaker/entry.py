@@ -20,7 +20,7 @@ if typing.TYPE_CHECKING:
 
     class BaseBuildArguments(BaseArguments, typing.Protocol):
         repo: str
-        gpg: typing.Optional[str]
+        gpg: str | None
         install: bool
         export: bool
         cleanup: bool
@@ -28,19 +28,19 @@ if typing.TYPE_CHECKING:
         keep_going: bool
 
     class BuildArguments(BaseBuildArguments, typing.Protocol):
-        descriptions: typing.List[str]
+        descriptions: list[str]
 
     class BuildRuntimeArguments(BaseBuildArguments, typing.Protocol):
-        runtimes: typing.List[EngineName]
+        runtimes: list[EngineName]
 
     class GenerateArguments(BaseArguments, typing.Protocol):
         url: str
         appname: str
         engine: EngineName
         archive: str
-        archives: typing.List[str]
-        patches: typing.List[str]
-        files: typing.List[str]
+        archives: list[str]
+        patches: list[str]
+        files: list[str]
 
 
 def static_deltas(args: BaseBuildArguments) -> None:

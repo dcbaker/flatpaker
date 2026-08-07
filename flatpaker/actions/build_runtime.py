@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
 
 
 def _build_runtime(args: BaseBuildArguments, sdk: pathlib.Path) -> None:
-    build_command: typing.List[str] = [
+    build_command: list[str] = [
         'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
 
     if args.export:
@@ -56,7 +56,7 @@ def build_runtimes(args: BuildRuntimeArguments) -> bool:
     subprocess.run(command, check=True)
 
     basename = 'com.github.dcbaker.flatpaker'
-    runtimes: typing.List[str] = []
+    runtimes: list[str] = []
     if 'rpgmaker' in args.runtimes:
         runtimes.append(f'{basename}.RPGM.Platform.yml')
     if 'renpy8' in args.runtimes:

@@ -25,7 +25,7 @@ if typing.TYPE_CHECKING:
 def load_config() -> Config:
     root = os.environ.get('XDG_CONFIG_HOME', os.path.expanduser('~/.config'))
     conf = os.path.join(root, 'flatpaker', 'config.toml')
-    raw: typing.Dict[str, typing.Any]
+    raw: dict[str, typing.Any]
     if os.path.exists(conf):
         with open(conf, 'rb') as f:
             raw = tomlkit.load(f)
