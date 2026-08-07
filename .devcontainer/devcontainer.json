@@ -1,0 +1,46 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/debian
+{
+  "name": "flatpaker",
+
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "image": "mcr.microsoft.com/devcontainers/base:trixie",
+
+  // These are required to let bubblewrap run inside the container
+  "capAdd": ["SYS_ADMIN"],
+  "securityOpt": ["seccomp=unconfined", "unmask=ALL"],
+  "runArgs": ["--device=/dev/fuse"],
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  // "features": {
+  //  "ghcr.io/devcontainer-config/features/dot-config:4": {}
+  // },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "EditorConfig.EditorConfig",
+        "charliermarsh.ruff",
+        "ms-python.mypy-type-checker",
+        "ms-python.pylint",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "njpwerner.autodocstring",
+        "tamasfe.even-better-toml",
+      ]
+    }
+  },
+
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:~/.cargo/bin",
+  },
+
+  "onCreateCommand": "sudo sh .devcontainer/debian-install.sh",
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  "remoteUser": "root",
+}
