@@ -1,0 +1,11 @@
+--- ftgl/Makefile.am	2026-08-10 09:05:24.973016890 -0000
++++ ftgl/Makefile.am	2026-08-10 09:06:13.861319158 -0000
+@@ -1,7 +1,7 @@
+
+ ACLOCAL_AMFLAGS = -I m4
+
+-SUBDIRS = src demo docs # test (does not build)
++SUBDIRS = src
+ DIST_SUBDIRS = $(SUBDIRS) msvc
+
+ pkgconfigdir = $(libdir)/pkgconfig
