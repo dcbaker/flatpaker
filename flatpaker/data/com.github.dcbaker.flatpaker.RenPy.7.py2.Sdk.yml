@@ -11,17 +11,6 @@ modules:
   - "modules/renpy-shared.yml"
   - "modules/python-2.7.json"
   - "modules/python2-requirements.json"
-  - name: "python2-cython0"
-    buildsystem: "simple"
-    build-commands:
-      - pip2 install --prefix=${FLATPAK_DEST} --no-deps . --verbose
-      - ln -s ${FLATPAK_DEST}/lib/python2.7/site-packages/cython0.py ${FLATPAK_DEST}/lib/python2.7/site-packages/cython.py
-    sources:
-      - type: "git"
-        url: "https://github.com/dcbaker/cython.git"
-        branch: "cython0"
-    cleanup-platform:
-      - ${FLATPAK_DEST}/bin
   - name: PyGame_SDL2
     buildsystem: simple
     build-commands:
@@ -33,13 +22,11 @@ modules:
       - type: patch
         path: patches/pygame-sdl2-7-remove-pathlib.patch
       - type: patch
-        path: patches/pygame-sdl2-7-use-correct-cython.patch
-      - type: patch
         path: patches/pygame-sdl2-7-install-headers.patch
   - name: RenPy
     buildsystem: simple
     build-commands:
-      - RENPY_CYTHON=cython0 RENPY_DEPS_INSTALL="${FLATPAK_DEST}" python2 module/setup.py install --prefix=${FLATPAK_DEST} || exit 1
+      - RENPY_DEPS_INSTALL="${FLATPAK_DEST}" python2 module/setup.py install --prefix=${FLATPAK_DEST} || exit 1
 
       # If this is initialized it tries to write files into a readonly location
       # and causes a crash. It's also not useful since there is no steam in the

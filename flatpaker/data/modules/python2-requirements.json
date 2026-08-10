@@ -130,6 +130,23 @@
                     "sha256": "c7219ef20c5fbf413b4567092adfc46fa6203cb8454eda33c3fc1afe1398a308"
                 }
             ]
+        },
+        {
+            "name": "python2-cython",
+            "buildsystem": "simple",
+            "build-commands": [
+                "pip2 install --verbose --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=${FLATPAK_DEST} \"cython\" --no-build-isolation"
+            ],
+            "sources": [
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/7e/26/9d8de10005fedb1eceabe713348d43bae1dbab1786042ca0751a2e2b0f8c/Cython-0.29.37-py2.py3-none-any.whl",
+                    "sha256": "95f1d6a83ef2729e67b3fa7318c829ce5b07ac64c084cd6af11c228e0364662c"
+                }
+            ],
+            "cleanup": [
+                "*"
+            ]
         }
     ]
 }
