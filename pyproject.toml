@@ -33,7 +33,7 @@
 
 [tool.mypy]
   strict = true
-  modules = "flatpaker"
+  packages = "flatpaker"
   exclude = ['data/.*']
 
 [tool.ruff]
