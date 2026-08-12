@@ -12,7 +12,7 @@ import tomlkit
 from flatpaker import util
 
 if typing.TYPE_CHECKING:
-    import tomlkit.items
+    import tomlkit.items  # noqa: TC004
 
     from flatpaker.entry import GenerateArguments
 

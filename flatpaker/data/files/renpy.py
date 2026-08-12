@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# coding=utf-8
+# coding=utf-8  # noqa: UP009
 
 # This file is part of Ren'Py. The license below applies to Ren'Py only.
 # Games and other projects that use Ren'Py may use a different license.
@@ -29,7 +29,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function  # noqa: UP010
 
 import os
 import sys
