@@ -2,7 +2,7 @@
 # Copyright © 2022-2024 Dylan Baker
 
 from __future__ import annotations
-from xml.etree import ElementTree as ET
+
 import contextlib
 import hashlib
 import pathlib
@@ -10,6 +10,7 @@ import shutil
 import tempfile
 import textwrap
 import typing
+from xml.etree import ElementTree as ET
 
 if typing.TYPE_CHECKING:
     from .description import Description
