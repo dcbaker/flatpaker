@@ -78,7 +78,7 @@ def main() -> None:
     from . import __version__
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
+    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
     subparsers = parser.add_subparsers(required=True)
     build_parser = subparsers.add_parser(
         'build', help='Build flatpaks from descriptions', parents=[pp])
