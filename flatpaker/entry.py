@@ -2,15 +2,16 @@
 # Copyright © 2022-2025 Dylan Baker
 
 from __future__ import annotations
+
 import argparse
 import subprocess
 import sys
 import typing
 
-from flatpaker.actions.build_runtime import build_runtimes
-from flatpaker.actions.build_flatpak import build_flatpak
-from flatpaker.actions.generate import generate
 import flatpaker.config
+from flatpaker.actions.build_flatpak import build_flatpak
+from flatpaker.actions.build_runtime import build_runtimes
+from flatpaker.actions.generate import generate
 
 if typing.TYPE_CHECKING:
     from flatpaker.description import EngineName

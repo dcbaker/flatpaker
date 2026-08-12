@@ -2,6 +2,7 @@
 # Copyright © 2024 Dylan Baker
 
 from __future__ import annotations
+
 import os
 import typing
 

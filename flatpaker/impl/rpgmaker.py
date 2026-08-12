@@ -2,6 +2,7 @@
 # Copyright © 2022-2025 Dylan Baker
 
 from __future__ import annotations
+
 import json
 import pathlib
 import textwrap

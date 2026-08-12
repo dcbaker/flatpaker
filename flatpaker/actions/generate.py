@@ -2,6 +2,7 @@
 # Copyright © 2025 Dylan Baker
 
 from __future__ import annotations
+
 import pathlib
 import shutil
 import typing
