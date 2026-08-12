@@ -47,7 +47,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
     ])
 
     game_sh_contents = [
-        'exec /usr/lib/nwjs/nw /app/lib/game/ --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"'
+        'exec /usr/lib/nwjs/nw /app/lib/game/ --enable-features=UseOzonePlatform --ozone-platform=auto "$@"'
     ]
 
     # TODO: typing requires more thought
@@ -77,6 +77,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         'finish-args': [
             '--socket=pulseaudio',
             '--socket=wayland',
+            '--socket=fallback-x11',
             '--device=dri',
         ],
         'modules': modules,
