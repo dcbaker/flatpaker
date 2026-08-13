@@ -25,11 +25,11 @@ modules:
     cleanup-platform:
       - '*'
     sources:
-      # The last release is super old, and doesn't link against libopenjpeg2 correctly
-      # Patching it proved to be entirely too much effort, so just use git
-      - type: "git"
-        url: "https://git.code.sf.net/p/icns/code"
-        commit: 921f972c461c505e5ac981aaddbdfdde97e8bb2b
+      - type: "archive"
+        url: "https://downloads.sf.net/icns/libicns-0.8.1.tar.gz"
+        sha256: "335f10782fc79855cf02beac4926c4bf9f800a742445afbbf7729dab384555c2"
+      - type: "patch"
+        path: "../patches/icns-add-missing-headers.patch"
 
   - name: rpatool
     buildsystem: "simple"
