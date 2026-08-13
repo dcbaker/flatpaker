@@ -7,7 +7,9 @@ modules:
     config-opts:
       - --mandir=/share/man
     cleanup:
-      - /share
+      - "/share"
+      - "/lib/*/*.a"
+      - "/lib/*/*.la"
     cleanup-platform:
       - '*'
     sources:
@@ -21,7 +23,9 @@ modules:
     config-opts:
       - --mandir=/share/man
     cleanup:
-      - /share
+      - "/share"
+      - "/lib/*/*.a"
+      - "/lib/*/*.la"
     cleanup-platform:
       - '*'
     sources:
@@ -30,6 +34,21 @@ modules:
         sha256: "335f10782fc79855cf02beac4926c4bf9f800a742445afbbf7729dab384555c2"
       - type: "patch"
         path: "../patches/icns-add-missing-headers.patch"
+
+  - name: unrar
+    buildsystem: "simple"
+    build-commands:
+      # Use system cflags
+      - sed -e '/CXXFLAGS=/d' -e '/LDFLAGS=/d' -i makefile
+
+      - make -j$FLATPAK_BUILDER_N_JOBS
+      - DESTDIR="${FLATPAK_DEST}" make install
+    cleanup-platform:
+      - '*'
+    sources:
+      - type: "archive"
+        url: "https://www.rarlab.com/rar/unrarsrc-7.2.7.tar.gz"
+        sha256: "01d903a7dcf413cb2925696d7796e48e38d471f79bfe7ef3ad2aebf6c12dbefd"
 
   - name: rpatool
     buildsystem: "simple"
@@ -53,21 +72,6 @@ modules:
       - type: "file"
         url: https://files.pythonhosted.org/packages/59/c7/eac5f1c131f8e4e41268944bbfe60cb42dfcea2ec8fc5a0ee8476fd8b6bd/unrpa-2.3.0-py3-none-any.whl
         sha256: 17b024050e19edf470eb9abd91fa5fb2be63aa73c01f44d2ef9cf6978289eea9
-
-  - name: unrar
-    buildsystem: "simple"
-    build-commands:
-      # Use system cflags
-      - sed -e '/CXXFLAGS=/d' -e '/LDFLAGS=/d' -i makefile
-
-      - make -j$FLATPAK_BUILDER_N_JOBS
-      - DESTDIR="${FLATPAK_DEST}" make install
-    cleanup-platform:
-      - '*'
-    sources:
-      - type: "archive"
-        url: "https://www.rarlab.com/rar/unrarsrc-7.2.7.tar.gz"
-        sha256: "01d903a7dcf413cb2925696d7796e48e38d471f79bfe7ef3ad2aebf6c12dbefd"
 
   - name: un.rpyc
     buildsystem: "simple"
