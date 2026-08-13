@@ -14,7 +14,7 @@ modules:
   - name: PyGame_SDL2
     buildsystem: simple
     build-commands:
-      - pip3 install --prefix=${FLATPAK_DEST} --no-deps .
+      - pip3 install --prefix=${FLATPAK_DEST} --no-deps . --exists-action=i --no-index --no-build-isolation
     sources:
       - type: archive
         url: https://www.renpy.org/dl/8.3.7/pygame_sdl2-2.1.0+renpy8.3.7.tar.gz
@@ -24,7 +24,7 @@ modules:
   - name: RenPy
     buildsystem: simple
     build-commands:
-      - RENPY_CYTHON=cython0 RENPY_DEPS_INSTALL="${FLATPAK_DEST}" pip3 install --prefix=${FLATPAK_DEST} --no-deps ./module || exit 1
+      - RENPY_CYTHON=cython0 RENPY_DEPS_INSTALL="${FLATPAK_DEST}" pip3 install --prefix=${FLATPAK_DEST} --no-deps ./module --exists-action=i --no-index --no-build-isolation || exit 1
 
       # If this is initialized it tries to write files into a readonly location
       # and causes a crash It's also not useful since there is no steam in the
