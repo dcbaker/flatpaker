@@ -66,8 +66,8 @@ modules:
       - '*'
     sources:
       - type: "archive"
-        url: https://www.rarlab.com/rar/unrarsrc-7.1.6.tar.gz
-        sha256: ca5e1da37dd6fa1b78bb5ed675486413f79e4a917709744aa04b6f93dfd914f0
+        url: "https://www.rarlab.com/rar/unrarsrc-7.2.7.tar.gz"
+        sha256: "01d903a7dcf413cb2925696d7796e48e38d471f79bfe7ef3ad2aebf6c12dbefd"
 
   - name: un.rpyc
     buildsystem: "simple"
