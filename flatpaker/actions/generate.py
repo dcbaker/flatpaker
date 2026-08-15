@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import pathlib
 import shutil
 import typing
@@ -19,7 +20,9 @@ if typing.TYPE_CHECKING:
 
 def generate(args: GenerateArguments) -> bool:
     name = f'{args.url}.{util.sanitize_name(args.appname)}'
-    sourcedir = pathlib.Path('sources') / name
+    projectdir = pathlib.Path(name)
+    sourcedir = projectdir / 'sources'
+    patchdir = projectdir / 'patches'
 
     doc = tomlkit.document()
 
@@ -47,7 +50,7 @@ def generate(args: GenerateArguments) -> bool:
     archives: list[tomlkit.items.Table] = []
     for src in [args.archive] + args.archives:
         archive = tomlkit.table()
-        add(archive, 'path', sourcedir.joinpath(pathlib.Path(src).name).as_posix())
+        add(archive, 'path', os.path.join(sourcedir.name, os.path.basename(src)))
         add(archive, 'sha256', util.sha256(pathlib.Path(src)))
         archives.append(archive)
 
@@ -58,7 +61,7 @@ def generate(args: GenerateArguments) -> bool:
         patches: list[tomlkit.items.Table] = []
         for src in args.patches:
             patch = tomlkit.table()
-            add(patch, 'path', sourcedir.joinpath(pathlib.Path(src).name).as_posix())
+            add(patch, 'path', os.path.join(patchdir.name, os.path.basename(src)))
             patches.append(patch)
         sources.add('patches', patches)
 
@@ -66,7 +69,7 @@ def generate(args: GenerateArguments) -> bool:
         files: list[tomlkit.items.Table] = []
         for src in args.patches:
             file = tomlkit.table()
-            add(file, 'path', sourcedir.joinpath(pathlib.Path(src).name).as_posix())
+            add(file, 'path', os.path.join(sourcedir.name, os.path.basename(src)))
             files.append(file)
         sources.add('files', files)
 
@@ -76,15 +79,18 @@ def generate(args: GenerateArguments) -> bool:
     # this ensures that even if the sources are not checked into git that the
     # folder will be
     sourcedir.joinpath('.gitkeep').touch()
+    patchdir.joinpath('.gitkeep').touch()
 
-    with open(f'{name}.toml', 'w') as f:
+    with projectdir.joinpath('build.toml').open('w', encoding='utf-8') as f:
         tomlkit.dump(doc, f)
 
     # move files after writing the toml, so we don't move things then fail
-    for src in [args.archive] + args.archives + args.patches + args.files:
-        srcp = pathlib.Path(src)
-        dest = sourcedir / srcp.name
-        if dest != srcp:
-            shutil.move(src, sourcedir)
+    for srcs, subdir in [([args.archive] + args.archives + args.files, sourcedir),
+                         (args.patches, patchdir)]:
+        for src in srcs:
+            srcp = pathlib.Path(src)
+            dest = subdir / srcp.name
+            if dest != srcp:
+                shutil.move(src, subdir)
 
     return True
