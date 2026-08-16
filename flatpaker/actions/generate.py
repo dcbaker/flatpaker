@@ -75,11 +75,17 @@ def generate(args: GenerateArguments) -> bool:
 
     doc.add('sources', sources)
 
-    sourcedir.mkdir(parents=True, exist_ok=True)
-    # this ensures that even if the sources are not checked into git that the
+    # this ensures that even if there are not patches checked into git that the
     # folder will be
-    sourcedir.joinpath('.gitkeep').touch()
+    patchdir.mkdir(parents=True, exist_ok=True)
     patchdir.joinpath('.gitkeep').touch()
+
+    # It's assumed that sources will not be checked into git but by writing a
+    # file in the directory, we ensure that the directory will be saved/restored
+    # by `git`.
+    sourcedir.mkdir(parents=True, exist_ok=True)
+    with sourcedir.joinpath('.gitignore').open('w', encoding='utf-8') as f:
+        f.write('*')
 
     with projectdir.joinpath('build.toml').open('w', encoding='utf-8') as f:
         tomlkit.dump(doc, f)
