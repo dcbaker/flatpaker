@@ -79,6 +79,9 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             '--socket=wayland',
             '--socket=fallback-x11',
             '--device=dri',
+            # Need to own the chromium interface because NW.js cannot
+            # override the name except at chromium build time.
+            '--own-name=org.mpris.MediaPlayer2.chromium.*',
         ],
         'modules': modules,
     }
