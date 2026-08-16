@@ -44,7 +44,8 @@ def generate(args: GenerateArguments) -> bool:
     add(appdata, 'summary', 'A short summary')
     add(appdata, 'description', tomlkit.string('A longer description', multiline=True))
     add(appdata, 'content_rating', tomlkit.table(), comment='Optionally, add content ratings')
-    add(appdata, 'releases', tomlkit.table(), comment='Optionally, add release information')
+    add(appdata, 'releases', tomlkit.table(),
+        comment='Optionally, add release information in the form: "1900-01-01" = "1.0"')
     doc.add('appdata', appdata)
 
     archives: list[tomlkit.items.Table] = []
