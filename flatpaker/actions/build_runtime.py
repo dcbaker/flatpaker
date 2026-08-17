@@ -17,7 +17,8 @@ if typing.TYPE_CHECKING:
 def _build_runtime(args: BaseBuildArguments, sdk: pathlib.Path,
                    need_platform_workaround: bool) -> None:
     build_command: list[str] = [
-        'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
+        'flatpak-builder', '--force-clean', '--user',
+        '--install-deps-from=flathub', 'build', sdk.as_posix()]
 
     if args.export:
         build_command.extend(['--repo', args.repo])
