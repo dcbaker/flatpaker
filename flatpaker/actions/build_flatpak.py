@@ -47,12 +47,13 @@ def _build(args: BaseBuildArguments, description: Description) -> None:
             (workdir / f'{appid}.json').absolute().as_posix(),
         ]
 
-        if args.export:
-            build_command.extend(['--repo', args.repo])
-            if args.gpg:
-                build_command.extend(['--gpg-sign', args.gpg])
-        if args.install:
-            build_command.extend(['--install'])
+        match args.export:
+            case 'repo':
+                build_command.extend(['--repo', args.repo])
+                if args.gpg:
+                    build_command.extend(['--gpg-sign', args.gpg])
+            case 'install':
+                build_command.extend(['--install'])
 
         subprocess.run(build_command, check=True)
         if args.cleanup:

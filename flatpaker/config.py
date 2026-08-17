@@ -10,11 +10,14 @@ import tomlkit
 
 if typing.TYPE_CHECKING:
 
+    ExportMode = typing.Literal['none', 'repo', 'install']
+
     Common = typing.TypedDict(
         'Common',
         {
             'gpg-key': str,
             'repo': str,
+            'export': ExportMode,
         },
         total=False,
     )
