@@ -14,7 +14,8 @@ if typing.TYPE_CHECKING:
     from ..entry import BaseBuildArguments, BuildRuntimeArguments
 
 
-def _build_runtime(args: BaseBuildArguments, sdk: pathlib.Path) -> None:
+def _build_runtime(args: BaseBuildArguments, sdk: pathlib.Path,
+                   need_platform_workaround: bool) -> None:
     build_command: list[str] = [
         'flatpak-builder', '--force-clean', '--user', 'build', sdk.as_posix()]
 
@@ -28,7 +29,7 @@ def _build_runtime(args: BaseBuildArguments, sdk: pathlib.Path) -> None:
     subprocess.run(build_command, check=True)
 
     # Work around https://github.com/flatpak/flatpak-builder/issues/630
-    if args.install and 'Sdk' in sdk.name:
+    if need_platform_workaround and args.install and 'Sdk' in sdk.name:
         if '8' in sdk.name:
             branch = '8'
         elif '7.py2' in sdk.name:
@@ -46,6 +47,24 @@ def _build_runtime(args: BaseBuildArguments, sdk: pathlib.Path) -> None:
             '--reinstall', repo, f'{platform_id}.Platform//{branch}',
         ]
         subprocess.run(install_command, check=True)
+
+
+def _need_platform_workaround() -> bool:
+    """Do we need the workaround for platform installation?
+
+    Prior to flatpak-builder 1.4.5, flatpak would only install the Sdk component
+    when a Platform and and Sdk are built together. This means that for the Ren'Py
+    platforms, only the Sdk would be installed. For later versions this is fixed,
+    and we don't need the workaround.
+    """
+    out = subprocess.run(
+        ['flatpak-builder', '--version'],
+        stdout=subprocess.PIPE,
+        text=True,
+        check=True,
+    )
+    raw_ver = out.stdout.rsplit('-', 1)[1]
+    return tuple(int(v) for v in raw_ver.split('.')) < (1, 4, 5)
 
 
 def build_runtimes(args: BuildRuntimeArguments) -> bool:
@@ -69,11 +88,12 @@ def build_runtimes(args: BuildRuntimeArguments) -> bool:
 
     success = True
 
+    need_platform_workaround = _need_platform_workaround()
     datadir =  importlib.resources.files('flatpaker') / 'data'
     for runtime in runtimes:
         try:
             with importlib.resources.as_file(datadir / runtime) as sdk:
-                _build_runtime(args, sdk)
+                _build_runtime(args, sdk, need_platform_workaround)
         except Exception:
             if not args.keep_going:
                 raise
