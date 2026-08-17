@@ -46,8 +46,10 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
 2. Download any mods or addons (optional)
 3. Generate a toml description `flatpaker generate com.developer.game "Game Name" engine archive.zip`
 4. Edit the generated description to fill in missing information
-5. run `flatpaker build-runtimes --install` (which adds the runtimes and sdks)
-6. run `flatpaker build --install *.toml` or `flatpaker build --export --gpg-sign *.toml` (for local install or for export to a shared repo)
+5. run `flatpaker build-runtimes --export=install` (which adds the runtimes and sdks)
+6. run `flatpaker build --export=install *.toml` or `flatpaker build
+   --export=repo --gpg-sign *.toml` (for local install or for export to a shared
+   repo)
 
 ### Toml Format
 
@@ -181,6 +183,10 @@ That file must be written to `$XDG_CONFIG_HOME/flatpaker/config.toml` (if unset
 
   # The absolute path to a repo to write to. overwritten by the --repo option
   repo = "/path/to/a/repo/to/export"
+
+  # The default export mode
+  # May be one of: "none", "install", "repo"
+  export = "none"
 ```
 
 

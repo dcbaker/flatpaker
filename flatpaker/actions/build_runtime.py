@@ -20,17 +20,18 @@ def _build_runtime(args: BaseBuildArguments, sdk: pathlib.Path,
         'flatpak-builder', '--force-clean', '--user',
         '--install-deps-from=flathub', 'build', sdk.as_posix()]
 
-    if args.export:
-        build_command.extend(['--repo', args.repo])
-        if args.gpg:
-            build_command.extend(['--gpg-sign', args.gpg])
-    if args.install:
-        build_command.extend(['--install'])
+    match args.export:
+        case 'repo':
+            build_command.extend(['--repo', args.repo])
+            if args.gpg:
+                build_command.extend(['--gpg-sign', args.gpg])
+        case 'install':
+            build_command.extend(['--install'])
 
     subprocess.run(build_command, check=True)
 
     # Work around https://github.com/flatpak/flatpak-builder/issues/630
-    if need_platform_workaround and args.install and 'Sdk' in sdk.name:
+    if need_platform_workaround and args.export == 'install' and 'Sdk' in sdk.name:
         if '8' in sdk.name:
             branch = '8'
         elif '7.py2' in sdk.name:
@@ -40,7 +41,7 @@ def _build_runtime(args: BaseBuildArguments, sdk: pathlib.Path,
         else:
             raise RuntimeError('Unexpected Sdk')
 
-        repo = args.repo if args.export else pathlib.Path('.flatpak-builder/cache').absolute().as_posix()
+        repo = pathlib.Path('.flatpak-builder/cache').absolute().as_posix()
         platform_id = '.'.join(sdk.name.split('.', maxsplit=5)[:-1])
 
         install_command = [

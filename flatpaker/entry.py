@@ -14,6 +14,7 @@ from flatpaker.actions.build_runtime import build_runtimes
 from flatpaker.actions.generate import generate
 
 if typing.TYPE_CHECKING:
+    from flatpaker.config import ExportMode
     from flatpaker.description import EngineName
 
     class BaseArguments(typing.Protocol):
@@ -22,8 +23,7 @@ if typing.TYPE_CHECKING:
     class BaseBuildArguments(BaseArguments, typing.Protocol):
         repo: str
         gpg: str | None
-        install: bool
-        export: bool
+        export: ExportMode
         cleanup: bool
         deltas: bool
         keep_going: bool
@@ -45,7 +45,7 @@ if typing.TYPE_CHECKING:
 
 
 def static_deltas(args: BaseBuildArguments) -> None:
-    if not (args.deltas or args.export):
+    if not (args.deltas or args.export != 'repo'):
         return
     command = ['flatpak', 'build-update-repo', args.repo, '--generate-static-deltas']
     if args.gpg:
@@ -54,7 +54,7 @@ def static_deltas(args: BaseBuildArguments) -> None:
     subprocess.run(command, check=True)
 
 
-def main() -> None:
+def _parse_args() -> BaseArguments:
     config = flatpaker.config.load_config()
 
     # An inheritable parser instance used to add arguments to both build and build-runtimes
@@ -69,10 +69,21 @@ def main() -> None:
         default=config['common'].get('gpg-key'),
         action='store',
         help='A GPG key to sign the output to when writing to a repo')
-    pp.add_argument('--export', action='store_true', help='Export to the provided repo')
-    pp.add_argument('--install', action='store_true', help="Install for the user (useful for testing)")
+    pp.add_argument(
+        '--export',
+        action='store',
+        choices=['none', 'install', 'repo'],
+        default=config['common'].get('export', 'none'),
+        help='Export the repo using one of the following methods. '
+             '"none": Do not export, only build; '
+             '"export": write to an ostree repo; '
+             '"install": install for the user(useful for testing)')
     pp.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
-    pp.add_argument('--static-deltas', action='store_true', dest='deltas', help="generate static deltas when exporting")
+    pp.add_argument(
+        '--static-deltas',
+        action='store_true',
+        dest='deltas',
+        help="generate static deltas when exporting to a repo. Has not effect if `--export-mode` is not `repo`")
     pp.add_argument('--keep-going', action='store_true', help="Don't stop if building a runtime or app fails.")
 
     from . import __version__
@@ -130,7 +141,18 @@ def main() -> None:
     )
     generate_parser.set_defaults(action='generate')
 
-    args = typing.cast('BaseArguments', parser.parse_args())
+    base = typing.cast('BaseArguments', parser.parse_args())
+
+    if base.action in {'build', 'build-runtimes'}:
+        runargs = typing.cast('BaseBuildArguments', base)
+        if runargs.export == 'repo' and not runargs.repo:
+            parser.error('export is set to "repo", but no "repo" is defined')
+
+    return base
+
+
+def main() -> None:
+    args = _parse_args()
     success = True
 
     match args.action:
