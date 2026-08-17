@@ -133,17 +133,18 @@ def main() -> None:
     args = typing.cast('BaseArguments', parser.parse_args())
     success = True
 
-    if args.action == 'build':
-        bargs = typing.cast('BuildArguments', args)
-        success = build_flatpak(bargs)
-        if bargs.deltas:
-            static_deltas(bargs)
-    if args.action == 'build-runtimes':
-        brargs = typing.cast('BuildRuntimeArguments', args)
-        success = build_runtimes(brargs)
-        if brargs.deltas:
-            static_deltas(brargs)
-    if args.action == 'generate':
-        success = generate(typing.cast('GenerateArguments', args))
+    match args.action:
+        case 'build':
+            bargs = typing.cast('BuildArguments', args)
+            success = build_flatpak(bargs)
+            if bargs.deltas:
+                static_deltas(bargs)
+        case 'build-runtimes':
+            brargs = typing.cast('BuildRuntimeArguments', args)
+            success = build_runtimes(brargs)
+            if brargs.deltas:
+                static_deltas(brargs)
+        case 'generate':
+            success = generate(typing.cast('GenerateArguments', args))
 
     sys.exit(0 if success else 1)
