@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import os
 import pathlib
 import subprocess
 import sys
@@ -29,6 +30,12 @@ if typing.TYPE_CHECKING:
         cleanup: bool
         deltas: bool
         keep_going: bool
+        flat_manager_remote: str | None
+        flat_manager_repo: str | None
+        flat_manager_token: str | None
+        flat_manager_token_file: str | None
+        flat_manager_token_keyring_service: str | None
+        flat_manager_token_keyring_keyid: str | None
 
     class BuildArguments(BaseBuildArguments, typing.Protocol):
         descriptions: list[pathlib.Path]
@@ -47,6 +54,14 @@ if typing.TYPE_CHECKING:
 
 
 @dataclasses.dataclass(slots=False, eq=False)
+class FlatManagerConfig:
+
+    remote: str
+    repo: str
+    token: str
+
+
+@dataclasses.dataclass(slots=False, eq=False)
 class _BuildCommonConfig:
     """Common configuration for "build" and "build-runtimes"."""
 
@@ -56,6 +71,7 @@ class _BuildCommonConfig:
     cleanup: bool
     deltas: bool
     keep_going: bool
+    flat_manager: FlatManagerConfig | None
 
 
 @dataclasses.dataclass(slots=False, eq=False)
@@ -113,12 +129,48 @@ def _parse_args() -> BaseArguments:
     pp.add_argument(
         '--export',
         action='store',
-        choices=['none', 'install', 'repo'],
+        choices=['none', 'install', 'repo', 'flat-manager'],
         default=config['common'].get('export', 'none'),
         help='Export the repo using one of the following methods. '
              '"none": Do not export, only build; '
              '"export": write to an ostree repo; '
              '"install": install for the user(useful for testing)')
+    pp.add_argument(
+        '--flat-manager-remote',
+        action='store',
+        default=config['flat-manager'].get('remote'),
+        help='The flat-manager url',
+    )
+    pp.add_argument(
+        '--flat-manager-repo',
+        action='store',
+        default=config['flat-manager'].get('repo'),
+        help='The repo of the flat-manager instance to manage',
+    )
+    pp.add_argument(
+        '--flat-manager-token',
+        action='store',
+        default=config['flat-manager'].get('token-str'),
+        help='A path to a file containing a flat-manager repo token',
+    )
+    pp.add_argument(
+        '--flat-manager-token-file',
+        action='store',
+        default=config['flat-manager'].get('token-file'),
+        help='Path to a file containing flat-manager repo token',
+    )
+    pp.add_argument(
+        '--flat-manager-token-keyring-service',
+        action='store',
+        default=config['flat-manager'].get('token-keyring', (None, None))[0],
+        help='A service to pass to `keyring.get_password(service, keyid)',
+    )
+    pp.add_argument(
+        '--flat-manager-token-keyring-keyid',
+        action='store',
+        default=config['flat-manager'].get('token-keyring', (None, None))[1],
+        help='A keyid to pass to `keyring.get_password(service, keyid)',
+    )
     pp.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")
     pp.add_argument(
         '--static-deltas',
@@ -188,8 +240,56 @@ def _parse_args() -> BaseArguments:
         runargs = typing.cast('BaseBuildArguments', base)
         if runargs.export == 'repo' and not runargs.repo:
             parser.error('export is set to "repo", but no "repo" is defined')
+        if runargs.export == 'flat-manager':
+            if not runargs.flat_manager_remote:
+                parser.error('export is set to "flat-manager", but "flat-manager-remote" is not defined')
+            if not runargs.flat_manager_repo:
+                parser.error('export is set to "flat-manager", but "flat-manager-repo" is not defined')
+            if type(runargs.flat_manager_token_keyring_keyid) != type(runargs.flat_manager_token_keyring_service):
+                parser.error('only one of: "flat-manager-token-keyring-service" and '
+                             '"flat-manager-token-keyring-keyid" is set. '
+                             'Both must be set to use the keyring.')
+            # We can check either service or keyid here, since we know they're both None or they're both str
+            if not any([runargs.flat_manager_token, runargs.flat_manager_token_file,
+                        runargs.flat_manager_token_keyring_service]):
+                parser.error('export is set to "flat-manager", but no flat-manager token is defined')
 
     return base
+
+
+def _flat_manager_config(args: BaseBuildArguments) -> FlatManagerConfig | None:
+    if args.export != 'flat-manager':
+        return None
+
+    repo = args.flat_manager_repo
+    assert repo is not None
+    remote = args.flat_manager_remote
+    assert remote is not None
+
+    if args.flat_manager_token:
+        token = args.flat_manager_token
+    elif p := args.flat_manager_token_file:
+        with open(os.path.expanduser(os.path.expandvars(p)), 'r', encoding='utf-8') as f:
+            token = f.read().strip()
+    else:
+        # This is imported here becaue it's optional.
+        # Someday this can be `lazy import`ed
+        try:
+            import keyring
+        except ImportError as e:
+            raise RuntimeError('Requested the use of `keyring` for flat-manager runtime secret, '
+                               'but the keyring module cannot be imported') from e
+
+        service = args.flat_manager_token_keyring_service
+        assert service is not None
+        keyid = args.flat_manager_token_keyring_keyid
+        assert keyid is not None
+        if t := keyring.get_password(service, keyid):
+            token = t
+        else:
+            raise RuntimeError(f'There is not keyring secret available for: "{service}":"{keyid}"')
+
+    return FlatManagerConfig(remote, repo, token)
 
 
 def _args_to_config() -> BuildFlatpakConfig | BuildRuntimeConfig | GenerateConfig:
@@ -205,6 +305,7 @@ def _args_to_config() -> BuildFlatpakConfig | BuildRuntimeConfig | GenerateConfi
                 gpg=bargs.gpg,
                 keep_going=bargs.keep_going,
                 descriptions=bargs.descriptions,
+                flat_manager=_flat_manager_config(bargs)
             )
         case 'build-runtimes':
             rargs = typing.cast('BuildRuntimeArguments', args)
@@ -216,6 +317,7 @@ def _args_to_config() -> BuildFlatpakConfig | BuildRuntimeConfig | GenerateConfi
                 gpg=rargs.gpg,
                 keep_going=rargs.keep_going,
                 runtimes=rargs.runtimes,
+                flat_manager=_flat_manager_config(rargs)
             )
         case 'generate':
             gargs = typing.cast('GenerateArguments', args)

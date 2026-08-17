@@ -17,39 +17,54 @@ if typing.TYPE_CHECKING:
 _RUNTIME_ID_BASE = 'com.github.dcbaker.flatpaker'
 
 
+def _get_renpy_branch(sdk: str) -> str:
+    if '8' in sdk:
+        return '8'
+    elif '7.py2' in sdk:
+        return '7'
+    elif '7.py3' in sdk:
+        return '7-PY3'
+    raise RuntimeError("Unknown Ren'Py branch")
+
+
 def _build_runtime(args: BuildRuntimeConfig, sdk: pathlib.Path,
                    need_platform_workaround: bool) -> None:
     build_command: list[str] = [
         'flatpak-builder', '--force-clean', '--user',
         '--install-deps-from=flathub', 'build', sdk.as_posix()]
 
+    repo = args.repo
+
     match args.export:
         case 'repo':
-            build_command.extend(['--repo', args.repo])
+            build_command.extend(['--repo', repo])
             if args.gpg:
                 build_command.extend(['--gpg-sign', args.gpg])
         case 'install':
             build_command.extend(['--install'])
+        case 'flat-manager':
+            # Use a temporary repo for each runtime and app
+            # This simplifies uploading with flat-manager-client
+            repos = pathlib.Path.cwd() / '.flat-manager-repos'
+            repos.mkdir(exist_ok=True)
+            repo = repos.joinpath(sdk.name).as_posix()
+            build_command.extend(['--repo', repo])
 
     subprocess.run(build_command, check=True)
 
+    if args.export == 'flat-manager':
+        assert args.flat_manager is not None
+        util.export_to_flat_manager(repo, args.flat_manager)
+
     platform_id = sdk.name.removeprefix(_RUNTIME_ID_BASE).removeprefix('.').split('.', maxsplit=1)[0]
     # Work around https://github.com/flatpak/flatpak-builder/issues/630
-    if need_platform_workaround and args.export == 'install' and 'Sdk' in sdk.name:
-        if '8' in sdk.name:
-            branch = '8'
-        elif '7.py2' in sdk.name:
-            branch = '7'
-        elif '7.py3' in sdk.name:
-            branch = '7-PY3'
-        else:
-            raise RuntimeError('Unexpected Sdk')
-
+    if need_platform_workaround and args.export == 'install' and platform_id == 'RenPy':
         repo = pathlib.Path('.flatpak-builder/cache').absolute().as_posix()
+        branch = _get_renpy_branch(sdk.name)
 
         install_command = [
             'flatpak', 'install', '--user', '-y', '--noninteractive',
-            '--reinstall', repo, f'{platform_id}.Platform//{branch}',
+            '--reinstall', repo, f'{_RUNTIME_ID_BASE}.{platform_id}.Platform//{branch}',
         ]
         subprocess.run(install_command, check=True)
 
