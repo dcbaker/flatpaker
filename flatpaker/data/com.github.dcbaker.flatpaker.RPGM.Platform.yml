@@ -4,21 +4,22 @@ runtime-version: "24.08"
 runtime: org.freedesktop.Platform
 sdk: org.freedesktop.Sdk
 inherit-extensions:
- - "org.freedesktop.Platform.GL"
+  - "org.freedesktop.Platform.GL"
+  - "org.freedesktop.Platform.VAAPI.Intel"
 modules:
- - name: "nwjs"
-   buildsystem: "simple"
-   sources:
-    - type: "archive"
-      url: "https://dl.nwjs.io/v0.114.1/nwjs-v0.114.1-linux-x64.tar.gz"
-      sha256: "35e53de9b37edf8a0cd77068d74728bcd470ae6569f88a4a15b97d27647635db"
-      only_arches:
-       - x86_64
-    - type: "archive"
-      url: "https://dl.nwjs.io/v0.114.1/nwjs-v0.114.1-linux-arm64.tar.gz"
-      sha256: "40befc36553e189151a3d89481da2aa02b1d250df447f57020e142e1953090ff"
-      only_arches:
-       - aarch64
-   build-commands:
-    - "mkdir /usr/lib/nwjs"
-    - "mv * /usr/lib/nwjs/"
+  - name: "nwjs"
+    buildsystem: "simple"
+    sources:
+      - type: "archive"
+        url: "https://dl.nwjs.io/v0.114.1/nwjs-v0.114.1-linux-x64.tar.gz"
+        sha256: "35e53de9b37edf8a0cd77068d74728bcd470ae6569f88a4a15b97d27647635db"
+        only_arches:
+          - x86_64
+      - type: "archive"
+        url: "https://dl.nwjs.io/v0.114.1/nwjs-v0.114.1-linux-arm64.tar.gz"
+        sha256: "40befc36553e189151a3d89481da2aa02b1d250df447f57020e142e1953090ff"
+        only_arches:
+          - aarch64
+    build-commands:
+      - "mkdir /usr/lib/nwjs"
+      - "mv * /usr/lib/nwjs/"
