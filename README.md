@@ -47,9 +47,10 @@ to provide even better security by using Wayland instead of X11 (or XWayland).
 3. Generate a toml description `flatpaker generate com.developer.game "Game Name" engine archive.zip`
 4. Edit the generated description to fill in missing information
 5. run `flatpaker build-runtimes --export=install` (which adds the runtimes and sdks)
-6. run `flatpaker build --export=install *.toml` or `flatpaker build
-   --export=repo --gpg-sign *.toml` (for local install or for export to a shared
-   repo)
+6. Run one of:
+  - `flatpaker build --export=install *.toml` to install for your user
+  - `flatpaker build --export=repo --gpg-sign *.toml` to export to a local ostree repo
+  - `flatpaker build --export=flat-manager *.toml` to export to a flat-manager instance
 
 ### Toml Format
 
@@ -185,17 +186,42 @@ That file must be written to `$XDG_CONFIG_HOME/flatpaker/config.toml` (if unset
   repo = "/path/to/a/repo/to/export"
 
   # The default export mode
-  # May be one of: "none", "install", "repo"
+  # May be one of: "none", "install", "repo", "flat-manager"
   export = "none"
+
+[flat-manager]
+  # The address that the flat-manager instance listens on
+  remote = "https://flat-manager.example.com:8080"
+
+  # The default repo on that flat-manager instance to push to
+  repo = "stable"
+
+  # Only one of the following may be set. This is the repo key that
+  # will be passed to the flat-manager client.
+
+  # A pair of strings to pass to `keyring.get_password()`
+  # The token can be written into the keyring with the command line tool
+  # `keyring set <serivce name> <keyname>`.
+  token-keyring = ["service name", "keyname"]
+
+  # A file containing the key
+  # Both environment variables and `~` can be used here
+  # This is the only form that can be set on the command line
+  token-file = "/secret.d/flat-manager/1"
+
+  # The keyfile written straight into the config file
+  token-str = "ABC123"
 ```
 
 
 ## What is required?
 
 - python >= 3.10
+- python-keyring (if using flat-manager export with a secret stored in a keyring)
 - python-tomlkit
 - flatpak-builder
 - flatpak
+- flat-manager-client (if using flat-manager export)
 
 ### Schema
 

@@ -49,15 +49,29 @@ def _build(args: BuildFlatpakConfig, path: pathlib.Path) -> None:
             (workdir / f'{appid}.json').absolute().as_posix(),
         ]
 
+        repo = args.repo
+
         match args.export:
             case 'repo':
-                build_command.extend(['--repo', args.repo])
+                build_command.extend(['--repo', repo])
                 if args.gpg:
                     build_command.extend(['--gpg-sign', args.gpg])
             case 'install':
                 build_command.extend(['--install'])
+            case 'flat-manager':
+                # Use a temporary repo for each runtime and app
+                # This simplifies uploading with flat-manager-client
+                repos = pathlib.Path.cwd() / '.flat-manager-repos'
+                repos.mkdir(exist_ok=True)
+                repo = repos.joinpath(appid).as_posix()
+                build_command.extend(['--repo', repo])
 
         subprocess.run(build_command, check=True)
+
+        if args.export == 'flat-manager':
+            assert args.flat_manager is not None
+            util.export_to_flat_manager(repo, args.flat_manager)
+
         if args.cleanup:
             shutil.rmtree('build', ignore_errors=True)
 

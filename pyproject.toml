@@ -24,6 +24,9 @@
   ]
   dependencies = ['tomlkit']
 
+  [project.optional-dependencies]
+    flat-manager = ["keyring"]
+
   [project.scripts]
     flatpaker = "flatpaker.entry:main"
 

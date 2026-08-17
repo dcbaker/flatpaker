@@ -7,6 +7,7 @@ import contextlib
 import hashlib
 import pathlib
 import shutil
+import subprocess
 import tempfile
 import textwrap
 import typing
@@ -14,6 +15,7 @@ from xml.etree import ElementTree as ET
 
 if typing.TYPE_CHECKING:
     from .description import Description
+    from .entry import FlatManagerConfig
 
 
 def _subelem(elem: ET.Element, tag: str, text: str | None = None, **extra: str) -> ET.Element:
@@ -180,3 +182,29 @@ def bd_metadata(desktop: pathlib.Path, appdata: pathlib.Path, game: list[str]) -
             'install -Dm755 game.sh -t /app/bin',
         ],
     }
+
+
+def export_to_flat_manager(repodir: str, config: FlatManagerConfig) -> None:
+    env = {'REPO_TOKEN': config.token}
+    exe = shutil.which('flat-manager-client')
+    if exe is None:
+        raise RuntimeError('Could not find flat-manager-client!')
+
+    out = subprocess.run(
+        [exe, 'create', config.remote, config.repo],
+        check=True,
+        env=env,
+        stdout=subprocess.PIPE,
+        text=True,
+        timeout=5,
+    )
+    build = out.stdout.strip()
+
+    # Now that we have a build repo, we want to ensure it is purged even if we
+    # somewhere along the line
+    try:
+        cmd = [exe, 'push', '--commit', '--publish', build, repodir]
+        subprocess.run(cmd, check=True, env=env)
+    finally:
+        subprocess.run([exe, 'purge', build], env=env, check=True)
+
