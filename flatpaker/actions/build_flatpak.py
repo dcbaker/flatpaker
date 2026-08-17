@@ -30,7 +30,8 @@ def select_impl(name: EngineName) -> JsonWriterImpl:
     return mod.write_rules
 
 
-def _build(args: BaseBuildArguments, description: Description) -> None:
+def _build(args: BaseBuildArguments, path: pathlib.Path) -> None:
+    description = load_description(path)
     # TODO: This could be common
     appid = f"{description.common.reverse_url}.{util.sanitize_name(description.common.name)}"
 
@@ -65,8 +66,7 @@ def build_flatpak(args: BuildArguments) -> bool:
 
     for d in args.descriptions:
         try:
-            description = load_description(d)
-            _build(args, description)
+            _build(args, d)
         except Exception:
             if not args.keep_going:
                 raise
