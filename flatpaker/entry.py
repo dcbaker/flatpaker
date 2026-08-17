@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import pathlib
 import subprocess
 import sys
 import typing
@@ -29,7 +30,7 @@ if typing.TYPE_CHECKING:
         keep_going: bool
 
     class BuildArguments(BaseBuildArguments, typing.Protocol):
-        descriptions: list[str]
+        descriptions: list[pathlib.Path]
 
     class BuildRuntimeArguments(BaseBuildArguments, typing.Protocol):
         runtimes: list[EngineName]
@@ -93,7 +94,7 @@ def _parse_args() -> BaseArguments:
     subparsers = parser.add_subparsers(required=True)
     build_parser = subparsers.add_parser(
         'build', help='Build flatpaks from descriptions', parents=[pp])
-    build_parser.add_argument('descriptions', nargs='+', help="A Toml description file")
+    build_parser.add_argument('descriptions', nargs='+', type=pathlib.Path, help="A Toml description file")
     build_parser.set_defaults(action='build')
 
     _all_runtimes = ['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']

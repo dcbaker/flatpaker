@@ -88,13 +88,13 @@ class Description:
     sources: Sources
 
 
-def load_description(name: str) -> Description:
-    relpath = pathlib.Path(name).parent.absolute()
+def load_description(path: pathlib.Path) -> Description:
+    relpath = path.parent.absolute()
 
     # TODO: the cast to Any leaves us with the same
     #       validation problem with had previous, but without the hints.
     #       I wish python had something like serde
-    with open(name, 'rb') as f:
+    with path.open('rb') as f:
         d = typing.cast('typing.Any', tomlkit.load(f))
 
     quirks = Quirks(**d.get('quirks', {}))
