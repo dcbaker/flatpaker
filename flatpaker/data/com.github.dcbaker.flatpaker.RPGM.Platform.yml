@@ -1,11 +1,12 @@
 build-runtime: true
 id: com.github.dcbaker.flatpaker.RPGM.Platform
-runtime-version: "24.08"
+runtime-version: "25.08"
 runtime: org.freedesktop.Platform
 sdk: org.freedesktop.Sdk
 inherit-extensions:
   - "org.freedesktop.Platform.GL"
   - "org.freedesktop.Platform.VAAPI.Intel"
+  - "org.freedesktop.Platform.VAAPI.nvidia"
 modules:
   - name: "nwjs"
     buildsystem: "simple"
