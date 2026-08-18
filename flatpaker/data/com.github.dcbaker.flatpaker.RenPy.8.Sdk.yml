@@ -2,15 +2,17 @@ build-runtime: true
 id: com.github.dcbaker.flatpaker.RenPy.Sdk
 id-platform: com.github.dcbaker.flatpaker.RenPy.Platform
 branch: "8"
-runtime-version: "24.08"
+runtime-version: "25.08"
 runtime: org.freedesktop.Platform
 sdk: org.freedesktop.Sdk
 inherit-extensions:
   - "org.freedesktop.Platform.GL"
   - "org.freedesktop.Platform.VAAPI.Intel"
+  - "org.freedesktop.Platform.VAAPI.nvidia"
 modules:
   - "modules/renpy-shared.yml"
   - "modules/python3-requirements.json"
+  - "modules/sdl2.json"
   - name: assimp
     buildsystem: cmake-ninja
     config-opts:
@@ -18,7 +20,7 @@ modules:
       - "-DASSIMP_WARNINGS_AS_ERRORS=OFF"
       - "-DASSIMP_BUILD_ASSIMP_TOOLS=OFF"
       - "-DASSIMP_BUILD_ZLIB=OFF"
-    cleanup:
+    cleanup-platform:
       - "/include"
       - "/lib/*/cmake"
       - "/lib/*/pkgconfig"
@@ -47,9 +49,9 @@ modules:
       - "/lib/*.la"
     cleanup-platform:
       - "/include"
-      - "/lib/cmake"
-      - "/lib/pkgconfig"
-      - "/lib/*.a"
+      - "/lib/*/cmake"
+      - "/lib/*/pkgconfig"
+      - "/lib/*/*.a"
     sources:
       - type: "git"
         url: "https://github.com/frankheckenbach/ftgl"
@@ -81,8 +83,8 @@ modules:
       - mv 00enabledebug.rpy renpy/common/
 
       # TODO: calculate where site packages is instead of hardocding
-      - cp -rv renpy ${FLATPAK_DEST}/lib/python3.12/site-packages || exit 1
-      - python -m compileall ${FLATPAK_DEST}/lib/python3.12/site-packages/renpy || exit 1
+      - cp -rv renpy ${FLATPAK_DEST}/lib/python3.13/site-packages || exit 1
+      - python -m compileall ${FLATPAK_DEST}/lib/python3.13/site-packages/renpy || exit 1
       - install -Dm755 renpy-bin -t ${FLATPAK_DEST}/bin/ || exit 1
 
       # the renpy script gets mad that /app/lib/game doesn't exist, use the
@@ -92,7 +94,7 @@ modules:
       - |
         mkdir -p /app/lib/game/ || exit 1
         mv the_question /app/lib/game/game || exit 1
-        pushd ${FLATPAK_DEST}/lib/python3.12/site-packages/renpy || exit 1
+        pushd ${FLATPAK_DEST}/lib/python3.13/site-packages/renpy || exit 1
         ${FLATPAK_DEST}/bin/renpy-bin 'dummy' 'dummy' "/app/lib/game" compile || exit 1
         popd
         rm -r /app/lib/game || exit 1
