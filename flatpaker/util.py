@@ -15,8 +15,6 @@ from xml.etree import ElementTree as ET
 if typing.TYPE_CHECKING:
     from .description import Description
 
-RUNTIME_VERSION = "24.08"
-
 
 def _subelem(elem: ET.Element, tag: str, text: str | None = None, **extra: str) -> ET.Element:
     new = ET.SubElement(elem, tag, extra)

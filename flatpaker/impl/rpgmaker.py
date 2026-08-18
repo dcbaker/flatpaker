@@ -65,7 +65,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
     ]
 
     struct = {
-        'sdk': f'org.freedesktop.Sdk//{util.RUNTIME_VERSION}',
+        'sdk': 'org.freedesktop.Sdk//24.08',
         'runtime': 'com.github.dcbaker.flatpaker.RPGM.Platform',
         'runtime-version': 'master',
         'id': appid,

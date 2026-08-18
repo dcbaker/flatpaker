@@ -44,7 +44,8 @@ def _build(args: BuildFlatpakConfig, path: pathlib.Path) -> None:
         write_build_rules(description, workdir, appid, desktop_file, appdata_file)
 
         build_command: list[str] = [
-            'flatpak-builder', '--force-clean', '--user', 'build',
+            'flatpak-builder', '--install-deps-from=flathub',
+            '--force-clean', '--user', 'build',
             (workdir / f'{appid}.json').absolute().as_posix(),
         ]
 

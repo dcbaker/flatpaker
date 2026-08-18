@@ -73,13 +73,6 @@ def _need_platform_workaround() -> bool:
 
 
 def build_runtimes(args: BuildRuntimeConfig) -> bool:
-    command = [
-        'flatpak', 'install', '--no-auto-pin', '--user',
-        f'org.freedesktop.Platform//{util.RUNTIME_VERSION}',
-        f'org.freedesktop.Sdk//{util.RUNTIME_VERSION}',
-    ]
-    subprocess.run(command, check=True)
-
     runtimes: list[str] = []
     if 'rpgmaker' in args.runtimes:
         runtimes.append(f'{_RUNTIME_ID_BASE}.RPGM.Platform.yml')
