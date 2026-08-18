@@ -14,6 +14,9 @@ if typing.TYPE_CHECKING:
     from ..entry import BuildRuntimeConfig
 
 
+_RUNTIME_ID_BASE = 'com.github.dcbaker.flatpaker'
+
+
 def _build_runtime(args: BuildRuntimeConfig, sdk: pathlib.Path,
                    need_platform_workaround: bool) -> None:
     build_command: list[str] = [
@@ -30,6 +33,7 @@ def _build_runtime(args: BuildRuntimeConfig, sdk: pathlib.Path,
 
     subprocess.run(build_command, check=True)
 
+    platform_id = sdk.name.removeprefix(_RUNTIME_ID_BASE).removeprefix('.').split('.', maxsplit=1)[0]
     # Work around https://github.com/flatpak/flatpak-builder/issues/630
     if need_platform_workaround and args.export == 'install' and 'Sdk' in sdk.name:
         if '8' in sdk.name:
@@ -42,7 +46,6 @@ def _build_runtime(args: BuildRuntimeConfig, sdk: pathlib.Path,
             raise RuntimeError('Unexpected Sdk')
 
         repo = pathlib.Path('.flatpak-builder/cache').absolute().as_posix()
-        platform_id = '.'.join(sdk.name.split('.', maxsplit=5)[:-1])
 
         install_command = [
             'flatpak', 'install', '--user', '-y', '--noninteractive',
@@ -77,16 +80,15 @@ def build_runtimes(args: BuildRuntimeConfig) -> bool:
     ]
     subprocess.run(command, check=True)
 
-    basename = 'com.github.dcbaker.flatpaker'
     runtimes: list[str] = []
     if 'rpgmaker' in args.runtimes:
-        runtimes.append(f'{basename}.RPGM.Platform.yml')
+        runtimes.append(f'{_RUNTIME_ID_BASE}.RPGM.Platform.yml')
     if 'renpy8' in args.runtimes:
-        runtimes.append(f'{basename}.RenPy.8.Sdk.yml')
+        runtimes.append(f'{_RUNTIME_ID_BASE}.RenPy.8.Sdk.yml')
     if 'renpy7' in args.runtimes:
-        runtimes.append(f'{basename}.RenPy.7.py2.Sdk.yml')
+        runtimes.append(f'{_RUNTIME_ID_BASE}.RenPy.7.py2.Sdk.yml')
     if 'renpy7-py3' in args.runtimes:
-        runtimes.append(f'{basename}.RenPy.7.py3.Sdk.yml')
+        runtimes.append(f'{_RUNTIME_ID_BASE}.RenPy.7.py3.Sdk.yml')
 
     success = True
 
