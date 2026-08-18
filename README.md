@@ -227,3 +227,24 @@ That file must be written to `$XDG_CONFIG_HOME/flatpaker/config.toml` (if unset
 
 A Json based schema is provided, which can be used with VSCode's EvenBetterToml
 extension. It may be useful elsewhere.
+
+## FAQ and Things You Should Know
+
+### Ren'Py 7 Python 3 runtime
+
+tl;dr: This runtime is deprecated and will be removed in the future, unless
+someone reports a game that uses it.
+
+This runtime is still based on the older Freedesktop 24.08 runtime. This runtime
+will reach EOL in 2026/09. Updating to 25.08 or 26.08 is not trivial.
+
+Ren'Py 7 cannot be built with a Python newer than 3.12, due to it's reliance on
+Cython 0.29, which does not support a new Python 3 release. This means I would
+either need to build a second copy of Python 3 into the runtime (possible),
+update Ren'Py 7 (and its dependencies) to build with newer Cython (possible, but
+harder, more likley to introduce bugs).
+
+I also have yet to find a single Ren'Py game that actually uses it, everything
+Python 3 based uses Ren'Py 8, and everythign using Ren'Py 7 uses Python 2 (or
+works with Python 2). I originally created the Ren'Py 7 Python 3 runtime for
+completeness and because it was interesting and easy.
