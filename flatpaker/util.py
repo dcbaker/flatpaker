@@ -145,7 +145,7 @@ def sanitize_name(name: str) -> str:
 
 
 @contextlib.contextmanager
-def tmpdir(name: str, cleanup: bool = True) -> typing.Iterator[pathlib.Path]:
+def tmpdir(name: str, cleanup: bool = True) -> typing.Generator[pathlib.Path]:
     tdir = pathlib.Path(tempfile.gettempdir()) / 'flatpaker' / name
     tdir.mkdir(parents=True, exist_ok=True)
     yield tdir
