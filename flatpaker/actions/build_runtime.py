@@ -11,10 +11,10 @@ import typing
 from flatpaker import util
 
 if typing.TYPE_CHECKING:
-    from ..entry import BaseBuildArguments, BuildRuntimeArguments
+    from ..entry import BuildRuntimeConfig
 
 
-def _build_runtime(args: BaseBuildArguments, sdk: pathlib.Path,
+def _build_runtime(args: BuildRuntimeConfig, sdk: pathlib.Path,
                    need_platform_workaround: bool) -> None:
     build_command: list[str] = [
         'flatpak-builder', '--force-clean', '--user',
@@ -69,7 +69,7 @@ def _need_platform_workaround() -> bool:
     return tuple(int(v) for v in raw_ver.split('.')) < (1, 4, 5)
 
 
-def build_runtimes(args: BuildRuntimeArguments) -> bool:
+def build_runtimes(args: BuildRuntimeConfig) -> bool:
     command = [
         'flatpak', 'install', '--no-auto-pin', '--user',
         f'org.freedesktop.Platform//{util.RUNTIME_VERSION}',

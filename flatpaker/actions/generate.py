@@ -15,10 +15,10 @@ from flatpaker import util
 if typing.TYPE_CHECKING:
     import tomlkit.items  # noqa: TC004
 
-    from flatpaker.entry import GenerateArguments
+    from flatpaker.entry import GenerateConfig
 
 
-def generate(args: GenerateArguments) -> bool:
+def generate(args: GenerateConfig) -> bool:
     name = f'{args.url}.{util.sanitize_name(args.appname)}'
     projectdir = pathlib.Path(name)
     sourcedir = projectdir / 'sources'
@@ -49,7 +49,7 @@ def generate(args: GenerateArguments) -> bool:
     doc.add('appdata', appdata)
 
     archives: list[tomlkit.items.Table] = []
-    for src in [args.archive] + args.archives:
+    for src in args.archives:
         archive = tomlkit.table()
         add(archive, 'path', os.path.join(sourcedir.name, os.path.basename(src)))
         add(archive, 'sha256', util.sha256(pathlib.Path(src)))
@@ -93,7 +93,7 @@ def generate(args: GenerateArguments) -> bool:
         tomlkit.dump(doc, f)
 
     # move files after writing the toml, so we don't move things then fail
-    for srcs, subdir in [([args.archive] + args.archives + args.files, sourcedir),
+    for srcs, subdir in [(args.archives + args.files, sourcedir),
                          (args.patches, patchdir)]:
         for src in srcs:
             srcp = pathlib.Path(src)
