@@ -14,7 +14,7 @@ from flatpaker.description import load_description
 
 if typing.TYPE_CHECKING:
     from flatpaker.description import Description, EngineName
-    from flatpaker.entry import BaseBuildArguments, BuildArguments
+    from flatpaker.entry import BuildFlatpakConfig
 
     JsonWriterImpl = typing.Callable[[Description, pathlib.Path, str, pathlib.Path, pathlib.Path], None]
 
@@ -30,7 +30,7 @@ def select_impl(name: EngineName) -> JsonWriterImpl:
     return mod.write_rules
 
 
-def _build(args: BaseBuildArguments, path: pathlib.Path) -> None:
+def _build(args: BuildFlatpakConfig, path: pathlib.Path) -> None:
     description = load_description(path)
     # TODO: This could be common
     appid = f"{description.common.reverse_url}.{util.sanitize_name(description.common.name)}"
@@ -61,7 +61,7 @@ def _build(args: BaseBuildArguments, path: pathlib.Path) -> None:
             shutil.rmtree('build', ignore_errors=True)
 
 
-def build_flatpak(args: BuildArguments) -> bool:
+def build_flatpak(args: BuildFlatpakConfig) -> bool:
     success = True
 
     for d in args.descriptions:

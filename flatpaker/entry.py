@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import pathlib
 import subprocess
 import sys
@@ -45,7 +46,46 @@ if typing.TYPE_CHECKING:
         files: list[str]
 
 
-def static_deltas(args: BaseBuildArguments) -> None:
+@dataclasses.dataclass(slots=False, eq=False)
+class _BuildCommonConfig:
+    """Common configuration for "build" and "build-runtimes"."""
+
+    repo: str
+    gpg: str | None
+    export: ExportMode
+    cleanup: bool
+    deltas: bool
+    keep_going: bool
+
+
+@dataclasses.dataclass(slots=False, eq=False)
+class BuildFlatpakConfig(_BuildCommonConfig):
+    """Configuration for "build"."""
+
+    descriptions: list[pathlib.Path]
+
+
+@dataclasses.dataclass(slots=False, eq=False)
+class BuildRuntimeConfig(_BuildCommonConfig):
+    """Configuration for "build-runtimes"."""
+
+    runtimes: list[EngineName]
+
+
+@dataclasses.dataclass(slots=False, eq=False)
+class GenerateConfig:
+    """Configuration for "generate"."""
+
+    url: str
+    appname: str
+    engine: EngineName
+    archives: list[str]
+    patches: list[str]
+    files: list[str]
+
+
+
+def static_deltas(args: BuildRuntimeConfig | BuildFlatpakConfig) -> None:
     if not (args.deltas or args.export != 'repo'):
         return
     command = ['flatpak', 'build-update-repo', args.repo, '--generate-static-deltas']
@@ -152,22 +192,56 @@ def _parse_args() -> BaseArguments:
     return base
 
 
-def main() -> None:
+def _args_to_config() -> BuildFlatpakConfig | BuildRuntimeConfig | GenerateConfig:
     args = _parse_args()
-    success = True
-
     match args.action:
         case 'build':
             bargs = typing.cast('BuildArguments', args)
-            success = build_flatpak(bargs)
-            if bargs.deltas:
-                static_deltas(bargs)
+            return BuildFlatpakConfig(
+                repo=bargs.repo,
+                cleanup=bargs.cleanup,
+                deltas=bargs.deltas,
+                export=bargs.export,
+                gpg=bargs.gpg,
+                keep_going=bargs.keep_going,
+                descriptions=bargs.descriptions,
+            )
         case 'build-runtimes':
-            brargs = typing.cast('BuildRuntimeArguments', args)
-            success = build_runtimes(brargs)
-            if brargs.deltas:
-                static_deltas(brargs)
+            rargs = typing.cast('BuildRuntimeArguments', args)
+            return BuildRuntimeConfig(
+                repo=rargs.repo,
+                cleanup=rargs.cleanup,
+                deltas=rargs.deltas,
+                export=rargs.export,
+                gpg=rargs.gpg,
+                keep_going=rargs.keep_going,
+                runtimes=rargs.runtimes,
+            )
         case 'generate':
-            success = generate(typing.cast('GenerateArguments', args))
+            gargs = typing.cast('GenerateArguments', args)
+            return GenerateConfig(
+                appname=gargs.appname,
+                archives=[gargs.archive] + gargs.archives,
+                engine=gargs.engine,
+                files=gargs.files,
+                patches=gargs.patches,
+                url=gargs.url,
+            )
+
+def main() -> None:
+    config = _args_to_config()
+    success = True
+
+    match config:
+        case BuildFlatpakConfig():
+            success = build_flatpak(config)
+            if config.deltas:
+                static_deltas(config)
+        case BuildRuntimeConfig():
+            success = build_runtimes(config)
+            if config.deltas:
+                static_deltas(config)
+        case GenerateConfig():
+            success = generate(config)
 
     sys.exit(0 if success else 1)
