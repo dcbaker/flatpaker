@@ -2,7 +2,7 @@ build-runtime: true
 id: com.github.dcbaker.flatpaker.RenPy.Sdk
 id-platform: com.github.dcbaker.flatpaker.RenPy.Platform
 branch: "7"
-runtime-version: "24.08"
+runtime-version: "25.08"
 runtime: org.freedesktop.Platform
 sdk: org.freedesktop.Sdk
 inherit-extensions:
@@ -12,6 +12,7 @@ modules:
   - "modules/renpy-shared.yml"
   - "modules/python-2.7.json"
   - "modules/python2-requirements.json"
+  - "modules/sdl2.json"
   - name: PyGame_SDL2
     buildsystem: simple
     build-commands:
