@@ -11,7 +11,16 @@ inherit-extensions:
 modules:
   - "modules/renpy-shared.yml"
   - "modules/python3-requirements.json"
-  - "modules/python3-cython0.yml"
+  - name: "python3-cython0"
+    buildsystem: "simple"
+    build-commands:
+      - pip3 install --prefix=${FLATPAK_DEST} --no-deps . --verbose --exists-action=i --no-index --no-build-isolation
+    sources:
+      - type: "git"
+        url: "https://github.com/dcbaker/cython.git"
+        branch: "cython0"
+    cleanup-platform:
+      - '*'
   - name: PyGame_SDL2
     buildsystem: simple
     build-commands:
