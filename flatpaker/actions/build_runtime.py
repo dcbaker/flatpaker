@@ -3,8 +3,9 @@
 
 from __future__ import annotations
 
-import importlib.resources
+import os
 import pathlib
+import shutil
 import subprocess
 import typing
 
@@ -15,6 +16,13 @@ if typing.TYPE_CHECKING:
 
 
 _RUNTIME_ID_BASE = 'com.github.dcbaker.flatpaker'
+
+
+def _get_runtime_dir() -> pathlib.Path:
+    cachedir = pathlib.Path(
+        os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))) / 'flatpaker'
+    cachedir.mkdir(parents=True, exist_ok=True)
+    return cachedir / 'runtimes'
 
 
 def _get_renpy_branch(sdk: str) -> str:
@@ -87,6 +95,24 @@ def _need_platform_workaround() -> bool:
     return tuple(int(v) for v in raw_ver.split('.')) < (1, 4, 5)
 
 
+def _fetch_runtimes() -> None:
+    runtimedir = _get_runtime_dir()
+
+    git = shutil.which('git')
+    assert git is not None
+    if not runtimedir.exists():
+        subprocess.run(
+            [git, 'clone', '--recurse-submodules', 'https://github.com/dcbaker/flatpaker-runtime.git',
+             runtimedir.as_posix()],
+            check=True,
+        )
+    else:
+        subprocess.run(
+            [git, '-C', runtimedir.as_posix(), 'pull', '--recurse-submodules'],
+            check=True,
+        )
+
+
 def build_runtimes(args: BuildRuntimeConfig) -> bool:
     runtimes: list[str] = []
     if 'rpgmaker' in args.runtimes:
@@ -98,14 +124,15 @@ def build_runtimes(args: BuildRuntimeConfig) -> bool:
     if 'renpy7-py3' in args.runtimes:
         runtimes.append(f'{_RUNTIME_ID_BASE}.RenPy.7.py3.Sdk.yml')
 
-    success = True
-
     need_platform_workaround = _need_platform_workaround()
-    datadir =  importlib.resources.files('flatpaker') / 'data'
+    runtimedir = _get_runtime_dir()
+    if not runtimedir.exists():
+        _fetch_runtimes()
+
+    success = True
     for runtime in runtimes:
         try:
-            with importlib.resources.as_file(datadir / runtime) as sdk:
-                _build_runtime(args, sdk, need_platform_workaround)
+            _build_runtime(args, runtimedir.joinpath(runtime), need_platform_workaround)
         except Exception:
             if not args.keep_going:
                 raise
