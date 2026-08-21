@@ -42,6 +42,7 @@ if typing.TYPE_CHECKING:
 
     class BuildRuntimeArguments(BaseBuildArguments, typing.Protocol):
         runtimes: list[EngineName]
+        update: bool
 
     class GenerateArguments(BaseArguments, typing.Protocol):
         url: str
@@ -86,6 +87,7 @@ class BuildRuntimeConfig(_BuildCommonConfig):
     """Configuration for "build-runtimes"."""
 
     runtimes: list[EngineName]
+    update: bool
 
 
 @dataclasses.dataclass(slots=False, eq=False)
@@ -198,6 +200,11 @@ def _parse_args() -> BaseArguments:
         choices=_all_runtimes,
         default=_all_runtimes,
         help="Which runtimes to build",
+    )
+    runtimes_parser.add_argument(
+        '--update',
+        action='store_true',
+        help='Update the runtimes definitions to the latest',
     )
     runtimes_parser.set_defaults(action='build-runtimes')
 
@@ -317,6 +324,7 @@ def _args_to_config() -> BuildFlatpakConfig | BuildRuntimeConfig | GenerateConfi
                 gpg=rargs.gpg,
                 keep_going=rargs.keep_going,
                 runtimes=rargs.runtimes,
+                update=rargs.update,
                 flat_manager=_flat_manager_config(rargs)
             )
         case 'generate':

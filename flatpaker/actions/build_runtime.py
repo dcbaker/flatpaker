@@ -126,7 +126,7 @@ def build_runtimes(args: BuildRuntimeConfig) -> bool:
 
     need_platform_workaround = _need_platform_workaround()
     runtimedir = _get_runtime_dir()
-    if not runtimedir.exists():
+    if not runtimedir.exists() or args.update:
         _fetch_runtimes()
 
     success = True
