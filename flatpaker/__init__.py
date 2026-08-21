@@ -11,4 +11,4 @@ honor XDG variables, so that the games don't need access to the user's home
 directory. This increases security and is generally beneficial for end users.
 """
 
-__version__ = "0.0.11"
+__version__ = "0.0.12"
