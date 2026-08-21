@@ -52,13 +52,16 @@ def bd_build_commands(description: Description) -> list[str]:
         commands.append(f'install -Dm644 {p.path.name} {dest}')
 
     if description.quirks.force_window_gui_icon:
-        commands.append(
-            'install -D -m644 $FLATPAK_DEST/lib/game/game/gui/window_icon.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png')
+        commands.append('''
+            SIZE="$(resize-image ${FLATPAK_DEST}/lib/game/game/gui/window_icon.png)" || exit 1
+            install -D -m644 "icon-${SIZE}x${SIZE}.png" "${FLATPAK_DEST}/share/icons/hicolor/${SIZE}x${SIZE}/apps/${FLATPAK_ID}.png" || exit 1
+            ''')
     elif (arch := description.quirks.x_renpy_archived_window_gui_icon) is not None:
-        commands.extend([
-            f'rpatool $FLATPAK_DEST/lib/game/game/{arch} -x $FLATPAK_ID.png=gui/window_icon.png || exit 1',
-            'install -Dm644 ${FLATPAK_ID}.png -t ${FLATPAK_DEST}/share/icons/hicolor/256x256/apps || exit 1',
-        ])
+        commands.append(f'''
+            rpatool ${{FLATPAK_DEST}}/lib/game/game/{arch} -x tmp.png=gui/window_icon.png || exit 1
+            SIZE="$(resize-image tmp.png)" || exit 1
+            install -D -m644 "icon-${{SIZE}}x${{SIZE}}.png" "${{FLATPAK_DEST}}/share/icons/hicolor/${{SIZE}}x${{SIZE}}/apps/${{FLATPAK_ID}}.png" || exit 1
+            ''')
     else:
         commands.append(
             # Extract the icon file from either a Windows exe or from MacOS resources.
@@ -77,7 +80,7 @@ def bd_build_commands(description: Description) -> list[str]:
 
                 PNG=$(ls *png)
                 if [[ ! "${PNG}" && -f "$FLATPAK_DEST/lib/game/game/gui/window_icon.png" ]]; then
-                    cp $FLATPAK_DEST/lib/game/game/gui/window_icon.png window_iconx256x256.png
+                    resize-image $FLATPAK_DEST/lib/game/game/gui/window_icon.png
                 fi
 
                 for icon in $(ls *.png); do
