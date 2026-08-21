@@ -37,7 +37,6 @@
 [tool.mypy]
   strict = true
   packages = "flatpaker"
-  exclude = ['data/.*']
 
 [tool.ruff]
   line-length = 100
