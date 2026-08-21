@@ -86,8 +86,8 @@ def generate(args: GenerateConfig) -> bool:
     # by `git`.
     sourcedir.mkdir(parents=True, exist_ok=True)
     with sourcedir.joinpath('.gitignore').open('w', encoding='utf-8') as f:
-        f.write('*')
-        f.write('!.gitignore')
+        f.write('*\n')
+        f.write('!.gitignore\n')
 
     with projectdir.joinpath('build.toml').open('w', encoding='utf-8') as f:
         tomlkit.dump(doc, f)
