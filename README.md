@@ -24,6 +24,9 @@ For Ren'Py:
 - provides a runtime with up to date renpy and deps, built against the freedesktop Platform libraries.
   using the shared runtime saves space, as well as ensures that all games can be run with Wayland support.
 - strips .rpy files to save space (keeping the rpyc files)
+- unpacks .rpa files, which allows more .rpy files to be removed, as well as for
+  smaller updates when storing the flatpak in an ostree repo. Also makes patching
+  .rpy files stored in a .rpa easier
 
 For RPG Maker:
 - provides a runtime with a newer nwjs installed, saving disk space
@@ -166,9 +169,8 @@ For example:
     of extracting icons from the exe or icns files. This is generally
     unnecessary, but some games have customized window_icons but not exe icons.
 
-  - `x_renpy_archived_window_gui_icon: string`. Extract a `gui/window_icon.png` file
-    from the named archive instead of extracting from the exe or icns files.
-    This is generally unnecessary, but see above.
+  - `x_renpy_archived_window_gui_icon: string`. **REMOVED**
+    This is no longer supported, as RPA archives are now unpacked.
 
 
 ### Configuration
