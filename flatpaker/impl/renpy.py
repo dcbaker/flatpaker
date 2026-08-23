@@ -28,6 +28,20 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
+def unrpa() -> dict[str, object]:
+    # Extract all rpa files.
+    # This ensures that there is a window_gui icon, allows us to remove any
+    # .rpy files stored in them, and makes flatpak updates smaller
+    unrpa_ = textwrap.dedent('''\
+        for rpa in $(ls game/*.rpa); do
+            rpatool -x "$rpa" -o game/ || exit 1
+            rm "$rpa"
+        done
+        ''')
+
+    return {'type': 'shell', 'commands': [unrpa_]}
+
+
 def bd_build_commands(description: Description) -> list[str]:
     commands: list[str] = [
         'mkdir -p $FLATPAK_DEST/lib/game',
@@ -55,12 +69,6 @@ def bd_build_commands(description: Description) -> list[str]:
         commands.append('''
             SIZE="$(resize-image ${FLATPAK_DEST}/lib/game/game/gui/window_icon.png)" || exit 1
             install -D -m644 "icon-${SIZE}x${SIZE}.png" "${FLATPAK_DEST}/share/icons/hicolor/${SIZE}x${SIZE}/apps/${FLATPAK_ID}.png" || exit 1
-            ''')
-    elif (arch := description.quirks.x_renpy_archived_window_gui_icon) is not None:
-        commands.append(f'''
-            rpatool ${{FLATPAK_DEST}}/lib/game/game/{arch} -x tmp.png=gui/window_icon.png || exit 1
-            SIZE="$(resize-image tmp.png)" || exit 1
-            install -D -m644 "icon-${{SIZE}}x${{SIZE}}.png" "${{FLATPAK_DEST}}/share/icons/hicolor/${{SIZE}}x${{SIZE}}/apps/${{FLATPAK_ID}}.png" || exit 1
             ''')
     else:
         commands.append(
@@ -111,6 +119,9 @@ def bd_build_commands(description: Description) -> list[str]:
 
 def write_rules(description: Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     sources = util.extract_sources(description)
+    # Assume we only need to do this for the main sources. That might not be a
+    # good assumption.
+    sources.insert(1, unrpa())
 
     # TODO: typing requires more thought
     modules: list[dict[str, typing.Any]] = [
