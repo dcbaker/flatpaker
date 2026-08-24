@@ -200,11 +200,19 @@ def export_to_flat_manager(repodir: str, config: FlatManagerConfig) -> None:
     )
     build = out.stdout.strip()
 
+    def make_cmd(subcmd: typing.Literal['push', 'commit', 'publish', 'purge']) -> list[str]:
+        return [exe, subcmd, build] + ([repodir] if subcmd == 'push' else [])
+
     # Now that we have a build repo, we want to ensure it is purged even if we
     # somewhere along the line
     try:
-        cmd = [exe, 'push', '--commit', '--publish', build, repodir]
-        subprocess.run(cmd, check=True, env=env)
+        # For some reason we don't always get all of the objects pushed the
+        # first time
+        cmd = make_cmd('push')
+        for _ in range(2):
+            subprocess.run(cmd, check=True, env=env)
+        subprocess.run(make_cmd('commit'), check=True, env=env)
+        subprocess.run(make_cmd('publish'), check=True, env=env)
     finally:
-        subprocess.run([exe, 'purge', build], env=env, check=True)
+        subprocess.run(make_cmd('purge'), env=env, check=True)
 
