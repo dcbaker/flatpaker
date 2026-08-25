@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright © 2022-2025 Dylan Baker
+# Copyright © 2022-2026 Dylan Baker
 
 from __future__ import annotations
 
@@ -15,13 +15,14 @@ import flatpaker.config
 from flatpaker.actions.build_flatpak import build_flatpak
 from flatpaker.actions.build_runtime import build_runtimes
 from flatpaker.actions.generate import generate
+from flatpaker.actions.validate import validate
 
 if typing.TYPE_CHECKING:
     from flatpaker.config import ExportMode
     from flatpaker.description import EngineName
 
     class BaseArguments(typing.Protocol):
-        action: typing.Literal['build', 'build-runtimes', 'generate']
+        action: typing.Literal['build', 'build-runtimes', 'generate', 'validate']
 
     class BaseBuildArguments(BaseArguments, typing.Protocol):
         repo: str
@@ -53,6 +54,8 @@ if typing.TYPE_CHECKING:
         patches: list[str]
         files: list[str]
 
+    class ValidateArguments(typing.Protocol):
+        descriptions: list[pathlib.Path]
 
 @dataclasses.dataclass(slots=False, eq=False)
 class FlatManagerConfig:
@@ -100,6 +103,13 @@ class GenerateConfig:
     archives: list[str]
     patches: list[str]
     files: list[str]
+
+
+@dataclasses.dataclass(slots=False, eq=False)
+class ValidateConfig:
+    """Configuration for "validate"."""
+
+    descriptions: list[pathlib.Path]
 
 
 
@@ -190,6 +200,11 @@ def _parse_args() -> BaseArguments:
         'build', help='Build flatpaks from descriptions', parents=[pp])
     build_parser.add_argument('descriptions', nargs='+', type=pathlib.Path, help="A Toml description file")
     build_parser.set_defaults(action='build')
+
+    validate_parser = subparsers.add_parser(
+        'validate', help='validate buidl configurations')
+    validate_parser.add_argument('descriptions', nargs='+', type=pathlib.Path, help="One or more Toml description file")
+    validate_parser.set_defaults(action='validate')
 
     _all_runtimes = ['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']
     runtimes_parser = subparsers.add_parser(
@@ -299,7 +314,7 @@ def _flat_manager_config(args: BaseBuildArguments) -> FlatManagerConfig | None:
     return FlatManagerConfig(remote, repo, token)
 
 
-def _args_to_config() -> BuildFlatpakConfig | BuildRuntimeConfig | GenerateConfig:
+def _args_to_config() -> BuildFlatpakConfig | BuildRuntimeConfig | GenerateConfig | ValidateConfig:
     args = _parse_args()
     match args.action:
         case 'build':
@@ -337,6 +352,10 @@ def _args_to_config() -> BuildFlatpakConfig | BuildRuntimeConfig | GenerateConfi
                 patches=gargs.patches,
                 url=gargs.url,
             )
+        case 'validate':
+            vargs = typing.cast('ValidateArguments', args)
+            return ValidateConfig(descriptions=vargs.descriptions)
+
 
 def main() -> None:
     config = _args_to_config()
@@ -353,5 +372,7 @@ def main() -> None:
                 static_deltas(config)
         case GenerateConfig():
             success = generate(config)
+        case ValidateConfig():
+            success = validate(config)
 
     sys.exit(0 if success else 1)

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import pathlib
 import typing
+import warnings
 
 import tomlkit
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -87,15 +88,38 @@ class Quirks(BaseModel):
     """The quirks section of the build toml description."""
 
     force_window_gui_icon: bool = False
-    x_configure_prologue: str | None = Field(None, deprecated='Use the "commands" field in "[[sources.archive]]" instead')
-    x_renpy_archived_window_gui_icon: str | None = Field(None, deprecated='Use "force_window_gui_icon" instead')
+    x_configure_prologue: str | None = Field(None)
+    x_renpy_archived_window_gui_icon: str | None = Field(None)
+
+    @field_validator('x_configure_prologue', mode='before')
+    @classmethod
+    def _validate_prologue(cls, v: str | None, info: ValidationInfo) -> str | None:
+        if v is not None:
+            assert info.context
+            file = info.context.get('file')
+            assert isinstance(file, pathlib.PurePath)
+            warnings.warn(f'{file.as_posix()}: [quirks.x_configure_prologue]: use [[sources.archives.commands]] instead',
+                        DeprecationWarning)
+
+        return v
+
+    @field_validator('x_renpy_archived_window_gui_icon', mode='before')
+    @classmethod
+    def _validate_renpy_archived_window_gui_icon(cls, v: str | None, info: ValidationInfo) -> str | None:
+        if v is not None:
+            assert info.context
+            file = info.context.get('file')
+            assert isinstance(file, pathlib.PurePath), file
+            warnings.warn(f'{file.as_posix()}: [quirks.x_renpy_archived_window_gui_icon]: use [quirks.force_window_gui_icon] instead',
+                          DeprecationWarning)
+        return v
 
     @model_validator(mode="after")
     def _validate_only_one_icon_override(self) -> Self:
         if self.force_window_gui_icon and self.x_renpy_archived_window_gui_icon:
             raise ValueError('Cannot require both an unpacked windows_gui.png and a packed windows_gui.png!')
 
-        # Because .rpa files are always unpacked we want to translate this to force_windows_gui_icon
+        # Because .rpa files are always unpacked we want to translate this to force_window_gui_icon
         if self.x_renpy_archived_window_gui_icon is not None:
             self.force_window_gui_icon = True
         return self
@@ -115,4 +139,4 @@ def load_description(path: pathlib.Path) -> Description:
     with path.open('rb') as f:
         d = tomlkit.load(f)
     return Description.model_validate(
-        d, strict=True, extra='forbid', context={'basedir': path.parent.absolute()})
+        d, strict=True, extra='forbid', context={'basedir': path.parent.absolute(), 'file': path})
