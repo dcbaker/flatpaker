@@ -87,7 +87,7 @@ class Quirks(BaseModel):
     """The quirks section of the build toml description."""
 
     force_window_gui_icon: bool = False
-    x_configure_prologue: str | None = Field(None)
+    x_configure_prologue: str | None = Field(None, deprecated='Use the "commands" field in "[[sources.archive]]" instead')
     x_renpy_archived_window_gui_icon: str | None = Field(None, deprecated='Use "force_window_gui_icon" instead')
 
     @model_validator(mode="after")
