@@ -275,6 +275,13 @@ def _parse_args() -> BaseArguments:
             if not any([runargs.flat_manager_token, runargs.flat_manager_token_file,
                         runargs.flat_manager_token_keyring_service]):
                 parser.error('export is set to "flat-manager", but no flat-manager token is defined')
+    if base.action in {'build', 'validate'}:
+        # BuildArgs is strictul a superset
+        valargs = typing.cast('ValidateArguments', base)
+        for d in valargs.descriptions:
+            if not (d.exists() and d.is_file()):
+                parser.error(f'Toml description file {d.as_posix()} does not exist '
+                             'or is not a regular file or symlink to one')
 
     return base
 
