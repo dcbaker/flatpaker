@@ -226,7 +226,6 @@ That file must be written to `$XDG_CONFIG_HOME/flatpaker/config.toml` (if unset
 - flatpak-builder
 - flatpak
 - flat-manager-client (if using flat-manager export)
-- git (if building runtimes)
 
 ### Schema
 
