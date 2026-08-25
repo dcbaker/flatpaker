@@ -120,19 +120,19 @@ def _parse_args() -> BaseArguments:
     pp = argparse.ArgumentParser(add_help=False)
     pp.add_argument(
         '--repo',
-        default=config['common'].get('repo', 'repo'),
+        default=config.common.repo,
         action='store',
         help='a flatpak repo to put the result in')
     pp.add_argument(
         '--gpg',
-        default=config['common'].get('gpg-key'),
+        default=config.common.gpg_key,
         action='store',
         help='A GPG key to sign the output to when writing to a repo')
     pp.add_argument(
         '--export',
         action='store',
         choices=['none', 'install', 'repo', 'flat-manager'],
-        default=config['common'].get('export', 'none'),
+        default=config.common.export,
         help='Export the repo using one of the following methods. '
              '"none": Do not export, only build; '
              '"export": write to an ostree repo; '
@@ -140,37 +140,37 @@ def _parse_args() -> BaseArguments:
     pp.add_argument(
         '--flat-manager-remote',
         action='store',
-        default=config['flat-manager'].get('remote'),
+        default=config.flat_manager.remote,
         help='The flat-manager url',
     )
     pp.add_argument(
         '--flat-manager-repo',
         action='store',
-        default=config['flat-manager'].get('repo'),
+        default=config.flat_manager.repo,
         help='The repo of the flat-manager instance to manage',
     )
     pp.add_argument(
         '--flat-manager-token',
         action='store',
-        default=config['flat-manager'].get('token-str'),
+        default=config.flat_manager.token_str,
         help='A path to a file containing a flat-manager repo token',
     )
     pp.add_argument(
         '--flat-manager-token-file',
         action='store',
-        default=config['flat-manager'].get('token-file'),
+        default=config.flat_manager.token_file,
         help='Path to a file containing flat-manager repo token',
     )
     pp.add_argument(
         '--flat-manager-token-keyring-service',
         action='store',
-        default=config['flat-manager'].get('token-keyring', (None, None))[0],
+        default=config.flat_manager.token_keyring[0],
         help='A service to pass to `keyring.get_password(service, keyid)',
     )
     pp.add_argument(
         '--flat-manager-token-keyring-keyid',
         action='store',
-        default=config['flat-manager'].get('token-keyring', (None, None))[1],
+        default=config.flat_manager.token_keyring[1],
         help='A keyid to pass to `keyring.get_password(service, keyid)',
     )
     pp.add_argument('--no-cleanup', action='store_false', dest='cleanup', help="don't delete the temporary directory")

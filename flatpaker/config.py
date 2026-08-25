@@ -7,69 +7,59 @@ import os
 import typing
 
 import tomlkit
+from pydantic import BaseModel, Field, model_validator
 
 if typing.TYPE_CHECKING:
-    ExportMode = typing.Literal['none', 'repo', 'install', 'flat-manager']
+    from typing_extensions import Self
 
-    FlatManager = typing.TypedDict(
-        'FlatManager',
-        {
-            'remote': str,
-            'repo': str,
-            'token-file': str,
-            'token-str': str,
-            'token-keyring': tuple[str, str]
-        },
-        total=False,
+ExportMode = typing.Literal['none', 'repo', 'install', 'flat-manager']
+
+
+def _keyring_default() -> tuple[str | None, str | None]:
+    return (None, None)
+
+
+class FlatManagerConfig(BaseModel):
+
+    """The flat-manager section of the user config file."""
+
+    remote: str | None = Field(None)
+    repo: str | None = Field(None)
+    token_file: str | None = Field(None, alias='token-file')
+    token_str: str | None = Field(None, alias='token-str')
+    token_keyring: tuple[str | None, str | None] = Field(default_factory=_keyring_default, alias='token-keyring')
+
+    @model_validator(mode="after")
+    def _verify_one_secret(self) -> Self:
+        if len([t for t in [self.token_file, self.token_str, self.token_keyring] if t is not None and t != (None, None)]) > 1:
+            raise ValueError('Configuration file may only contain one of: '
+                            '"flat-manager.token-file", "flat-manager.token-str", or '
+                            '"flat-manager.token-key"')
+        return self
+
+
+class CommonConfig(BaseModel):
+
+    """The common section of the user config file."""
+
+    gpg_key: str | None = Field(None, alias='gpg-key')
+    repo: str | None = Field(None)
+    export: ExportMode = Field('none')
+
+
+class Config(BaseModel):
+
+    """The user config file."""
+
+    common: CommonConfig = Field(default_factory=CommonConfig.model_construct)
+    flat_manager: FlatManagerConfig = Field(
+        alias='flat-manager',
+        default_factory=FlatManagerConfig.model_construct,
     )
-
-    Common = typing.TypedDict(
-        'Common',
-        {
-            'gpg-key': str,
-            'repo': str,
-            'export': ExportMode,
-        },
-        total=False,
-    )
-
-    Config = typing.TypedDict(
-        'Config',
-        {
-            'common': Common,
-            'flat-manager': FlatManager,
-        },
-    )
-
-
-def _load_flat_manager(raw: dict[str, object]) -> FlatManager:
-    token_file = raw.get('token-file', None)
-    token_str = raw.get('token-str', None)
-    token_key = raw.get('token-keyring', None)
-
-    if len([k for k in [token_file, token_str, token_key] if k is not None]) > 1:
-        raise TypeError('Configuration file may only contain one of: '
-                        '"flat-manager.token-file", "flat-manager.token-str", or '
-                        '"flat-manager.token-key"')
-
-    if token_file is not None and not isinstance(token_file, str):
-        raise TypeError('Configuration key "flat-manager.token-file" must be a string')
-    if token_str is not None and not isinstance(token_str, str):
-        raise TypeError('Configuration key "flat-manager.token-str" must be a string')
-    if token_key is not None:
-        if not isinstance(token_key, list):
-            raise TypeError('Configuration key "flat-manager.token-key" must be a a list')
-        if any(not isinstance(k, str) for k in token_key):
-            raise TypeError('Configuration key "flat-manager.token-key" elements must be strings')
-        if len(token_key) != 2:
-            raise TypeError('Configuration key "flat-manager.token-key" must be an array '
-                            'with exactly two elements')
-        raw['token-keyring'] = tuple(token_key)
-
-    return typing.cast('FlatManager', raw)
 
 
 def load_config() -> Config:
+    """Load the user config file, validate, and return a Config object."""
     root = os.environ.get('XDG_CONFIG_HOME', os.path.expanduser('~/.config'))
     conf = os.path.join(root, 'flatpaker', 'config.toml')
     raw: dict[str, typing.Any]
@@ -80,12 +70,5 @@ def load_config() -> Config:
     else:
         raw = {}
 
-    if 'common' not in raw:
-        raw['common'] = {}
-
-    if fm := raw.get('flat-manager'):
-        raw['flat-manager'] = _load_flat_manager(fm)
-    else:
-        raw['flat-manager'] = {}
-
-    return typing.cast('Config', raw)
+    # TODO: it would be nice to print customized error messages
+    return Config.model_validate(raw)
