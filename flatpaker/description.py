@@ -17,7 +17,33 @@ if typing.TYPE_CHECKING:
     from typing_extensions import Self
 
 EngineName = typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']
+
+# These are the 1.0 fields.
+ContentFields = typing.Literal[
+    'drugs-alcohol',
+    'drugs-narcotics',
+    'drugs-tobacco',
+    'language-descrimination',
+    'language-humor',
+    'language-profanity',
+    'money-gambling',
+    'money-purchasing',
+    'sex-nudity',
+    'sex-themes',
+    'social-audio',
+    'social-chat',
+    'social-contacts',
+    'social-info',
+    'social-location',
+    'violence-bloodshed',
+    'violence-cartoon',
+    'violence-fantasy',
+    'violence-realistic',
+    'violence-sexual',
+]
+
 ContentRating = typing.Literal['none', 'mild', 'moderate', 'intense']
+
 Category = typing.Literal[
     'ActionGame', 'Adult', 'AdventureGame', 'Amusement', 'ArcadeGame',
     'BlocksGame', 'BoardGame', 'CardGame', 'Emulator', 'KidsGame', 'LogicGame',
@@ -38,7 +64,7 @@ class AppData(BaseModel):
 
     summary: str
     description: str
-    content_rating: dict[str, ContentRating] = Field(default_factory=dict)
+    content_rating: dict[ContentFields, ContentRating] = Field(default_factory=dict)
     releases: dict[str, str] = Field(default_factory=dict)
     license: str = 'LicenseRef-Proprietary'
 
