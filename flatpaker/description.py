@@ -19,6 +19,7 @@ EngineName = typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']
 ContentRating = typing.Literal['none', 'mild', 'moderate', 'intense']
 
 class Common(BaseModel):
+    """The common section of the build toml description."""
 
     reverse_url: str
     name: str
@@ -27,6 +28,7 @@ class Common(BaseModel):
 
 
 class AppData(BaseModel):
+    """The appdata section of the build toml description."""
 
     summary: str
     description: str
@@ -36,7 +38,6 @@ class AppData(BaseModel):
 
 
 class _Source(BaseModel):
-
     """Shared base class for sources."""
 
     path: pathlib.Path
@@ -55,23 +56,27 @@ class _Source(BaseModel):
 
 
 class File(_Source):
+    """A file entry in the sources section of the build toml description."""
 
     dest: str = 'game'
     commands: list[str] = Field(default_factory=list)
 
 
 class Patch(_Source):
+    """A patch entry in the sources section of the build toml description."""
 
     strip_components: int = 1
 
 
 class Archive(_Source):
+    """An archive entry in the sources section of the build toml description."""
 
     commands: list[str] = Field(default_factory=list)
     strip_components: int = 1
 
 
 class Sources(BaseModel):
+    """The sources section of the build toml description."""
 
     archives: list[Archive] = Field(default_factory=list)
     patches: list[Patch] = Field(default_factory=list)
@@ -79,6 +84,7 @@ class Sources(BaseModel):
 
 
 class Quirks(BaseModel):
+    """The quirks section of the build toml description."""
 
     force_window_gui_icon: bool = False
     x_configure_prologue: str | None = Field(None)
@@ -92,6 +98,7 @@ class Quirks(BaseModel):
 
 
 class Description(BaseModel):
+    """The build toml description."""
 
     common: Common
     appdata: AppData
@@ -100,6 +107,7 @@ class Description(BaseModel):
 
 
 def load_description(path: pathlib.Path) -> Description:
+    """Load and validate a toml description."""
     with path.open('rb') as f:
         d = tomlkit.load(f)
     return Description.model_validate(
