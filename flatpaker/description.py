@@ -81,7 +81,7 @@ class _Source(BaseModel):
     """Shared base class for sources."""
 
     path: pathlib.Path
-    sha256: str | None = None
+    sha256: str | None = Field(None, min_length=64, max_length=64)
 
     @field_validator('path', mode='before')
     @classmethod
@@ -93,6 +93,13 @@ class _Source(BaseModel):
                 raise RuntimeError('sources context requires a "basedir" field that is a PurePath instance')
             return basedir / v
         raise RuntimeError('sources context require a "basedir" field')
+
+    @field_validator('sha256', mode='before')
+    @classmethod
+    def __validate_sha256(cls, v: str | None) -> str | None:  # pylint: disable=W0238
+        if v and not all(c in '0123456789abcdef' for c in v.lower()):
+            raise ValueError('sha256 contains invlalid characters. It must be a 64 character hex string')
+        return v
 
 
 class File(_Source):
