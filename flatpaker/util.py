@@ -122,7 +122,7 @@ def create_desktop(description: Description, workdir: pathlib.Path, appid: str) 
             Name={description.common.name}
             Exec=game.sh
             Type=Application
-            Categories={';'.join(['Game'] + description.common.categories)};
+            Categories={';'.join(['Game', *description.common.categories])};
             Icon={appid}
             '''))
 
