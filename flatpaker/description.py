@@ -18,6 +18,11 @@ if typing.TYPE_CHECKING:
 
 EngineName = typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']
 ContentRating = typing.Literal['none', 'mild', 'moderate', 'intense']
+Category = typing.Literal[
+    'ActionGame', 'Adult', 'AdventureGame', 'Amusement', 'ArcadeGame',
+    'BlocksGame', 'BoardGame', 'CardGame', 'Emulator', 'KidsGame', 'LogicGame',
+    'RolePlaying', 'Shooter', 'Simulation', 'SportsGame', 'StrategyGame',
+]
 
 class Common(BaseModel):
     """The common section of the build toml description."""
@@ -25,7 +30,7 @@ class Common(BaseModel):
     reverse_url: str
     name: str
     engine: EngineName
-    categories: list[str] = Field(default_factory=list)
+    categories: list[Category] = Field(default_factory=list)
 
 
 class AppData(BaseModel):
