@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import datetime
 import pathlib
 import typing
 import warnings
@@ -67,6 +68,13 @@ class AppData(BaseModel):
     content_rating: dict[ContentFields, ContentRating] = Field(default_factory=dict)
     releases: dict[str, str] = Field(default_factory=dict)
     license: str = 'LicenseRef-Proprietary'
+
+    @field_validator('releases', mode='after')
+    @classmethod
+    def _validate_field(cls, value: dict[str, str]) -> dict[str, str]:
+        for k in value:
+            datetime.date.fromisoformat(k)
+        return value
 
 
 class _Source(BaseModel):
