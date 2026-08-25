@@ -21,6 +21,7 @@ pip install --break-system-packages \
     requirements-parser \
     ruff \
     tomlkit \
+    pydantic \
     ;
 
 rustup default stable

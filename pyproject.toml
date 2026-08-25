@@ -22,7 +22,10 @@
     "Programming Language :: Python :: 3.14",
     "Topic :: System :: Archiving :: Packaging",
   ]
-  dependencies = ['tomlkit']
+  dependencies = [
+    'pydantic',
+    'tomlkit',
+  ]
 
   [project.optional-dependencies]
     flat-manager = ["keyring"]
