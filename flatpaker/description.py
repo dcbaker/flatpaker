@@ -5,120 +5,102 @@
 
 from __future__ import annotations
 
-import dataclasses
 import pathlib
 import typing
 
 import tomlkit
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 if typing.TYPE_CHECKING:
-    EngineName = typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']
-    ContentRating = typing.Literal['none', 'mild', 'moderate', 'intense']
+    from pydantic import ValidationInfo
+    from typing_extensions import Self
 
-@dataclasses.dataclass
-class Common:
+EngineName = typing.Literal['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']
+ContentRating = typing.Literal['none', 'mild', 'moderate', 'intense']
+
+class Common(BaseModel):
 
     reverse_url: str
     name: str
     engine: EngineName
-    categories: list[str] = dataclasses.field(default_factory=list)
+    categories: list[str] = Field(default_factory=list)
 
 
-@dataclasses.dataclass
-class AppData:
+class AppData(BaseModel):
 
     summary: str
     description: str
-    content_rating: dict[str, ContentRating] = dataclasses.field(default_factory=dict)
-    releases: dict[str, str] = dataclasses.field(default_factory=dict)
+    content_rating: dict[str, ContentRating] = Field(default_factory=dict)
+    releases: dict[str, str] = Field(default_factory=dict)
     license: str = 'LicenseRef-Proprietary'
 
-@dataclasses.dataclass
-class File:
+
+class _Source(BaseModel):
+
+    """Shared base class for sources."""
 
     path: pathlib.Path
+    sha256: str | None = None
+
+    @field_validator('path', mode='before')
+    @classmethod
+    def __validate_path(cls, v: str, info: ValidationInfo) -> pathlib.PurePath:  # pylint: disable=W0238
+        if not info.context:
+            raise RuntimeError('Parsing sources require context info')
+        if basedir := info.context.get('basedir'):
+            if not isinstance(basedir, pathlib.PurePath):
+                raise RuntimeError('sources context requires a "basedir" field that is a PurePath instance')
+            return basedir / v
+        raise RuntimeError('sources context require a "basedir" field')
+
+
+class File(_Source):
+
     dest: str = 'game'
-    sha256: str | None = None
-    commands: list[str] = dataclasses.field(default_factory=list)
+    commands: list[str] = Field(default_factory=list)
 
 
-@dataclasses.dataclass
-class Patch:
+class Patch(_Source):
 
-    path: pathlib.Path
-    sha256: str | None = None
     strip_components: int = 1
 
 
-@dataclasses.dataclass
-class Archive:
+class Archive(_Source):
 
-    path: pathlib.Path
-    sha256: str | None = None
-    commands: list[str] = dataclasses.field(default_factory=list)
+    commands: list[str] = Field(default_factory=list)
     strip_components: int = 1
 
 
-@dataclasses.dataclass
-class Sources:
+class Sources(BaseModel):
 
-    archives: list[Archive] = dataclasses.field(default_factory=list)
-    patches: list[Patch] = dataclasses.field(default_factory=list)
-    files: list[File] = dataclasses.field(default_factory=list)
+    archives: list[Archive] = Field(default_factory=list)
+    patches: list[Patch] = Field(default_factory=list)
+    files: list[File] = Field(default_factory=list)
 
 
-@dataclasses.dataclass
-class Quirks:
+class Quirks(BaseModel):
 
     force_window_gui_icon: bool = False
-    x_configure_prologue: str | None = None
-    x_renpy_archived_window_gui_icon: str | None = None
+    x_configure_prologue: str | None = Field(None)
+    x_renpy_archived_window_gui_icon: str | None = Field(None)
 
-    def __post_init__(self) -> None:
+    @model_validator(mode="after")
+    def _validate_only_one_icon_override(self) -> Self:
         if self.force_window_gui_icon and self.x_renpy_archived_window_gui_icon:
-            raise RuntimeError('Cannot require both an unpacked windows_gui.png and a packed windows_gui.png!')
+            raise ValueError('Cannot require both an unpacked windows_gui.png and a packed windows_gui.png!')
+        return self
 
 
-@dataclasses.dataclass
-class Description:
+class Description(BaseModel):
 
     common: Common
     appdata: AppData
-    quirks: Quirks
+    quirks: Quirks = Field(default_factory=Quirks.model_construct)
     sources: Sources
 
 
 def load_description(path: pathlib.Path) -> Description:
-    relpath = path.parent.absolute()
-
-    # TODO: the cast to Any leaves us with the same
-    #       validation problem with had previous, but without the hints.
-    #       I wish python had something like serde
     with path.open('rb') as f:
-        d = typing.cast('typing.Any', tomlkit.load(f))
-
-    quirks = Quirks(**d.get('quirks', {}))
-    appdata = AppData(**d['appdata'])
-    common = Common(**d['common'])
-    sources = Sources()
-
-    # Fixup relative paths
-    for a in d['sources']['archives']:
-        sources.archives.append(Archive(
-            relpath / a.pop('path'),
-            **a,
-        ))
-    if 'files' in d['sources']:
-        for s in d['sources']['files']:
-            sources.files.append(File(
-                relpath / s.pop('path'),
-                **s,
-            ))
-    if 'patches' in d['sources']:
-        for p in d['sources']['patches']:
-            sources.patches.append(Patch(
-                relpath / p.pop('path'),
-                **p,
-            ))
-
-    return Description(common, appdata, quirks, sources)
+        d = tomlkit.load(f)
+    return Description.model_validate(
+        d, strict=True, extra='forbid', context={'basedir': path.parent.absolute()})
