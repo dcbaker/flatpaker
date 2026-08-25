@@ -29,6 +29,11 @@
 
   [project.optional-dependencies]
     flat-manager = ["keyring"]
+    lint = [
+      'mypy',
+      'ruff',
+      'typing_extensions',
+    ]
 
   [project.scripts]
     flatpaker = "flatpaker.entry:main"
