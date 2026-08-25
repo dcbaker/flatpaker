@@ -219,8 +219,10 @@ That file must be written to `$XDG_CONFIG_HOME/flatpaker/config.toml` (if unset
 ## What is required?
 
 - python >= 3.10
-- python-keyring (if using flat-manager export with a secret stored in a keyring)
-- python-tomlkit
+- The following Python modules:
+    - keyring (if using flat-manager export with a secret stored in a keyring)
+    - pydantic
+    - tomlkit
 - flatpak-builder
 - flatpak
 - flat-manager-client (if using flat-manager export)
