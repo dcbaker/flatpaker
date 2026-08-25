@@ -95,11 +95,8 @@ def _need_platform_workaround() -> bool:
     return tuple(int(v) for v in raw_ver.split('.')) < (1, 4, 5)
 
 
-def _fetch_runtimes() -> None:
+def _fetch_runtime_by_git(git: str) -> None:
     runtimedir = _get_runtime_dir()
-
-    git = shutil.which('git')
-    assert git is not None
     if not runtimedir.exists():
         subprocess.run(
             [git, 'clone', '--recurse-submodules', 'https://github.com/dcbaker/flatpaker-runtime.git',
@@ -111,6 +108,12 @@ def _fetch_runtimes() -> None:
             [git, '-C', runtimedir.as_posix(), 'pull', '--recurse-submodules'],
             check=True,
         )
+
+
+def _fetch_runtimes() -> None:
+    git = shutil.which('git')
+    assert git is not None
+    _fetch_runtime_by_git(git)
 
 
 def build_runtimes(args: BuildRuntimeConfig) -> bool:
