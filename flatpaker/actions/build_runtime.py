@@ -7,15 +7,21 @@ import os
 import pathlib
 import shutil
 import subprocess
+import tempfile
 import typing
+import urllib.request
+import zipfile
 
 from flatpaker import util
 
 if typing.TYPE_CHECKING:
+    from http.client import HTTPResponse
+
     from ..entry import BuildRuntimeConfig
 
 
 _RUNTIME_ID_BASE = 'com.github.dcbaker.flatpaker'
+_RUNTIME_URL = 'https://github.com/dcbaker/flatpaker-runtime/archive/refs/heads/main.zip'
 
 
 def _get_runtime_dir() -> pathlib.Path:
@@ -97,6 +103,11 @@ def _need_platform_workaround() -> bool:
 
 def _fetch_runtime_by_git(git: str) -> None:
     runtimedir = _get_runtime_dir()
+
+    # Switch from https to git
+    if runtimedir.exists() and not runtimedir.joinpath('.git').exists():
+        shutil.rmtree(runtimedir)
+
     if not runtimedir.exists():
         subprocess.run(
             [git, 'clone', '--recurse-submodules', 'https://github.com/dcbaker/flatpaker-runtime.git',
@@ -110,10 +121,47 @@ def _fetch_runtime_by_git(git: str) -> None:
         )
 
 
+def _fetch_runtime_by_https() -> None:
+    runtimedir = _get_runtime_dir()
+    if runtimedir.exists():
+        if runtimedir.is_symlink():
+            raise RuntimeError(
+                'Refusing to replace a symlinked copy of the runtime. '
+                'You must manually resolve this if you want to use https '
+                 + runtimedir.as_posix())
+        if runtimedir.joinpath('.git').exists():
+            raise RuntimeError(
+                'Refusing to replace git checkout with HTTPS runtime. '
+                'You can manually delete the directory and try again if '
+                f'you want to switch from git to http: {runtimedir.as_posix()}')
+        shutil.rmtree(runtimedir)
+
+    print('Updating runtime...', end='')
+    resp: HTTPResponse
+    with tempfile.TemporaryDirectory() as d:
+        temp_d = pathlib.Path(d)
+        rt_zip = temp_d / 'runtime.zip'
+
+        with urllib.request.urlopen(_RUNTIME_URL) as resp, rt_zip.open('wb') as f:
+            shutil.copyfileobj(resp, f)
+
+        unzip_path = temp_d / 'unziped'
+        with zipfile.ZipFile(rt_zip) as zf:
+            zf.extractall(unzip_path)
+
+        # This is a bit gross...
+        shutil.move(unzip_path / 'flatpaker-runtime-main', runtimedir)
+
+
+    print(' done!')
+
+
 def _fetch_runtimes() -> None:
     git = shutil.which('git')
-    assert git is not None
-    _fetch_runtime_by_git(git)
+    if git is not None:
+        _fetch_runtime_by_git(git)
+    else:
+        _fetch_runtime_by_https()
 
 
 def build_runtimes(args: BuildRuntimeConfig) -> bool:
