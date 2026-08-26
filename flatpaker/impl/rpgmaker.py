@@ -26,7 +26,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         # Automatically rewrite the name and window title. This is very often
         # blank or an ugly default
         f'''
-            jq '.name = "{description.common.name}" | .window.title = .name' package.json > package.json.tmp
+            jq '.name = "$ARGS.positional[0]" | .window.title = .name' package.json --args "{description.common.name}" > package.json.tmp || exit 1
             mv package.json.tmp package.json
         ''',
 
