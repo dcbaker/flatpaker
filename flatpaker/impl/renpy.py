@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright © 2022-2024 Dylan Baker
+# Copyright © 2022-2026 Dylan Baker
 
 from __future__ import annotations
 

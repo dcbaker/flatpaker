@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright © 2024-2025 Dylan Baker
+# Copyright © 2024-2026 Dylan Baker
 
 """Utilities to convert various kinds of native binaries into flatpaks.
 
