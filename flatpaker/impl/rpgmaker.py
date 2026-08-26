@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import json
 import pathlib
-import textwrap
 import typing
 
 from flatpaker import util
@@ -30,14 +29,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             mv package.json.tmp package.json
         ''',
 
-        # in MV www/icon.png is usually the customized icon and icon/icon.png is
-        textwrap.dedent('''
-            if [[ -d "www/icon" ]]; then
-                install -Dm644 www/icon/icon.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png
-            else
-                install -Dm644 icon/icon.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png
-            fi
-        '''),
+        'install -Dm644 www/icon/icon.png $FLATPAK_DEST/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png',
 
         # The manager has a different name in MZ and MV, rmmz_managers.js in MZ and rpg_managers.js in MV
         'find . -name "*_managers.js" -exec sed -i "s@path.dirname(process.mainModule.filename)@process.env.XDG_DATA_HOME@g" {} +',
