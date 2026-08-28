@@ -13,6 +13,8 @@ import textwrap
 import typing
 from xml.etree import ElementTree as ET
 
+from . import manifest
+
 if typing.TYPE_CHECKING:
     from .description import Description
     from .entry import FlatManagerConfig
@@ -24,45 +26,37 @@ def _subelem(elem: ET.Element, tag: str, text: str | None = None, **extra: str) 
     return new
 
 
-def extract_sources(description: Description) -> list[dict[str, object]]:
-    sources: list[dict[str, object]] = []
+def extract_sources(description: Description) -> manifest.SourceListType:
+    sources: manifest.SourceListType = []
 
     for archive in description.sources.archives:
         sha = archive.sha256
         if sha is None:
             sha = sha256(archive.path)
-        sources.append({
-            'path': archive.path.as_posix(),
-            'sha256': sha,
-            'type': 'archive',
-            'strip-components': archive.strip_components,
-        })
+        sources.append(
+            manifest.SourceArchive(
+                path=archive.path.as_posix(),
+                sha256=sha,
+                strip_components=archive.strip_components,
+            )
+        )
         if archive.commands:
-            sources.append({
-                'type': 'shell',
-                'commands': archive.commands
-            })
+            sources.append(manifest.SourceShell(commands=archive.commands))
     for source in description.sources.files:
         p = source.path
         sha = source.sha256
         if sha is None:
             sha = sha256(p)
-        sources.append({
-            'path': p.as_posix(),
-            'sha256': sha,
-            'type': 'file',
-        })
+        sources.append(manifest.SourceFile(path=p.as_posix(), sha256=sha))
         if source.commands:
-            sources.append({
-                'type': 'shell',
-                'commands': source.commands
-            })
+            sources.append(manifest.SourceShell(commands=source.commands))
     for patch in description.sources.patches:
-        sources.append({
-            'type': 'patch',
-            'path': patch.path.as_posix(),
-            'strip-components': patch.strip_components,
-        })
+        sources.append(
+            manifest.SourcePatch(
+                path=patch.path.as_posix(),
+                strip_components=patch.strip_components,
+            )
+        )
 
     return sources
 
@@ -155,33 +149,21 @@ def tmpdir(name: str, cleanup: bool = True) -> typing.Generator[pathlib.Path]:
         shutil.rmtree(tdir)
 
 
-def bd_metadata(desktop: pathlib.Path, appdata: pathlib.Path, game: list[str]) -> dict[str, typing.Any]:
-    return {
-        'buildsystem': 'simple',
-        'name': 'metadata',
-        'sources': [
-            {
-                'path': desktop.as_posix(),
-                'sha256': sha256(desktop),
-                'type': 'file',
-            },
-            {
-                'path': appdata.as_posix(),
-                'sha256': sha256(appdata),
-                'type': 'file',
-            },
-            {
-                'type': 'script',
-                'dest-filename': 'game.sh',
-                'commands': game,
-            }
+def bd_metadata(desktop: pathlib.Path, appdata: pathlib.Path, game: list[str]) -> manifest.Module:
+    return manifest.Module(
+        buildsystem='simple',
+        name='metadata',
+        sources=[
+            manifest.SourceFile(path=desktop.as_posix(), sha256=sha256(desktop)),
+            manifest.SourceFile(path=appdata.as_posix(), sha256=sha256(appdata)),
+            manifest.SourceScript(dest_filename='game.sh', commands=game),
         ],
-        'build-commands': [
-            f'install -D -m644 {desktop.name} -t /app/share/applications',
-            f'install -D -m644 {appdata.name} -t /app/share/metainfo',
-            'install -Dm755 game.sh -t /app/bin',
+        build_commands=[
+            f'install -D -m644 {desktop.name} -t $FLATPAK_DEST/share/applications',
+            f'install -D -m644 {appdata.name} -t $FLATPAK_DEST/share/metainfo',
+            'install -D -m755 game.sh -t $FLATPAK_DEST/bin'
         ],
-    }
+    )
 
 
 def export_to_flat_manager(repodir: str, config: FlatManagerConfig) -> None:
