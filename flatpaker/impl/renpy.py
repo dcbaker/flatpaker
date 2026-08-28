@@ -9,7 +9,7 @@ import pathlib
 import textwrap
 import typing
 
-from flatpaker import util
+from flatpaker import manifest, util
 
 if typing.TYPE_CHECKING:
     from flatpaker.description import Description
@@ -28,7 +28,7 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
-def unrpa() -> dict[str, object]:
+def unrpa() -> manifest.SourceScript:
     # Extract all rpa files.
     # This ensures that there is a window_gui icon, allows us to remove any
     # .rpy files stored in them, and makes flatpak updates smaller
@@ -39,7 +39,7 @@ def unrpa() -> dict[str, object]:
         done
         ''')
 
-    return {'type': 'shell', 'commands': [unrpa_]}
+    return manifest.SourceScript(commands=[unrpa_])
 
 
 def bd_build_commands(description: Description) -> list[str]:
@@ -123,18 +123,17 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
     # good assumption.
     sources.insert(1, unrpa())
 
-    # TODO: typing requires more thought
-    modules: list[dict[str, typing.Any]] = [
-        {
-            'buildsystem': 'simple',
-            'name': util.sanitize_name(description.common.name),
-            'sources': sources,
-            'build-commands': bd_build_commands(description),
-            'cleanup': [
+    modules: list[manifest.Module] = [
+        manifest.Module(
+            buildsystem='simple',
+            name=util.sanitize_name(description.common.name),
+            sources=sources,
+            build_commands=bd_build_commands(description),
+            cleanup=[
                 '*.rpy',
                 '*.rpyc.bak',
             ],
-        },
+        ),
         util.bd_metadata(desktop_file, appdata_file,
                          _create_game_sh(description.common.name)),
     ]
@@ -149,23 +148,23 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
     else:
         raise RuntimeError('Unexpected renpy version', engine)
 
-    struct = {
-        'sdk': f'com.github.dcbaker.flatpaker.RenPy.Sdk//{sdkver}',
-        'runtime': 'com.github.dcbaker.flatpaker.RenPy.Platform',
-        'runtime-version': sdkver,
-        'id': appid,
-        'build-options': {
-            'no-debuginfo': True,
-            'strip': False
-        },
-        'command': 'game.sh',
-        'finish-args': [
+    struct = manifest.Manifest(
+        sdk=f'com.github.dcbaker.flatpaker.RenPy.Sdk//{sdkver}',
+        runtime='com.github.dcbaker.flatpaker.RenPy.Platform',
+        runtime_version=sdkver,
+        id=appid,
+        build_options=manifest.BuildOptions(
+            no_debuginfo=True,
+            strip=False,
+        ),
+        command='game.sh',
+        finish_args=[
             '--socket=wayland',
             '--socket=pulseaudio',
             '--device=dri',
         ],
-        'modules': modules,
-    }
+        modules=modules,
+    )
 
     with (pathlib.Path(workdir) / f'{appid}.json').open('w') as f:
-        json.dump(struct, f, indent=4)
+        json.dump(struct.model_dump(by_alias=True), f, indent=4)
