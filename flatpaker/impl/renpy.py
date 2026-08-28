@@ -132,6 +132,8 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
             cleanup=[
                 '*.rpy',
                 '*.rpyc.bak',
+                '/lib/game/game/saves',
+                '/lib/game/game/cache',
             ],
         ),
         util.bd_metadata(desktop_file, appdata_file,
