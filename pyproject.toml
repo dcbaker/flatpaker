@@ -45,6 +45,7 @@
 [tool.mypy]
   strict = true
   packages = "flatpaker"
+  plugins = "pydantic.mypy"
 
 [tool.ruff]
   line-length = 100
