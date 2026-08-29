@@ -111,7 +111,7 @@ def bd_build_commands(description: Description) -> list[str]:
 
     commands.append(
         # Recompile all of the rpy files
-        "XDG_STATE_HOME=/tmp/state XDG_DATA_HOME=/tmp/data renpy-bin 'dummy' 'dummy' $FLATPAK_DEST/lib/game compile --keep-orphan-rpyc"
+        "XDG_STATE_HOME=/tmp/state XDG_DATA_HOME=/tmp/data renpy-bin 'dummy' 'dummy' $FLATPAK_DEST/lib/game compile --keep-orphan-rpyc || exit 1"
     )
 
     return commands
