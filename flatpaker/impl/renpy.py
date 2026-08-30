@@ -140,15 +140,15 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
                          _create_game_sh(description.common.name)),
     ]
 
-    engine = description.common.engine
-    if engine == "renpy8":
-        sdkver = '8'
-    elif engine == 'renpy7':
-        sdkver = '7'
-    elif engine == 'renpy7-py3':
-        sdkver = '7-PY3'
-    else:
-        raise RuntimeError('Unexpected renpy version', engine)
+    match description.common.engine:
+        case 'renpy8':
+            sdkver = '8'
+        case 'renpy7':
+            sdkver = '7'
+        case 'renpy7-py3':
+            sdkver = '7-PY3'
+        case _ as x:
+            raise RuntimeError('Unexpected renpy version', x)
 
     struct = manifest.Manifest(
         sdk=f'com.github.dcbaker.flatpaker.RenPy.Sdk//{sdkver}',
