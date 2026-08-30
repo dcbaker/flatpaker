@@ -16,6 +16,8 @@ from xml.etree import ElementTree as ET
 from . import manifest
 
 if typing.TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from .description import Description
     from .entry import FlatManagerConfig
 
@@ -131,13 +133,21 @@ def sha256(path: pathlib.Path) -> str:
         return m.hexdigest()
 
 
+_INVALID_URL_CHARACTER_MAP: Mapping[str, str] = {
+    ' ': '_',
+    '&': '_',
+    ':': '',
+    "'": '',
+}
+
+
 def sanitize_name(name: str) -> str:
     """Replace invalid characters in a name with valid ones."""
-    return name \
-        .replace(' ', '_') \
-        .replace("&", '_') \
-        .replace(':', '') \
-        .replace("'", '')
+    def _work() -> typing.Generator[str]:
+        for c in name:
+            yield _INVALID_URL_CHARACTER_MAP.get(c, c)
+
+    return ''.join(_work())
 
 
 @contextlib.contextmanager
