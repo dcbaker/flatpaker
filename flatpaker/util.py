@@ -141,6 +141,15 @@ _INVALID_URL_CHARACTER_MAP: Mapping[str, str] = {
 }
 
 
+def validate_name(name: str) -> str | None:
+    """Find any invalid characters in a name and return an error message."""
+    chars = set(name) & set(_INVALID_URL_CHARACTER_MAP)
+    if chars:
+        common = ", ".join(f'`{c}`' for c in chars)
+        return f'`{name}` contains invalid characters {common}'
+    return None
+
+
 def sanitize_name(name: str) -> str:
     """Replace invalid characters in a name with valid ones."""
     def _work() -> typing.Generator[str]:
