@@ -13,6 +13,8 @@ import warnings
 import tomlkit
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from flatpaker.util import validate_name
+
 if typing.TYPE_CHECKING:
     from pydantic import ValidationInfo
     from typing_extensions import Self
@@ -58,6 +60,13 @@ class Common(BaseModel):
     name: str
     engine: EngineName
     categories: list[Category] = Field(default_factory=list)
+
+    @field_validator('reverse_url', mode='before')
+    @classmethod
+    def __validate_reverse_url(cls, value: str) -> str:  # pylint: disable=W0238
+        if err := validate_name(value):
+            raise ValueError(err)
+        return value
 
 
 class AppData(BaseModel):
