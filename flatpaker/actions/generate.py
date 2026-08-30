@@ -19,7 +19,7 @@ if typing.TYPE_CHECKING:
 
 
 def generate(args: GenerateConfig) -> bool:
-    name = f'{args.url}.{util.sanitize_name(args.appname)}'
+    name = f'{util.sanitize_name(args.url)}.{util.sanitize_name(args.appname)}'
     projectdir = pathlib.Path(name)
     sourcedir = projectdir / 'sources'
     patchdir = projectdir / 'patches'
