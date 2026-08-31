@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import datetime
+import functools
 import pathlib
 import typing
 import warnings
@@ -13,7 +14,7 @@ import warnings
 import tomlkit
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from flatpaker.util import validate_name
+from flatpaker.util import sanitize_name, validate_name
 
 if typing.TYPE_CHECKING:
     from pydantic import ValidationInfo
@@ -67,6 +68,10 @@ class Common(BaseModel):
         if err := validate_name(value):
             raise ValueError(err)
         return value
+
+    @functools.cached_property
+    def appid(self) -> str:
+        return f'{self.reverse_url}.{sanitize_name(self.name)}'
 
 
 class AppData(BaseModel):
