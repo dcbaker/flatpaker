@@ -63,11 +63,11 @@ def extract_sources(description: Description) -> manifest.SourceListType:
     return sources
 
 
-def create_appdata(description: Description, workdir: pathlib.Path, appid: str) -> pathlib.Path:
-    p = workdir / f'{appid}.metainfo.xml'
+def create_appdata(description: Description, workdir: pathlib.Path) -> pathlib.Path:
+    p = workdir / f'{description.common.appid}.metainfo.xml'
 
     root = ET.Element('component', type="desktop-application")
-    _subelem(root, 'id', appid)
+    _subelem(root, 'id', description.common.appid)
     _subelem(root, 'name', description.common.name)
     _subelem(root, 'summary', description.appdata.summary)
     _subelem(root, 'metadata_license', 'CC0-1.0')
@@ -87,7 +87,7 @@ def create_appdata(description: Description, workdir: pathlib.Path, appid: str) 
 
     desc = ET.SubElement(root, 'description')
     _subelem(desc, 'p', description.appdata.description)
-    _subelem(root, 'launchable', f'{appid}.desktop', type="desktop-id")
+    _subelem(root, 'launchable', f'{description.common.appid}.desktop', type="desktop-id")
 
     # There is an oars-1.1, but it doesn't appear to be supported by KDE
     # discover yet
@@ -110,8 +110,8 @@ def create_appdata(description: Description, workdir: pathlib.Path, appid: str) 
     return p
 
 
-def create_desktop(description: Description, workdir: pathlib.Path, appid: str) -> pathlib.Path:
-    p = workdir / f'{appid}.desktop'
+def create_desktop(description: Description, workdir: pathlib.Path) -> pathlib.Path:
+    p = workdir / f'{description.common.appid}.desktop'
     with p.open('w') as f:
         f.write(textwrap.dedent(f'''\
             [Desktop Entry]
@@ -119,7 +119,7 @@ def create_desktop(description: Description, workdir: pathlib.Path, appid: str) 
             Exec=game.sh
             Type=Application
             Categories={';'.join(['Game', *description.common.categories])};
-            Icon={appid}
+            Icon={description.common.appid}
             '''))
 
     return p

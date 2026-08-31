@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
     from flatpaker.description import Description
 
 
-def write_rules(description: Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
+def write_rules(description: Description, workdir: pathlib.Path, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     sources = util.extract_sources(description)
 
     commands: list[str] = ['mkdir -p $FLATPAK_DEST/lib/game']
@@ -57,7 +57,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         sdk='org.freedesktop.Sdk//25.08',
         runtime='com.github.dcbaker.flatpaker.RPGM.Platform',
         runtime_version='master',
-        id=appid,
+        id=description.common.appid,
         build_options=manifest.BuildOptions(
             no_debuginfo=True,
             strip=False,
@@ -75,5 +75,5 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         modules=modules,
     )
 
-    with (pathlib.Path(workdir) / f'{appid}.json').open('w') as f:
+    with (pathlib.Path(workdir) / f'{description.common.appid}.json').open('w') as f:
         json.dump(struct.model_dump(by_alias=True), f, indent=4)

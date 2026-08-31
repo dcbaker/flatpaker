@@ -117,7 +117,7 @@ def bd_build_commands(description: Description) -> list[str]:
     return commands
 
 
-def write_rules(description: Description, workdir: pathlib.Path, appid: str, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
+def write_rules(description: Description, workdir: pathlib.Path, desktop_file: pathlib.Path, appdata_file: pathlib.Path) -> None:
     sources = util.extract_sources(description)
     # Assume we only need to do this for the main sources. That might not be a
     # good assumption.
@@ -154,7 +154,7 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         sdk=f'com.github.dcbaker.flatpaker.RenPy.Sdk//{sdkver}',
         runtime='com.github.dcbaker.flatpaker.RenPy.Platform',
         runtime_version=sdkver,
-        id=appid,
+        id=description.common.appid,
         build_options=manifest.BuildOptions(
             no_debuginfo=True,
             strip=False,
@@ -168,5 +168,5 @@ def write_rules(description: Description, workdir: pathlib.Path, appid: str, des
         modules=modules,
     )
 
-    with (pathlib.Path(workdir) / f'{appid}.json').open('w') as f:
+    with (pathlib.Path(workdir) / f'{description.common.appid}.json').open('w') as f:
         json.dump(struct.model_dump(by_alias=True), f, indent=4)

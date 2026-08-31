@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
     from flatpaker.description import Description, EngineName
     from flatpaker.entry import BuildFlatpakConfig
 
-    JsonWriterImpl = typing.Callable[[Description, pathlib.Path, str, pathlib.Path, pathlib.Path], None]
+    JsonWriterImpl = typing.Callable[[Description, pathlib.Path, pathlib.Path, pathlib.Path], None]
 
     class ImplMod(typing.Protocol):
 
@@ -32,21 +32,19 @@ def select_impl(name: EngineName) -> JsonWriterImpl:
 
 def _build(args: BuildFlatpakConfig, path: pathlib.Path) -> None:
     description = load_description(path)
-    # TODO: This could be common
-    appid = f"{description.common.reverse_url}.{util.sanitize_name(description.common.name)}"
 
     write_build_rules = select_impl(description.common.engine)
 
     with util.tmpdir(description.common.name, args.cleanup) as d:
         workdir = pathlib.Path(d)
-        desktop_file = util.create_desktop(description, workdir, appid)
-        appdata_file = util.create_appdata(description, workdir, appid)
-        write_build_rules(description, workdir, appid, desktop_file, appdata_file)
+        desktop_file = util.create_desktop(description, workdir)
+        appdata_file = util.create_appdata(description, workdir)
+        write_build_rules(description, workdir, desktop_file, appdata_file)
 
         build_command: list[str] = [
             'flatpak-builder', '--install-deps-from=flathub',
             '--force-clean', '--user', 'build',
-            (workdir / f'{appid}.json').absolute().as_posix(),
+            (workdir / f'{description.common.appid}.json').absolute().as_posix(),
         ]
 
         repo = args.repo
@@ -63,7 +61,7 @@ def _build(args: BuildFlatpakConfig, path: pathlib.Path) -> None:
                 # This simplifies uploading with flat-manager-client
                 repos = pathlib.Path.cwd() / '.flat-manager-repos'
                 repos.mkdir(exist_ok=True)
-                repo = repos.joinpath(appid).as_posix()
+                repo = repos.joinpath(description.common.appid).as_posix()
                 build_command.extend(['--repo', repo])
 
         subprocess.run(build_command, check=True)
