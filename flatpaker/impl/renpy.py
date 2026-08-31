@@ -28,7 +28,7 @@ def quote(s: str) -> str:
     return f'"{s}"'
 
 
-def unrpa() -> manifest.SourceScript:
+def unrpa() -> manifest.SourceShell:
     # Extract all rpa files.
     # This ensures that there is a window_gui icon, allows us to remove any
     # .rpy files stored in them, and makes flatpak updates smaller
@@ -39,7 +39,7 @@ def unrpa() -> manifest.SourceScript:
         done
         ''')
 
-    return manifest.SourceScript(commands=[unrpa_])
+    return manifest.SourceShell(commands=[unrpa_])
 
 
 def bd_build_commands(description: Description) -> list[str]:
