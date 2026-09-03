@@ -298,7 +298,7 @@ def _flat_manager_config(args: BaseBuildArguments) -> FlatManagerConfig | None:
     if args.flat_manager_token:
         token = args.flat_manager_token
     elif p := args.flat_manager_token_file:
-        with open(os.path.expanduser(os.path.expandvars(p)), 'r', encoding='utf-8') as f:
+        with open(os.path.expanduser(os.path.expandvars(p)), encoding='utf-8') as f:
             token = f.read().strip()
     else:
         # This is imported here becaue it's optional.
