@@ -52,7 +52,7 @@
   line-length = 100
 
   [tool.ruff.lint]
-    extend-select = ["I", "UP"]
+    extend-select = ["A", "ERA", "FURB", "I", "N", "UP"]
 
   [tool.ruff.format]
     quote-style = "preserve"
