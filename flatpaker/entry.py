@@ -57,7 +57,7 @@ if typing.TYPE_CHECKING:
     class ValidateArguments(typing.Protocol):
         descriptions: list[pathlib.Path]
 
-@dataclasses.dataclass(slots=False, eq=False)
+@dataclasses.dataclass(slots=True, eq=False)
 class FlatManagerConfig:
 
     remote: str
@@ -65,7 +65,7 @@ class FlatManagerConfig:
     token: str
 
 
-@dataclasses.dataclass(slots=False, eq=False)
+@dataclasses.dataclass(slots=True, eq=False)
 class _BuildCommonConfig:
     """Common configuration for "build" and "build-runtimes"."""
 
@@ -78,14 +78,14 @@ class _BuildCommonConfig:
     flat_manager: FlatManagerConfig | None
 
 
-@dataclasses.dataclass(slots=False, eq=False)
+@dataclasses.dataclass(slots=True, eq=False)
 class BuildFlatpakConfig(_BuildCommonConfig):
     """Configuration for "build"."""
 
     descriptions: list[pathlib.Path]
 
 
-@dataclasses.dataclass(slots=False, eq=False)
+@dataclasses.dataclass(slots=True, eq=False)
 class BuildRuntimeConfig(_BuildCommonConfig):
     """Configuration for "build-runtimes"."""
 
@@ -93,7 +93,7 @@ class BuildRuntimeConfig(_BuildCommonConfig):
     update: bool
 
 
-@dataclasses.dataclass(slots=False, eq=False)
+@dataclasses.dataclass(slots=True, eq=False)
 class GenerateConfig:
     """Configuration for "generate"."""
 
@@ -105,7 +105,7 @@ class GenerateConfig:
     files: list[str]
 
 
-@dataclasses.dataclass(slots=False, eq=False)
+@dataclasses.dataclass(slots=True, eq=False)
 class ValidateConfig:
     """Configuration for "validate"."""
 
