@@ -31,7 +31,12 @@
         "ms-python.python",
         "njpwerner.autodocstring",
         "tamasfe.even-better-toml",
-      ]
+      ],
+      "settings": {
+        // Pylance doesn't understand the pydantic types and generates lots of
+        // false positive warnings.
+        "python.analysis.typeCheckingMode": "off",
+      }
     }
   },
 
