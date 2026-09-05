@@ -143,6 +143,13 @@ class Sources(BaseModel):
     patches: list[Patch] = Field(default_factory=list)
     files: list[File] = Field(default_factory=list)
 
+    @field_validator('archives', mode='after')
+    @classmethod
+    def _validate_field(cls, value: list[Archive]) -> list[Archive]:
+        if not value:
+            raise ValueError('At least one "archive" entry is required')
+        return value
+
 
 class Quirks(BaseModel):
     """The quirks section of the build toml description."""
