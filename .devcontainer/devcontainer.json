@@ -26,21 +26,15 @@
         "EditorConfig.EditorConfig",
         "charliermarsh.ruff",
         "ms-python.mypy-type-checker",
-        "ms-python.pylint",
         "ms-python.python",
-        "ms-python.vscode-pylance",
         "njpwerner.autodocstring",
         "tamasfe.even-better-toml",
       ]
     }
   },
 
-  "remoteEnv": {
-    "PATH": "${containerEnv:PATH}:~/.cargo/bin",
-  },
-
   "onCreateCommand": "sudo sh .devcontainer/debian-install.sh",
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-  "remoteUser": "root",
+  // "remoteUser": "root",
 }
