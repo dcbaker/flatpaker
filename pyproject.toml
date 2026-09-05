@@ -58,7 +58,7 @@
     quote-style = "preserve"
 
 [tool.bumpversion]
-  current_version = "0.1.1t"
+  current_version = "0.1.1"
   parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
   serialize = ["{major}.{minor}.{patch}"]
   search = "{current_version}"
