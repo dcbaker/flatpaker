@@ -202,7 +202,7 @@ def _parse_args() -> BaseArguments:
     build_parser.set_defaults(action='build')
 
     validate_parser = subparsers.add_parser(
-        'validate', help='validate buidl configurations')
+        'validate', help='validate build configurations')
     validate_parser.add_argument('descriptions', nargs='+', type=pathlib.Path, help="One or more Toml description file")
     validate_parser.set_defaults(action='validate')
 
