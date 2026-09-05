@@ -15,6 +15,7 @@ import flatpaker.config
 from flatpaker.actions.build_flatpak import build_flatpak
 from flatpaker.actions.build_runtime import build_runtimes
 from flatpaker.actions.generate import generate
+from flatpaker.actions.schema import dump_schema
 from flatpaker.actions.validate import validate
 
 if typing.TYPE_CHECKING:
@@ -22,7 +23,7 @@ if typing.TYPE_CHECKING:
     from flatpaker.description import EngineName
 
     class BaseArguments(typing.Protocol):
-        action: typing.Literal['build', 'build-runtimes', 'generate', 'validate']
+        action: typing.Literal['build', 'build-runtimes', 'generate', 'validate', 'schema']
 
     class BaseBuildArguments(BaseArguments, typing.Protocol):
         repo: str
@@ -56,6 +57,10 @@ if typing.TYPE_CHECKING:
 
     class ValidateArguments(typing.Protocol):
         descriptions: list[pathlib.Path]
+
+    class SchemaArguments(typing.Protocol):
+        output: str
+
 
 @dataclasses.dataclass(slots=True, eq=False)
 class FlatManagerConfig:
@@ -111,6 +116,12 @@ class ValidateConfig:
 
     descriptions: list[pathlib.Path]
 
+
+@dataclasses.dataclass(slots=True, eq=False)
+class SchemaConfig:
+    """Configuration for "validate"."""
+
+    output: pathlib.Path
 
 
 def static_deltas(args: BuildRuntimeConfig | BuildFlatpakConfig) -> None:
@@ -205,6 +216,11 @@ def _parse_args() -> BaseArguments:
         'validate', help='validate build configurations')
     validate_parser.add_argument('descriptions', nargs='+', type=pathlib.Path, help="One or more Toml description file")
     validate_parser.set_defaults(action='validate')
+
+    schema_parser = subparsers.add_parser(
+        'schema', help='validate build configurations')
+    schema_parser.add_argument('-o', '--output', action='store', default='.', help='Where to write the schema file')
+    schema_parser.set_defaults(action='schema')
 
     _all_runtimes = ['renpy8', 'renpy7', 'renpy7-py3', 'rpgmaker']
     runtimes_parser = subparsers.add_parser(
@@ -321,7 +337,7 @@ def _flat_manager_config(args: BaseBuildArguments) -> FlatManagerConfig | None:
     return FlatManagerConfig(remote, repo, token)
 
 
-def _args_to_config() -> BuildFlatpakConfig | BuildRuntimeConfig | GenerateConfig | ValidateConfig:
+def _args_to_config() -> BuildFlatpakConfig | BuildRuntimeConfig | GenerateConfig | ValidateConfig | SchemaConfig:
     args = _parse_args()
     match args.action:
         case 'build':
@@ -362,6 +378,10 @@ def _args_to_config() -> BuildFlatpakConfig | BuildRuntimeConfig | GenerateConfi
         case 'validate':
             vargs = typing.cast('ValidateArguments', args)
             return ValidateConfig(descriptions=vargs.descriptions)
+        case 'schema':
+            scargs = typing.cast('SchemaArguments', args)
+            path = pathlib.Path(scargs.output) / 'flatpaker.schema.json'
+            return SchemaConfig(output=path.absolute())
 
 
 def main() -> None:
@@ -381,5 +401,7 @@ def main() -> None:
             success = generate(config)
         case ValidateConfig():
             success = validate(config)
+        case SchemaConfig():
+            success = dump_schema(config.output)
 
     sys.exit(0 if success else 1)
