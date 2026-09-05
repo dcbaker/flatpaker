@@ -12,9 +12,11 @@
   "runArgs": ["--device=/dev/fuse"],
 
   // Features to add to the dev container. More info: https://containers.dev/features.
-  // "features": {
-  //  "ghcr.io/devcontainer-config/features/dot-config:4": {}
-  // },
+  "features": {
+    "ghcr.io/devcontainers-extra/features/apt-packages": {
+      "packages": "python3,python-is-python3,appstream,flatpak-builder,python3-pip"
+    }
+  },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
