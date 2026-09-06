@@ -12,7 +12,7 @@ import typing
 import warnings
 
 import tomlkit
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from flatpaker.util import sanitize_name, validate_name
 
@@ -57,10 +57,38 @@ Category = typing.Literal[
 class Common(BaseModel):
     """The common section of the build toml description."""
 
-    reverse_url: str
-    name: str
-    engine: EngineName
-    categories: list[Category] = Field(default_factory=list)
+    model_config = ConfigDict(title='common')
+
+    reverse_url: str = Field(
+        title='Reverse URL',
+        json_schema_extra={
+            'description': ('A reverse root URL for the game. '
+                            'The Game name will be automatically appended from the name field. '
+                            'This cannot be changed.'),
+            'example': 'com.github.user',
+        },
+    )
+    name: str = Field(
+        title='Proper Name',
+        json_schema_extra={
+            'description': 'The proper name with punctionation and spaces for this game',
+            'example': "Soldier's Quest",
+        },
+    )
+    engine: EngineName = Field(
+        title='Engine name',
+        json_schema_extra={
+            'description': 'Which engine (and runtime) this game uses',
+        },
+    )
+    categories: list[Category] = Field(
+        default_factory=list,
+        title='Freedesktop Application Categories',
+        json_schema_extra={
+            'description': ("Valid categories for the game's .destkop file. "
+                            "'Game' is added automatically"),
+        },
+    )
 
     @field_validator('reverse_url', mode='before')
     @classmethod
@@ -77,11 +105,41 @@ class Common(BaseModel):
 class AppData(BaseModel):
     """The appdata section of the build toml description."""
 
-    summary: str
-    description: str
-    content_rating: dict[ContentFields, ContentRating] = Field(default_factory=dict)
-    releases: dict[str, str] = Field(default_factory=dict)
-    license: str = 'LicenseRef-Proprietary'
+    model_config = ConfigDict(title='Application Metadata')
+
+    summary: str = Field(
+        title='Application summary',
+        json_schema_extra={
+            'description': 'A short description of the game',
+        },
+    )
+    description: str = Field(
+        title='Application description',
+        json_schema_extra={
+            'description': 'A longer description of the game.',
+        },
+    )
+    content_rating: dict[ContentFields, ContentRating] = Field(
+        default_factory=dict,
+        title='OARS Content Rating Information',
+        json_schema_extra={
+            'description': 'Content information for the current game.',
+        },
+    )
+    releases: dict[str, str] = Field(
+        default_factory=dict,
+        title='Release information for this game',
+        json_schema_extra={
+            'description': 'Mapping of releases in the form `"YYYY-MM-DD" = "X.Y.Z"',
+        },
+    )
+    license: str = Field(
+        default='LicenseRef-Proprietary',
+        title='SPDX License Expression',
+        json_schema_extra={
+            'description': 'A valid SPDX license Expression for this game',
+        },
+    )
 
     @field_validator('releases', mode='after')
     @classmethod
@@ -94,8 +152,21 @@ class AppData(BaseModel):
 class _Source(BaseModel):
     """Shared base class for sources."""
 
-    path: pathlib.Path
-    sha256: str | None = Field(None, min_length=64, max_length=64)
+    path: pathlib.Path = Field(
+        title='Path to source',
+        json_schema_extra={
+            'description': 'A local path to the sources. Must be relative to this file, or absolute.',
+        },
+    )
+    sha256: str | None = Field(
+        None,
+        min_length=64,
+        max_length=64,
+        title='SHA256 Hash',
+        json_schema_extra={
+            'description': 'Hexedecimal representatio of the SHA256 of this file.',
+        },
+    )
 
     @field_validator('path', mode='before')
     @classmethod
@@ -119,29 +190,86 @@ class _Source(BaseModel):
 class File(_Source):
     """A file entry in the sources section of the build toml description."""
 
-    dest: str = 'game'
-    commands: list[str] = Field(default_factory=list)
+    model_config = ConfigDict(title='A single file type source')
+
+    dest: str = Field(
+        'game',
+        title='Installation location',
+        json_schema_extra={
+            'description': 'Relative path to install this file to.',
+        },
+    )
+    commands: list[str] = Field(
+        default_factory=list,
+        title='Extra shell commands',
+        json_schema_extra={
+            'description': ('Shell commands are run immediately after copying this '
+                            'source to the build directory'),
+        },
+    )
 
 
 class Patch(_Source):
     """A patch entry in the sources section of the build toml description."""
 
-    strip_components: int = 1
+    model_config = ConfigDict(title='A patch source')
+
+    strip_components: int = Field(
+        1,
+        title='Patch strip argument',
+        json_schema_extra={
+            'description': 'number of path elements to strip from patches. Passed to `patch -p N`',
+        },
+    )
 
 
 class Archive(_Source):
     """An archive entry in the sources section of the build toml description."""
 
-    commands: list[str] = Field(default_factory=list)
-    strip_components: int = 1
+    model_config = ConfigDict(title='An archive source')
+
+    commands: list[str] = Field(
+        default_factory=list,
+        title='Extra shell commands',
+        json_schema_extra={
+            'description': ('Shell commands are run immediately after copying this '
+                            'source to the build directory'),
+        },
+    )
+    strip_components: int = Field(
+        1,
+        title='Patch strip argument',
+        json_schema_extra={
+            'description': 'number of path elements to strip from patches. Passed to `patch -p N`',
+        },
+    )
 
 
 class Sources(BaseModel):
     """The sources section of the build toml description."""
 
-    archives: list[Archive] = Field(default_factory=list)
-    patches: list[Patch] = Field(default_factory=list)
-    files: list[File] = Field(default_factory=list)
+    model_config = ConfigDict(title='The sources for this build')
+
+    archives: list[Archive] = Field(
+        title='Archive Sources',
+        json_schema_extra={
+            'description': 'Archive type sources, such as .7z, .zip, .tar.gz, etc.',
+        },
+    )
+    patches: list[Patch] = Field(
+        default_factory=list,
+        title='Patch sources',
+        json_schema_extra={
+            'description': 'Patches to be applied after all archives are unpacked',
+        },
+    )
+    files: list[File] = Field(
+        default_factory=list,
+        title='source file',
+        json_schema_extra={
+            'description': 'extra files to add the build directory',
+        },
+    )
 
     @field_validator('archives', mode='after')
     @classmethod
@@ -152,11 +280,42 @@ class Sources(BaseModel):
 
 
 class Quirks(BaseModel):
-    """The quirks section of the build toml description."""
+    """Quirks of this build that have built-in wokarounds.
 
-    force_window_gui_icon: bool = False
-    x_configure_prologue: str | None = Field(None)
-    x_renpy_archived_window_gui_icon: str | None = Field(None)
+    There are a number of common issues, particularly in Ren'Py games that
+    flatpaker provides build steps to deal with.
+    """
+
+    model_config = ConfigDict(title='Quirks of this game to work around')
+
+    force_window_gui_icon: bool = Field(
+        False,
+        title='Force use of img/windows_gui/icon.png',
+        json_schema_extra={
+            'description': ('Normally icons from a .exe or .icns if they are avilable, '
+                            'however, some games do not customize these icon sources '
+                            'but do provide a customized incon in the img directory. '
+                            'Setting this to true forces the use of that icon.'),
+        },
+    )
+    x_configure_prologue: str | None = Field(
+        None,
+        title='Commands to run after unpacking all sources',
+        json_schema_extra={
+            'description': ('Extra shell commands to run after unpacking sources. '
+                            'This has been replaced with the `commands` field in sources'),
+            'deprecated': True,
+        },
+    )
+    x_renpy_archived_window_gui_icon: str | None = Field(
+        None,
+        title='Extract the icon from an RPA archive.',
+        json_schema_extra={
+            'description': ('Extract an icon from an .rpa icon. This is deprecated, and is '
+                            'now an alias for force_window_gui_icon'),
+            'deprecated': True,
+        },
+    )
 
     @field_validator('x_configure_prologue', mode='before')
     @classmethod
@@ -166,7 +325,7 @@ class Quirks(BaseModel):
             file = info.context.get('file')
             assert isinstance(file, pathlib.PurePath)
             warnings.warn(f'{file.as_posix()}: [quirks.x_configure_prologue]: use [[sources.archives.commands]] instead',
-                        DeprecationWarning)
+                          DeprecationWarning)
 
         return v
 
@@ -193,7 +352,14 @@ class Quirks(BaseModel):
 
 
 class Description(BaseModel):
-    """The build toml description."""
+    """A flatpaker build description for a Ren'Py or RPGMaker MV or MZ game"""
+
+    model_config = ConfigDict(
+        title='flatpaker',
+        json_schema_extra={
+            '$id': 'https://github.com/dcbaker/flatpaker/flatpaker.schema.json',
+        },
+    )
 
     common: Common
     appdata: AppData
