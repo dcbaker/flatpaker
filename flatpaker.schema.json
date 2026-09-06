@@ -1,129 +1,68 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://github.com.com/dcbaker/flatpaker/flatpaker.schema.json",
-    "title": "flatpaker",
-    "description": "A description of a Ren'py or RPGMaker game to package as a Flatpak",
-    "type": "object",
-    "properties": {
-        "common": {
-            "description": "Common properties used in the flatpak, appdata, and desktop files.",
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "The name of the application in proper casing."
-                },
-                "reverse_url": {
-                    "type": "string",
-                    "description": "A reverse root url for the game. For example, com.github.User. The name will be appended automatically"
-                },
-                "engine": {
-                    "type": "string",
-                    "enum": ["renpy8", "renpy7", "renpy7-py3", "rpgmaker"],
-                    "description": "What engine this game is for."
-                },
-                "categories": {
-                    "type": "array",
-                    "description": "Valid categories for the game's desktop file. 'Game' is added automatically",
-                    "items": {
-                        "type": "string",
-                        "enum": [
-                            "Adult", "ActionGame", "AdventureGame", "ArcadeGame", "BoardGame", "BlocksGame",
-                            "CardGame", "KidsGame", "LogicGame", "RolePlaying", "Shooter", "Simulation",
-                            "SportsGame", "StrategyGame"
-                        ]
-                    }
-                }
-            },
-            "required": [
-                "name",
-                "reverse_url",
-                "engine"
-            ],
-            "additionalProperties": false
-        },
-        "appdata": {
-            "description": "Application metadata.",
-            "type": "object",
+    "$defs": {
+        "AppData": {
+            "description": "The appdata section of the build toml description.",
             "properties": {
                 "summary": {
-                    " type": "string"
+                    "description": "A short description of the game",
+                    "title": "Application summary",
+                    "type": "string"
                 },
                 "description": {
+                    "description": "A longer description of the game.",
+                    "title": "Application description",
                     "type": "string"
                 },
                 "content_rating": {
-                    "type": "object",
-                    "properties": {
-                        "drugs-alcohol": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "drugs-tobacco": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "language-discrimination": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "language-humor": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "language-profanity": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "money-gambling": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "money-purchasing": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "sex-nudity": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "sex-themes": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "social-audio": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "social-chat": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "social-contacts": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "social-info": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "social-location": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "violence-bloodshed": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "violence-cartoon": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "violence-fantasy": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "violence-realistic": {
-                            "$ref": "#/$defs/content_ratings"
-                        },
-                        "violence-sexual": {
-                            "$ref": "#/$defs/content_ratings"
-                        }
+                    "additionalProperties": {
+                        "enum": [
+                            "none",
+                            "mild",
+                            "moderate",
+                            "intense"
+                        ],
+                        "type": "string"
                     },
-                    "additionalProperties": false
+                    "description": "Content information for the current game.",
+                    "propertyNames": {
+                        "enum": [
+                            "drugs-alcohol",
+                            "drugs-narcotics",
+                            "drugs-tobacco",
+                            "language-descrimination",
+                            "language-humor",
+                            "language-profanity",
+                            "money-gambling",
+                            "money-purchasing",
+                            "sex-nudity",
+                            "sex-themes",
+                            "social-audio",
+                            "social-chat",
+                            "social-contacts",
+                            "social-info",
+                            "social-location",
+                            "violence-bloodshed",
+                            "violence-cartoon",
+                            "violence-fantasy",
+                            "violence-realistic",
+                            "violence-sexual"
+                        ]
+                    },
+                    "title": "OARS Content Rating Information",
+                    "type": "object"
                 },
                 "releases": {
-                    "type": "object",
-                    "description": "A list of releases in the from `version : date`. Date should be YYYY-MM-DD",
                     "additionalProperties": {
                         "type": "string"
-                    }
+                    },
+                    "description": "Mapping of releases in the form `\"YYYY-MM-DD\" = \"X.Y.Z\"",
+                    "title": "Release information for this game",
+                    "type": "object"
                 },
                 "license": {
-                    "description": "An SPDX license expression. If unset will default to proprietary",
+                    "default": "LicenseRef-Proprietary",
+                    "description": "A valid SPDX license Expression for this game",
+                    "title": "SPDX License Expression",
                     "type": "string"
                 }
             },
@@ -131,110 +70,287 @@
                 "summary",
                 "description"
             ],
-            "additionalProperties": false
+            "title": "Application Metadata",
+            "type": "object"
         },
-        "sources": {
-            "description": "Optionally, sources for this description.",
-            "type": "object",
+        "Archive": {
+            "description": "An archive entry in the sources section of the build toml description.",
+            "properties": {
+                "path": {
+                    "description": "A local path to the sources. Must be relative to this file, or absolute.",
+                    "format": "path",
+                    "title": "Path to source",
+                    "type": "string"
+                },
+                "sha256": {
+                    "anyOf": [
+                        {
+                            "maxLength": 64,
+                            "minLength": 64,
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Hexedecimal representatio of the SHA256 of this file.",
+                    "title": "SHA256 Hash"
+                },
+                "commands": {
+                    "description": "Shell commands are run immediately after copying this source to the build directory",
+                    "items": {
+                        "type": "string"
+                    },
+                    "title": "Extra shell commands",
+                    "type": "array"
+                },
+                "strip_components": {
+                    "default": 1,
+                    "description": "number of path elements to strip from patches. Passed to `patch -p N`",
+                    "title": "Patch strip argument",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "path"
+            ],
+            "title": "An archive source",
+            "type": "object"
+        },
+        "Common": {
+            "description": "The common section of the build toml description.",
+            "properties": {
+                "reverse_url": {
+                    "description": "A reverse root URL for the game. The Game name will be automatically appended from the name field. This cannot be changed.",
+                    "example": "com.github.user",
+                    "title": "Reverse URL",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "The proper name with punctionation and spaces for this game",
+                    "example": "Soldier's Quest",
+                    "title": "Proper Name",
+                    "type": "string"
+                },
+                "engine": {
+                    "description": "Which engine (and runtime) this game uses",
+                    "enum": [
+                        "renpy8",
+                        "renpy7",
+                        "renpy7-py3",
+                        "rpgmaker"
+                    ],
+                    "title": "Engine name",
+                    "type": "string"
+                },
+                "categories": {
+                    "description": "Valid categories for the game's .destkop file. 'Game' is added automatically",
+                    "items": {
+                        "enum": [
+                            "ActionGame",
+                            "Adult",
+                            "AdventureGame",
+                            "Amusement",
+                            "ArcadeGame",
+                            "BlocksGame",
+                            "BoardGame",
+                            "CardGame",
+                            "Emulator",
+                            "KidsGame",
+                            "LogicGame",
+                            "RolePlaying",
+                            "Shooter",
+                            "Simulation",
+                            "SportsGame",
+                            "StrategyGame"
+                        ],
+                        "type": "string"
+                    },
+                    "title": "Freedesktop Application Categories",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "reverse_url",
+                "name",
+                "engine"
+            ],
+            "title": "common",
+            "type": "object"
+        },
+        "File": {
+            "description": "A file entry in the sources section of the build toml description.",
+            "properties": {
+                "path": {
+                    "description": "A local path to the sources. Must be relative to this file, or absolute.",
+                    "format": "path",
+                    "title": "Path to source",
+                    "type": "string"
+                },
+                "sha256": {
+                    "anyOf": [
+                        {
+                            "maxLength": 64,
+                            "minLength": 64,
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Hexedecimal representatio of the SHA256 of this file.",
+                    "title": "SHA256 Hash"
+                },
+                "dest": {
+                    "default": "game",
+                    "description": "Relative path to install this file to.",
+                    "title": "Installation location",
+                    "type": "string"
+                },
+                "commands": {
+                    "description": "Shell commands are run immediately after copying this source to the build directory",
+                    "items": {
+                        "type": "string"
+                    },
+                    "title": "Extra shell commands",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "path"
+            ],
+            "title": "A single file type source",
+            "type": "object"
+        },
+        "Patch": {
+            "description": "A patch entry in the sources section of the build toml description.",
+            "properties": {
+                "path": {
+                    "description": "A local path to the sources. Must be relative to this file, or absolute.",
+                    "format": "path",
+                    "title": "Path to source",
+                    "type": "string"
+                },
+                "sha256": {
+                    "anyOf": [
+                        {
+                            "maxLength": 64,
+                            "minLength": 64,
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Hexedecimal representatio of the SHA256 of this file.",
+                    "title": "SHA256 Hash"
+                },
+                "strip_components": {
+                    "default": 1,
+                    "description": "number of path elements to strip from patches. Passed to `patch -p N`",
+                    "title": "Patch strip argument",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "path"
+            ],
+            "title": "A patch source",
+            "type": "object"
+        },
+        "Quirks": {
+            "description": "Quirks of this build that have built-in wokarounds.\n\nThere are a number of common issues, particularly in Ren'Py games that\nflatpaker provides build steps to deal with.",
+            "properties": {
+                "force_window_gui_icon": {
+                    "default": false,
+                    "description": "Normally icons from a .exe or .icns if they are avilable, however, some games do not customize these icon sources but do provide a customized incon in the img directory. Setting this to true forces the use of that icon.",
+                    "title": "Force use of img/windows_gui/icon.png",
+                    "type": "boolean"
+                },
+                "x_configure_prologue": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "deprecated": true,
+                    "description": "Extra shell commands to run after unpacking sources. This has been replaced with the `commands` field in sources",
+                    "title": "Commands to run after unpacking all sources"
+                },
+                "x_renpy_archived_window_gui_icon": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "deprecated": true,
+                    "description": "Extract an icon from an .rpa icon. This is deprecated, and is now an alias for force_window_gui_icon",
+                    "title": "Extract the icon from an RPA archive."
+                }
+            },
+            "title": "Quirks of this game to work around",
+            "type": "object"
+        },
+        "Sources": {
+            "description": "The sources section of the build toml description.",
             "properties": {
                 "archives": {
-                    "description": "A list of archives used to build the project",
-                    "type": "array",
+                    "description": "Archive type sources, such as .7z, .zip, .tar.gz, etc.",
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "path": {
-                                "type": "string"
-                            },
-                            "strip_components": {
-                                "type": "number"
-                            },
-                            "sha256": {
-                                "type": "string",
-                                "description": "Optionally, a sha256 checksum. This will be generated if not provided"
-                            },
-                            "commands": {
-                                "type": "array",
-                                "items": "string"
-                            }
-                        },
-                        "required": [
-                            "path"
-                        ],
-                        "additionalProperties": false
-                    }
-                },
-                "files": {
-                    "description": "Single file sources",
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "path": {
-                                "type": "string",
-                                "description": "The Path to the file"
-                            },
-                            "dest": {
-                                "type": "string",
-                                "description": "Where to install the file. .rpy files are automatically merged into the game directory, other files likely need an explicit destination"
-                            },
-                            "sha256": {
-                                "type": "string",
-                                "description": "Optionally, a sha256 checksum. This will be generated if not provided"
-                            },
-                            "commands": {
-                                "type": "array",
-                                "items": "string"
-                            }
-                        },
-                        "required": [
-                            "path"
-                        ],
-                        "additionalProperties": false
-                    }
+                        "$ref": "#/$defs/Archive"
+                    },
+                    "title": "Archive Sources",
+                    "type": "array"
                 },
                 "patches": {
-                    "description": "Unix patch files to apply",
-                    "type": "array",
+                    "description": "Patches to be applied after all archives are unpacked",
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "path": {
-                                "type": "string"
-                            },
-                            "strip_components": {
-                                "type": "number"
-                            }
-                        },
-                        "required": [
-                            "path"
-                        ],
-                        "additionalProperties": false
-                    }
+                        "$ref": "#/$defs/Patch"
+                    },
+                    "title": "Patch sources",
+                    "type": "array"
+                },
+                "files": {
+                    "description": "extra files to add the build directory",
+                    "items": {
+                        "$ref": "#/$defs/File"
+                    },
+                    "title": "source file",
+                    "type": "array"
                 }
             },
             "required": [
                 "archives"
             ],
-            "additionalProperties": false
+            "title": "The sources for this build",
+            "type": "object"
+        }
+    },
+    "$id": "https://github.com/dcbaker/flatpaker/flatpaker.schema.json",
+    "description": "A flatpaker build description for a Ren'Py or RPGMaker MV or MZ game",
+    "properties": {
+        "common": {
+            "$ref": "#/$defs/Common"
+        },
+        "appdata": {
+            "$ref": "#/$defs/AppData"
         },
         "quirks": {
-            "description": "Workarounds for the quirks in games that cannot be easily resolved without flatpaker support.",
-            "type": "object",
-            "properties": {
-                "force_window_gui_icon": {
-                    "description": "For Ren'Py only. Use the window_gui.png file for the icon instead of extracting from the .exe or icns files.",
-                    "type": "boolean"
-                },
-                "x_configure_prologue": {
-                    "description": "A shell snippet to be run before any of the automated build steps. Because sometimes you just need an escape hatch",
-                    "type": "string"
-                },
-                "x_renpy_archived_window_gui_icon": {
-                    "description": "Extract a windows_gui.png icon from the named .rpa",
-                    "type": "string"
-                }
-            }
+            "$ref": "#/$defs/Quirks"
+        },
+        "sources": {
+            "$ref": "#/$defs/Sources"
         }
     },
     "required": [
@@ -242,17 +358,6 @@
         "appdata",
         "sources"
     ],
-    "additionalProperties": false,
-    "$defs": {
-        "content_ratings": {
-            "type": "string",
-            "enum": [
-                "unknown",
-                "none",
-                "mild",
-                "moderate",
-                "intense"
-            ]
-        }
-    }
+    "title": "flatpaker",
+    "type": "object"
 }
